@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.sachesi.locus</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Locus</name>
+  <summary>Watch processes and what they use</summary>
+  <description>
+    <p>Locus is a system monitor for Wayland desktops, built with GTK 4 and libadwaita. It lists the running processes with what each takes of the processor, the memory and the disks, and graphs the whole machine.</p>
+    <ul>
+      <li>Processes sorted by processor, memory or disk use, searchable by name, command line or ID</li>
+      <li>End, kill, stop and continue a process, from its menu or the bar beneath the list</li>
+      <li>Processor usage as a whole and for each core, memory and swap, network and disk traffic</li>
+      <li>Room left on each mounted disk</li>
+    </ul>
+    <p>Everything is read from /proc and /sys, and processes are read only while their list is on screen.</p>
+  </description>
+  <launchable type="desktop-id">io.github.sachesi.locus.desktop</launchable>
+  <url type="homepage">https://github.com/sachesi/locus</url>
+  <url type="bugtracker">https://github.com/sachesi/locus/issues</url>
+  <url type="vcs-browser">https://github.com/sachesi/locus</url>
+  <developer id="io.github.sachesi"><name>sachesi</name></developer>
+  <content_rating type="oars-1.1"/>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  <releases>
+    <release version="0.1.0" date="2026-08-28">
+      <description>
+        <p>The first release: processes with their processor, memory and disk use, which can be ended, killed, stopped and continued; graphs of the processor, each of its cores, memory and swap, the network and the disks; and the room left on each mounted disk.</p>
+      </description>
+    </release>
+  </releases>
+</component>

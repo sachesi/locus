@@ -1,0 +1,389 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusResourcesPage: Adw.Bin {
+  child: ScrolledWindow {
+    hscrollbar-policy: never;
+
+    child: Adw.Clamp {
+      maximum-size: 960;
+      tightening-threshold: 600;
+
+      child: Box {
+        orientation: vertical;
+        spacing: 18;
+        margin-top: 18;
+        margin-bottom: 18;
+        margin-start: 12;
+        margin-end: 12;
+
+        Box {
+          orientation: vertical;
+          spacing: 12;
+
+          Box {
+            spacing: 12;
+
+            Box {
+              orientation: vertical;
+              hexpand: true;
+
+              Label {
+                label: _("Processor");
+                xalign: 0;
+
+                styles [
+                  "title-4",
+                ]
+              }
+
+              Label cpu_model {
+                xalign: 0;
+                ellipsize: end;
+                visible: false;
+
+                styles [
+                  "caption",
+                  "dim-label",
+                ]
+              }
+            }
+
+            Label cpu_value {
+              valign: center;
+
+              styles [
+                "title-4",
+                "numeric",
+              ]
+            }
+          }
+
+          $LocusGraph cpu_graph {
+            maximum: 100;
+            height-request: 120;
+
+            accessibility {
+              label: _("Processor usage over the last readings");
+            }
+          }
+
+          FlowBox cores {
+            selection-mode: none;
+            homogeneous: true;
+            min-children-per-line: 2;
+            max-children-per-line: 8;
+            column-spacing: 12;
+            row-spacing: 12;
+          }
+
+          styles [
+            "card",
+            "resource",
+          ]
+        }
+
+        Box cards {
+          spacing: 18;
+          homogeneous: true;
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            Box {
+              spacing: 12;
+
+              Label {
+                label: _("Memory");
+                xalign: 0;
+                hexpand: true;
+
+                styles [
+                  "title-4",
+                ]
+              }
+
+              Label memory_value {
+                styles [
+                  "title-4",
+                  "numeric",
+                ]
+              }
+            }
+
+            $LocusGraph memory_graph {
+              maximum: 100;
+              height-request: 100;
+
+              accessibility {
+                label: _("Memory and swap in use over the last readings");
+              }
+            }
+
+            Adw.WrapBox {
+              child-spacing: 24;
+              line-spacing: 6;
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "first",
+                  ]
+                }
+
+                Label {
+                  label: _("Memory");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label memory_detail {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+
+              Box swap_legend {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "second",
+                  ]
+                }
+
+                Label {
+                  label: _("Swap");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label swap_detail {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+            }
+
+            styles [
+              "card",
+              "resource",
+            ]
+          }
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            Label {
+              label: _("Network");
+              xalign: 0;
+
+              styles [
+                "title-4",
+              ]
+            }
+
+            $LocusGraph network_graph {
+              height-request: 100;
+
+              accessibility {
+                label: _("Network traffic over the last readings");
+              }
+            }
+
+            Adw.WrapBox {
+              child-spacing: 24;
+              line-spacing: 6;
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "first",
+                  ]
+                }
+
+                Label {
+                  label: _("Receiving");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label received {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "second",
+                  ]
+                }
+
+                Label {
+                  label: _("Sending");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label sent {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+            }
+
+            styles [
+              "card",
+              "resource",
+            ]
+          }
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            Label {
+              label: _("Disks");
+              xalign: 0;
+
+              styles [
+                "title-4",
+              ]
+            }
+
+            $LocusGraph disk_graph {
+              height-request: 100;
+
+              accessibility {
+                label: _("Disk reads and writes over the last readings");
+              }
+            }
+
+            Adw.WrapBox {
+              child-spacing: 24;
+              line-spacing: 6;
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "first",
+                  ]
+                }
+
+                Label {
+                  label: _("Reading");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label read {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "second",
+                  ]
+                }
+
+                Label {
+                  label: _("Writing");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label written {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+            }
+
+            styles [
+              "card",
+              "resource",
+            ]
+          }
+        }
+
+        Box filesystems_card {
+          orientation: vertical;
+          spacing: 12;
+          visible: false;
+
+          Label {
+            label: _("File Systems");
+            xalign: 0;
+
+            styles [
+              "title-4",
+            ]
+          }
+
+          Box filesystems {
+            orientation: vertical;
+            spacing: 18;
+          }
+
+          styles [
+            "card",
+            "resource",
+          ]
+        }
+      };
+    };
+  };
+}

@@ -1,0 +1,213 @@
+using Gtk 4.0;
+using Gio 2.0;
+using Adw 1;
+
+template $LocusProcessesPage: Adw.Bin {
+  ShortcutController {
+    scope: managed;
+
+    Shortcut {
+      trigger: "Delete";
+      action: "action(process.end)";
+    }
+
+    Shortcut {
+      trigger: "<Shift>Delete";
+      action: "action(process.kill)";
+    }
+  }
+
+  child: Box {
+    orientation: vertical;
+
+    SearchBar search_bar {
+      search-mode-enabled: bind template.search-mode bidirectional;
+      key-capture-widget: template;
+
+      child: Adw.Clamp {
+        maximum-size: 400;
+
+        child: SearchEntry search_entry {
+          placeholder-text: _("Search processes");
+          hexpand: true;
+          search-changed => $on_search_changed() swapped;
+        };
+      };
+    }
+
+    PopoverBin context_bin {
+      vexpand: true;
+
+      popover: PopoverMenu {
+        menu-model: process_menu;
+        has-arrow: false;
+        halign: start;
+      };
+
+      child: Stack stack {
+        StackPage {
+          name: "list";
+
+          child: ScrolledWindow {
+            child: ColumnView view {
+              reorderable: false;
+
+              model: SingleSelection selection {
+                autoselect: false;
+                can-unselect: true;
+                notify::selected-item => $on_selection_changed() swapped;
+
+                model: SortListModel sort_model {
+                  sorter: bind view.sorter;
+
+                  model: FilterListModel filter_model {
+                    items-changed => $on_filtered_changed() swapped;
+
+                    model: Gio.ListStore store {
+                      item-type: typeof<$LocusProcess>;
+                    };
+                  };
+                };
+              };
+
+              ColumnViewColumn name_column {
+                title: _("Process Name");
+                expand: true;
+                resizable: true;
+              }
+
+              ColumnViewColumn user_column {
+                title: _("User");
+                fixed-width: 110;
+                resizable: true;
+                visible: bind template.narrow inverted;
+              }
+
+              ColumnViewColumn cpu_column {
+                title: _("CPU");
+                fixed-width: 80;
+              }
+
+              ColumnViewColumn memory_column {
+                title: _("Memory");
+                fixed-width: 100;
+              }
+
+              ColumnViewColumn disk_column {
+                title: _("Disk");
+                fixed-width: 100;
+                visible: bind template.narrow inverted;
+              }
+
+              ColumnViewColumn pid_column {
+                title: _("ID");
+                fixed-width: 80;
+                visible: bind template.narrow inverted;
+              }
+
+              styles [
+                "data-table",
+              ]
+            };
+          };
+        }
+
+        StackPage {
+          name: "empty";
+
+          child: Adw.StatusPage {
+            icon-name: "system-search-symbolic";
+            title: _("No Matching Processes");
+          };
+        }
+      };
+    }
+
+    ActionBar action_bar {
+      revealed: false;
+
+      [start]
+      Box {
+        orientation: vertical;
+        valign: center;
+
+        Label selected_name {
+          xalign: 0;
+          ellipsize: end;
+
+          styles [
+            "heading",
+          ]
+        }
+
+        Label selected_detail {
+          xalign: 0;
+          ellipsize: end;
+
+          styles [
+            "caption",
+            "dim-label",
+          ]
+        }
+      }
+
+      [end]
+      Adw.SplitButton {
+        label: _("_End Process");
+        use-underline: true;
+        action-name: "process.end";
+        menu-model: signal_menu;
+        dropdown-tooltip: _("More Actions");
+      }
+    }
+  };
+}
+
+menu process_menu {
+  section {
+    item {
+      label: _("_Stop");
+      action: "process.stop";
+      hidden-when: "action-disabled";
+    }
+
+    item {
+      label: _("_Continue");
+      action: "process.continue";
+      hidden-when: "action-disabled";
+    }
+  }
+
+  section {
+    item {
+      label: _("_End");
+      action: "process.end";
+    }
+
+    item {
+      label: _("_Kill");
+      action: "process.kill";
+    }
+  }
+}
+
+menu signal_menu {
+  section {
+    item {
+      label: _("_Stop");
+      action: "process.stop";
+      hidden-when: "action-disabled";
+    }
+
+    item {
+      label: _("_Continue");
+      action: "process.continue";
+      hidden-when: "action-disabled";
+    }
+
+    item {
+      label: _("_Kill");
+      action: "process.kill";
+    }
+  }
+}

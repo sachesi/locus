@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d3846"/>
+      <stop offset="1" stop-color="#241f31"/>
+    </linearGradient>
+    <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#62a0ea" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#62a0ea" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+  <rect x="12" y="22" width="104" height="88" rx="14" fill="#1a1622"/>
+  <rect x="12" y="18" width="104" height="88" rx="14" fill="url(#screen)"/>
+  <g fill="#ffffff" fill-opacity="0.08">
+    <rect x="24" y="40" width="80" height="2" rx="1"/>
+    <rect x="24" y="60" width="80" height="2" rx="1"/>
+    <rect x="24" y="80" width="80" height="2" rx="1"/>
+  </g>
+  <path d="M24 84 L38 76 L50 80 L62 50 L74 66 L86 42 L104 54 V94 H24 Z" fill="url(#area)"/>
+  <path d="M24 84 L38 76 L50 80 L62 50 L74 66 L86 42 L104 54" fill="none" stroke="#99c1f1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="86" cy="42" r="6" fill="#ffffff"/>
+</svg>

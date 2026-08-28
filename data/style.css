@@ -1,0 +1,24 @@
+/* Structural styling. Colours come from libadwaita variables; the graphs take the accent
+   colour for their first series and the text colour for their second, and the swatches of
+   their legends match. */
+
+.resource {
+  padding: 18px;
+}
+
+graph {
+  font-size: 0.8em;
+  font-feature-settings: "tnum";
+}
+
+.swatch {
+  min-width: 10px;
+  min-height: 10px;
+  border-radius: 5px;
+}
+.swatch.first {
+  background-color: var(--accent-bg-color);
+}
+.swatch.second {
+  background-color: color-mix(in srgb, currentColor 60%, transparent);
+}

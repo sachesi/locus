@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Locus
+GenericName=System Monitor
+Comment=See and end processes, and watch processor, memory, network and disk use
+Exec=locus
+Icon=io.github.sachesi.locus
+Terminal=false
+Type=Application
+Categories=GTK;System;Monitor;
+StartupNotify=true
+Keywords=process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usage;
