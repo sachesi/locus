@@ -29,4 +29,6 @@ Build needs Rust 1.92, `blueprint-compiler`, `just`, gettext and the development
 for GTK 4.22 and libadwaita 1.8 or newer. `just run` starts the debug build without
 installing it. `just uninstall` removes what `install` put in place, with the same prefix.
 
+The interface is available in English, Russian and Ukrainian.
+
 GPL-3.0-or-later.

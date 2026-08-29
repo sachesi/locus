@@ -1,0 +1,388 @@
+# Russian translation for locus.
+# Copyright (C) 2026 sachesi
+# This file is distributed under the same license as the locus package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: locus 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
+"POT-Creation-Date: 2026-08-28 21:08+0300\n"
+"PO-Revision-Date: 2026-08-29 10:56+0300\n"
+"Last-Translator: sachesi <xsachesi@pm.me>\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+#: data/io.github.sachesi.locus.desktop:2
+#: data/io.github.sachesi.locus.metainfo.xml:6
+msgid "Locus"
+msgstr ""
+
+#: data/io.github.sachesi.locus.desktop:3
+msgid "System Monitor"
+msgstr "Системный монитор"
+
+#: data/io.github.sachesi.locus.desktop:4
+msgid ""
+"See and end processes, and watch processor, memory, network and disk use"
+msgstr "Просмотр и завершение процессов, наблюдение за процессором, памятью, сетью и дисками"
+
+#: data/io.github.sachesi.locus.desktop:11
+msgid "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usage;"
+msgstr "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usage;процесс;задача;диспетчер;завершить;процессор;память;подкачка;сеть;диск;нагрузка;"
+
+#: data/io.github.sachesi.locus.gschema.xml:7
+msgid "Seconds between readings"
+msgstr "Секунды между замерами"
+
+#: data/io.github.sachesi.locus.gschema.xml:11
+msgid "List the processes of every user"
+msgstr "Показывать процессы всех пользователей"
+
+#: data/io.github.sachesi.locus.gschema.xml:12
+msgid "When off, only the processes of the user running Locus are listed."
+msgstr "Если выключено, показываются только процессы пользователя, запустившего Locus."
+
+#: data/io.github.sachesi.locus.gschema.xml:20
+msgid "Page shown when Locus starts"
+msgstr "Страница, открываемая при запуске Locus"
+
+#: data/io.github.sachesi.locus.gschema.xml:24
+msgid "Window size"
+msgstr "Размер окна"
+
+#: data/io.github.sachesi.locus.gschema.xml:28
+msgid "Window maximized"
+msgstr "Окно развёрнуто"
+
+#: data/io.github.sachesi.locus.metainfo.xml:7
+msgid "Watch processes and what they use"
+msgstr "Следите за процессами и тем, что они потребляют"
+
+#: data/io.github.sachesi.locus.metainfo.xml:9
+msgid ""
+"Locus is a system monitor for Wayland desktops, built with GTK 4 and "
+"libadwaita. It lists the running processes with what each takes of the "
+"processor, the memory and the disks, and graphs the whole machine."
+msgstr "Locus — системный монитор для рабочих столов Wayland, созданный на GTK 4 и libadwaita. Он показывает запущенные процессы и то, сколько каждый берёт от процессора, памяти и дисков, и строит графики для всей машины."
+
+#: data/io.github.sachesi.locus.metainfo.xml:11
+msgid ""
+"Processes sorted by processor, memory or disk use, searchable by name, "
+"command line or ID"
+msgstr "Процессы, упорядоченные по нагрузке на процессор, память или диск, с поиском по имени, командной строке или ID"
+
+#: data/io.github.sachesi.locus.metainfo.xml:12
+msgid ""
+"End, kill, stop and continue a process, from its menu or the bar beneath the "
+"list"
+msgstr "Завершение, принудительное завершение, остановка и продолжение процесса из его меню или панели под списком"
+
+#: data/io.github.sachesi.locus.metainfo.xml:13
+msgid ""
+"Processor usage as a whole and for each core, memory and swap, network and "
+"disk traffic"
+msgstr "Загрузка процессора в целом и по ядрам, память и подкачка, сетевой и дисковый обмен"
+
+#: data/io.github.sachesi.locus.metainfo.xml:14
+msgid "Room left on each mounted disk"
+msgstr "Свободное место на каждом подключённом диске"
+
+#: data/io.github.sachesi.locus.metainfo.xml:16
+msgid ""
+"Everything is read from /proc and /sys, and processes are read only while "
+"their list is on screen."
+msgstr "Всё читается из /proc и /sys, а процессы — только пока их список на экране."
+
+#: data/io.github.sachesi.locus.metainfo.xml:22
+msgid "sachesi"
+msgstr ""
+
+#: data/io.github.sachesi.locus.metainfo.xml:35
+msgid ""
+"The first release: processes with their processor, memory and disk use, "
+"which can be ended, killed, stopped and continued; graphs of the processor, "
+"each of its cores, memory and swap, the network and the disks; and the room "
+"left on each mounted disk."
+msgstr "Первый выпуск: процессы с их нагрузкой на процессор, память и диск, которые можно завершить, принудительно завершить, остановить и продолжить; графики процессора и каждого его ядра, памяти и подкачки, сети и дисков; свободное место на каждом подключённом диске."
+
+#. Translators: a transfer rate, such as "1.5 MB/s".
+#: src/format.rs:14
+#, no-c-format
+msgid "{size}/s"
+msgstr "{size}/с"
+
+#. Translators: memory in use out of what there is, such as "5.2 GB of 16.0 GB".
+#: src/format.rs:19
+#, no-c-format
+msgid "{used} of {total}"
+msgstr "{used} из {total}"
+
+#. Translators: room left on a disk, such as "120 GB free of 500 GB".
+#: src/format.rs:26
+#, no-c-format
+msgid "{available} free of {total}"
+msgstr "свободно {available} из {total}"
+
+#: src/main.rs:67
+#, no-c-format
+msgid ""
+"See what the processor, the memory, the network and the disks are busy with, "
+"and which processes keep them busy."
+msgstr "Смотрите, чем заняты процессор, память, сеть и диски и какие процессы их занимают."
+
+#: src/main.rs:69
+#, no-c-format
+msgid "translator-credits"
+msgstr "sachesi"
+
+#: src/processes_page.rs:318
+#, no-c-format
+msgid "ID {pid}"
+msgstr "ID {pid}"
+
+#: src/processes_page.rs:320
+#, no-c-format
+msgid "{detail}, stopped"
+msgstr "{detail}, остановлен"
+
+#: src/processes_page.rs:420
+#, no-c-format
+msgid "Kill “{name}”?"
+msgstr "Принудительно завершить «{name}»?"
+
+#: src/processes_page.rs:422
+#, no-c-format
+msgid ""
+"The process is stopped at once, without a chance to save its work or clean "
+"up."
+msgstr "Процесс будет остановлен сразу, без возможности сохранить работу или прибраться за собой."
+
+#: src/processes_page.rs:424
+#, no-c-format
+msgid "_Kill Process"
+msgstr "Завершить _принудительно"
+
+#: src/processes_page.rs:427
+#, no-c-format
+msgid "End “{name}”?"
+msgstr "Завершить «{name}»?"
+
+#: src/processes_page.rs:428
+#, no-c-format
+msgid "The process is asked to quit. Work it has not saved may be lost."
+msgstr "Процессу будет предложено завершиться. Несохранённая работа может быть потеряна."
+
+#: src/processes_page.rs:429 ui/processes_page.ui:185
+#, no-c-format
+msgid "_End Process"
+msgstr "_Завершить процесс"
+
+#: src/processes_page.rs:433
+#, no-c-format
+msgid "_Cancel"
+msgstr "_Отмена"
+
+#: src/processes_page.rs:459 src/processes_page.rs:462
+#, no-c-format
+msgid "“{name}” belongs to another user"
+msgstr "«{name}» принадлежит другому пользователю"
+
+#: src/processes_page.rs:460
+#, no-c-format
+msgid "“{name}” has already exited"
+msgstr "«{name}» уже завершился"
+
+#: src/processes_page.rs:465
+#, no-c-format
+msgid "Could not signal “{name}”: {error}"
+msgstr "Не удалось отправить сигнал «{name}»: {error}"
+
+#: src/resources_page.rs:222
+#, no-c-format
+msgid "CPU {number}"
+msgstr "ЦП {number}"
+
+#: src/resources_page.rs:273
+#, no-c-format
+msgid "{device}, {type}"
+msgstr "{device}, {type}"
+
+#: src/window.rs:102
+#, no-c-format
+msgid "Every Second"
+msgstr "Каждую секунду"
+
+#: src/window.rs:103
+#, no-c-format
+msgid "Every 2 Seconds"
+msgstr "Каждые 2 секунды"
+
+#: src/window.rs:104
+#, no-c-format
+msgid "Every 5 Seconds"
+msgstr "Каждые 5 секунд"
+
+#: ui/processes_page.ui:39
+msgid "Search processes"
+msgstr "Поиск процессов"
+
+#: ui/processes_page.ui:92
+msgid "Process Name"
+msgstr "Имя процесса"
+
+#: ui/processes_page.ui:99
+msgid "User"
+msgstr "Пользователь"
+
+#: ui/processes_page.ui:107
+msgid "CPU"
+msgstr "ЦП"
+
+#: ui/processes_page.ui:113 ui/resources_page.ui:107 ui/resources_page.ui:152
+msgid "Memory"
+msgstr "Память"
+
+#: ui/processes_page.ui:119
+msgid "Disk"
+msgstr "Диск"
+
+#: ui/processes_page.ui:126
+msgid "ID"
+msgstr "ID"
+
+#: ui/processes_page.ui:146
+msgid "No Matching Processes"
+msgstr "Нет подходящих процессов"
+
+#: ui/processes_page.ui:189
+msgid "More Actions"
+msgstr "Другие действия"
+
+#: ui/processes_page.ui:200 ui/processes_page.ui:224
+msgid "_Stop"
+msgstr "_Остановить"
+
+#: ui/processes_page.ui:205 ui/processes_page.ui:229
+msgid "_Continue"
+msgstr "_Продолжить"
+
+#: ui/processes_page.ui:212
+msgid "_End"
+msgstr "_Завершить"
+
+#: ui/processes_page.ui:216 ui/processes_page.ui:234
+msgid "_Kill"
+msgstr "Завершить _принудительно"
+
+#: ui/resources_page.ui:38
+msgid "Processor"
+msgstr "Процессор"
+
+#: ui/resources_page.ui:74
+msgid "Processor usage over the last readings"
+msgstr "Загрузка процессора за последние замеры"
+
+#: ui/resources_page.ui:130
+msgid "Memory and swap in use over the last readings"
+msgstr "Занятая память и подкачка за последние замеры"
+
+#: ui/resources_page.ui:181
+msgid "Swap"
+msgstr "Подкачка"
+
+#: ui/resources_page.ui:210
+msgid "Network"
+msgstr "Сеть"
+
+#: ui/resources_page.ui:221
+msgid "Network traffic over the last readings"
+msgstr "Сетевой обмен за последние замеры"
+
+#: ui/resources_page.ui:243
+msgid "Receiving"
+msgstr "Приём"
+
+#: ui/resources_page.ui:272
+msgid "Sending"
+msgstr "Отправка"
+
+#: ui/resources_page.ui:301
+msgid "Disks"
+msgstr "Диски"
+
+#: ui/resources_page.ui:312
+msgid "Disk reads and writes over the last readings"
+msgstr "Чтение и запись дисков за последние замеры"
+
+#: ui/resources_page.ui:334
+msgid "Reading"
+msgstr "Чтение"
+
+#: ui/resources_page.ui:363
+msgid "Writing"
+msgstr "Запись"
+
+#: ui/resources_page.ui:395
+msgid "File Systems"
+msgstr "Файловые системы"
+
+#: ui/shortcuts_dialog.ui:12
+msgid "General"
+msgstr "Общие"
+
+#: ui/shortcuts_dialog.ui:15 ui/shortcuts_dialog.ui:47 ui/window.ui:67
+msgid "Processes"
+msgstr "Процессы"
+
+#: ui/shortcuts_dialog.ui:21 ui/window.ui:77
+msgid "Resources"
+msgstr "Ресурсы"
+
+#: ui/shortcuts_dialog.ui:27
+msgid "Keyboard Shortcuts"
+msgstr "Комбинации клавиш"
+
+#: ui/shortcuts_dialog.ui:33
+msgid "Close Window"
+msgstr "Закрыть окно"
+
+#: ui/shortcuts_dialog.ui:39
+msgid "Quit"
+msgstr "Выйти"
+
+#: ui/shortcuts_dialog.ui:50 ui/window.ui:37
+msgid "Search"
+msgstr "Поиск"
+
+#: ui/shortcuts_dialog.ui:56
+msgid "End Process"
+msgstr "Завершить процесс"
+
+#: ui/shortcuts_dialog.ui:62
+msgid "Kill Process"
+msgstr "Завершить принудительно"
+
+#: ui/window.ui:55
+msgid "Main Menu"
+msgstr "Главное меню"
+
+#: ui/window.ui:99
+msgid "Show _All Processes"
+msgstr "Показывать _все процессы"
+
+#: ui/window.ui:103
+msgid "_Update Interval"
+msgstr "_Интервал обновления"
+
+#: ui/window.ui:108
+msgid "_Keyboard Shortcuts"
+msgstr "_Комбинации клавиш"
+
+#: ui/window.ui:112
+msgid "_About Locus"
+msgstr "_О Locus"
