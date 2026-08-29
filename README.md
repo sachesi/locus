@@ -31,4 +31,7 @@ installing it. `just uninstall` removes what `install` put in place, with the sa
 
 The interface is available in English, Russian and Ukrainian.
 
+- [Contributing](CONTRIBUTING.md), including where things are in the code, and
+  [reporting a vulnerability](SECURITY.md)
+
 GPL-3.0-or-later.
