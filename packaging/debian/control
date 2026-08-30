@@ -1,0 +1,34 @@
+Source: locus
+Section: utils
+Priority: optional
+Maintainer: sachesi <xsachesi@pm.me>
+Build-Depends: debhelper-compat (= 13),
+               cargo,
+               rustc (>= 1.92),
+               pkg-config,
+               just,
+               blueprint-compiler,
+               gettext,
+               libglib2.0-dev,
+               libgtk-4-dev (>= 4.22),
+               libadwaita-1-dev (>= 1.8)
+Standards-Version: 4.7.2
+Homepage: https://github.com/sachesi/locus
+Rules-Requires-Root: no
+
+Package: locus
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libgtk-4-1 (>= 4.22),
+         libadwaita-1-0 (>= 1.8),
+         hicolor-icon-theme
+Description: Watch processes and what they use
+ Locus is a system monitor for Wayland desktops, built with GTK 4 and
+ libadwaita. It lists the running processes with the share of the processor,
+ the memory and the disk traffic of each, and ends, kills, stops and continues
+ them; it graphs the processor and each of its cores, memory and swap, the
+ network and the disks, and shows the room left on each mounted disk.
+ .
+ Everything is read from /proc and /sys, and processes are read only while
+ their list is on screen.
