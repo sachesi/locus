@@ -54,19 +54,19 @@ template $LocusWindow: Adw.ApplicationWindow {
 
       content: Adw.ViewStack stack {
         Adw.ViewStackPage {
-          name: "processes";
-          title: _("Processes");
-          icon-name: "view-list-symbolic";
-
-          child: $LocusProcessesPage processes_page {};
-        }
-
-        Adw.ViewStackPage {
           name: "resources";
           title: _("Resources");
           icon-name: "resources-symbolic";
 
           child: $LocusResourcesPage resources_page {};
+        }
+
+        Adw.ViewStackPage {
+          name: "processes";
+          title: _("Processes");
+          icon-name: "view-list-symbolic";
+
+          child: $LocusProcessesPage processes_page {};
         }
       };
 

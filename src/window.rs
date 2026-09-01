@@ -90,9 +90,6 @@ mod imp {
             }
 
             self.settings
-                .bind("page", &*self.stack, "visible-child-name")
-                .build();
-            self.settings
                 .bind("show-all-processes", &*self.processes_page, "show-all")
                 .get()
                 .build();

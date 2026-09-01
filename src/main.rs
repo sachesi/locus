@@ -52,8 +52,8 @@ fn setup_actions(app: &adw::Application) {
     app.set_accels_for_action("app.quit", &["<Control>q"]);
     app.set_accels_for_action("window.close", &["<Control>w"]);
     app.set_accels_for_action("win.search", &["<Control>f"]);
-    app.set_accels_for_action("win.page::processes", &["<Alt>1"]);
-    app.set_accels_for_action("win.page::resources", &["<Alt>2"]);
+    app.set_accels_for_action("win.page::resources", &["<Alt>1"]);
+    app.set_accels_for_action("win.page::processes", &["<Alt>2"]);
 }
 
 fn show_about(app: &adw::Application) {

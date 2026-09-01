@@ -11,16 +11,8 @@
       <summary>List the processes of every user</summary>
       <description>When off, only the processes of the user running Locus are listed.</description>
     </key>
-    <key name="page" type="s">
-      <choices>
-        <choice value="processes"/>
-        <choice value="resources"/>
-      </choices>
-      <default>'processes'</default>
-      <summary>Page shown when Locus starts</summary>
-    </key>
     <key name="window-size" type="(ii)">
-      <default>(900, 640)</default>
+      <default>(960, 720)</default>
       <summary>Window size</summary>
     </key>
     <key name="window-maximized" type="b">
