@@ -21,6 +21,10 @@ mod imp {
         /// The value at the top of the graph; 0 scales it to the largest value shown.
         #[property(get, set = Self::set_maximum, minimum = 0.0)]
         maximum: Cell<f64>,
+        /// Draws the readings on a plain background, with a thinner line and no grid, for
+        /// graphs too small for more.
+        #[property(get, set)]
+        plain: Cell<bool>,
         /// Up to two series of readings, oldest first. The first is drawn in the accent
         /// colour and filled beneath, the second as a line in the text colour.
         pub series: RefCell<[VecDeque<f64>; 2]>,
@@ -70,9 +74,29 @@ mod imp {
                 scale_for(series.iter().flatten().copied().fold(0.0, f64::max))
             };
 
-            snapshot.push_clip(&graphene::Rect::new(0.0, 0.0, width, height));
-            for quarter in 1..4 {
-                let y = (height * quarter as f32 / 4.0).round();
+            // A graph scaled to its data names its top in a strip of its own above the
+            // readings, where no peak draws over it.
+            let label = self
+                .scale_label
+                .borrow()
+                .as_ref()
+                .filter(|_| maximum <= 0.0)
+                .map(|label| widget.create_pango_layout(Some(&label(top))));
+            let plot_top = label
+                .as_ref()
+                .map_or(0.0, |l| l.pixel_size().1 as f32 + 4.0);
+            let plot_height = height - plot_top;
+
+            let bounds = graphene::Rect::new(0.0, 0.0, width, height);
+            if self.plain.get() {
+                snapshot.push_rounded_clip(&gsk::RoundedRect::from_rect(bounds, 4.0));
+                snapshot.append_color(&text.with_alpha(0.05), &bounds);
+            } else {
+                snapshot.push_clip(&bounds);
+            }
+            let first_line = if label.is_some() { 0 } else { 1 };
+            for quarter in (first_line..4).filter(|_| !self.plain.get()) {
+                let y = (plot_top + plot_height * quarter as f32 / 4.0).round();
                 snapshot.append_color(
                     &text.with_alpha(0.08),
                     &graphene::Rect::new(0.0, y, width, 1.0),
@@ -83,7 +107,9 @@ mod imp {
             let point = |i: usize, count: usize, value: f64| {
                 let x = width - step * (count - 1 - i) as f32;
                 // A line at zero stays a line rather than falling off the bottom edge.
-                let y = 1.0 + (height - 2.0) * (1.0 - (value / top).clamp(0.0, 1.0) as f32);
+                let y = plot_top
+                    + 1.0
+                    + (plot_height - 2.0) * (1.0 - (value / top).clamp(0.0, 1.0) as f32);
                 (x, y)
             };
             for (index, values) in series.iter().enumerate().rev() {
@@ -115,18 +141,15 @@ mod imp {
                 } else {
                     text.with_alpha(0.6)
                 };
-                let stroke = gsk::Stroke::new(2.0);
+                let stroke = gsk::Stroke::new(if self.plain.get() { 1.5 } else { 2.0 });
                 stroke.set_line_join(gsk::LineJoin::Round);
                 snapshot.append_stroke(&line.to_path(), &stroke, &color);
             }
 
-            if maximum <= 0.0
-                && let Some(label) = &*self.scale_label.borrow()
-            {
-                let layout = widget.create_pango_layout(Some(&label(top)));
+            if let Some(layout) = label {
                 let (label_width, _) = layout.pixel_size();
                 snapshot.save();
-                snapshot.translate(&graphene::Point::new(width - label_width as f32 - 6.0, 4.0));
+                snapshot.translate(&graphene::Point::new(width - label_width as f32, 0.0));
                 snapshot.append_layout(&layout, &text.with_alpha(0.6));
                 snapshot.restore();
             }

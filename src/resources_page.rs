@@ -218,7 +218,8 @@ impl ResourcesPage {
 fn core_view(number: usize) -> (CoreView, gtk::Widget) {
     let graph = Graph::default();
     graph.set_maximum(100.0);
-    graph.set_height_request(48);
+    graph.set_plain(true);
+    graph.set_height_request(36);
     let name = gettext("CPU {number}").replace("{number}", &number.to_string());
     graph.update_property(&[gtk::accessible::Property::Label(&name)]);
     let label = gtk::Label::builder()
@@ -247,17 +248,28 @@ fn filesystem_view(filesystem: &FileSystem) -> (FileSystemView, gtk::Widget) {
     let name = gtk::Label::builder()
         .label(&filesystem.mount_point)
         .xalign(0.0)
-        .hexpand(true)
         .ellipsize(gtk::pango::EllipsizeMode::Middle)
         .build();
+    let device = gtk::Label::builder()
+        .label(format!("{} · {}", filesystem.fs_type, filesystem.source))
+        .xalign(0.0)
+        .ellipsize(gtk::pango::EllipsizeMode::Middle)
+        .css_classes(["caption", "dim-label"])
+        .build();
+    let names = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    names.set_hexpand(true);
+    names.append(&name);
+    names.append(&device);
     let free = gtk::Label::builder()
+        .valign(gtk::Align::End)
         .css_classes(["dim-label", "numeric"])
         .build();
     let top = gtk::Box::new(gtk::Orientation::Horizontal, 12);
-    top.append(&name);
+    top.append(&names);
     top.append(&free);
     let bar = gtk::LevelBar::new();
-    // The default offsets colour a nearly empty bar as a warning, as for a battery.
+    // The default offsets colour a nearly empty bar as a warning, as for a battery; here
+    // the bar turns to one past nine tenths full.
     for offset in [
         gtk::LEVEL_BAR_OFFSET_LOW,
         gtk::LEVEL_BAR_OFFSET_HIGH,
@@ -265,15 +277,12 @@ fn filesystem_view(filesystem: &FileSystem) -> (FileSystemView, gtk::Widget) {
     ] {
         bar.remove_offset_value(Some(offset));
     }
+    bar.add_offset_value("roomy", 0.9);
+    bar.add_offset_value("almost-full", 1.0);
     bar.update_property(&[gtk::accessible::Property::Label(&filesystem.mount_point)]);
     let widget = gtk::Box::new(gtk::Orientation::Vertical, 6);
     widget.append(&top);
     widget.append(&bar);
-    widget.set_tooltip_text(Some(
-        &gettext("{device}, {type}")
-            .replace("{device}", &filesystem.source)
-            .replace("{type}", &filesystem.fs_type),
-    ));
     (
         FileSystemView {
             mount_point: filesystem.mount_point.clone(),

@@ -22,3 +22,7 @@ graph {
 .swatch.second {
   background-color: color-mix(in srgb, currentColor 60%, transparent);
 }
+
+levelbar block.filled.almost-full {
+  background-color: var(--warning-bg-color);
+}
