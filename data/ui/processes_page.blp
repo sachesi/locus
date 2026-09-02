@@ -46,6 +46,21 @@ template $LocusProcessesPage: Adw.Bin {
 
       child: Stack stack {
         StackPage {
+          name: "loading";
+
+          child: Adw.Spinner {
+            halign: center;
+            valign: center;
+            width-request: 32;
+            height-request: 32;
+
+            accessibility {
+              label: _("Reading processes");
+            }
+          };
+        }
+
+        StackPage {
           name: "list";
 
           child: ScrolledWindow {

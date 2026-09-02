@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-08-28 21:08+0300\n"
-"PO-Revision-Date: 2026-08-29 10:58+0300\n"
+"POT-Creation-Date: 2026-09-02 20:03+0300\n"
+"PO-Revision-Date: 2026-09-02 20:04+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
@@ -29,7 +29,9 @@ msgstr "Системний монітор"
 #: data/io.github.sachesi.locus.desktop:4
 msgid ""
 "See and end processes, and watch processor, memory, network and disk use"
-msgstr "Перегляд і завершення процесів, спостереження за процесором, пам’яттю, мережею та дисками"
+msgstr ""
+"Перегляд і завершення процесів, спостереження за процесором, пам’яттю, "
+"мережею та дисками"
 
 #: data/io.github.sachesi.locus.desktop:11
 msgid "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usage;"
@@ -45,17 +47,14 @@ msgstr "Показувати процеси всіх користувачів"
 
 #: data/io.github.sachesi.locus.gschema.xml:12
 msgid "When off, only the processes of the user running Locus are listed."
-msgstr "Якщо вимкнено, показуються лише процеси користувача, який запустив Locus."
+msgstr ""
+"Якщо вимкнено, показуються лише процеси користувача, який запустив Locus."
 
-#: data/io.github.sachesi.locus.gschema.xml:20
-msgid "Page shown when Locus starts"
-msgstr "Сторінка, що відкривається під час запуску Locus"
-
-#: data/io.github.sachesi.locus.gschema.xml:24
+#: data/io.github.sachesi.locus.gschema.xml:16
 msgid "Window size"
 msgstr "Розмір вікна"
 
-#: data/io.github.sachesi.locus.gschema.xml:28
+#: data/io.github.sachesi.locus.gschema.xml:20
 msgid "Window maximized"
 msgstr "Вікно розгорнуто"
 
@@ -68,25 +67,34 @@ msgid ""
 "Locus is a system monitor for Wayland desktops, built with GTK 4 and "
 "libadwaita. It lists the running processes with what each takes of the "
 "processor, the memory and the disks, and graphs the whole machine."
-msgstr "Locus — системний монітор для робочих столів Wayland, створений на GTK 4 і libadwaita. Він показує запущені процеси й те, скільки кожен бере від процесора, пам’яті та дисків, і будує графіки для всієї машини."
+msgstr ""
+"Locus — системний монітор для робочих столів Wayland, створений на GTK 4 і "
+"libadwaita. Він показує запущені процеси й те, скільки кожен бере від "
+"процесора, пам’яті та дисків, і будує графіки для всієї машини."
 
 #: data/io.github.sachesi.locus.metainfo.xml:11
 msgid ""
 "Processes sorted by processor, memory or disk use, searchable by name, "
 "command line or ID"
-msgstr "Процеси, упорядковані за навантаженням на процесор, пам’ять чи диск, з пошуком за назвою, командним рядком або ID"
+msgstr ""
+"Процеси, упорядковані за навантаженням на процесор, пам’ять чи диск, з "
+"пошуком за назвою, командним рядком або ID"
 
 #: data/io.github.sachesi.locus.metainfo.xml:12
 msgid ""
 "End, kill, stop and continue a process, from its menu or the bar beneath the "
 "list"
-msgstr "Завершення, примусове завершення, зупинка й продовження процесу з його меню або панелі під списком"
+msgstr ""
+"Завершення, примусове завершення, зупинка й продовження процесу з його меню "
+"або панелі під списком"
 
 #: data/io.github.sachesi.locus.metainfo.xml:13
 msgid ""
 "Processor usage as a whole and for each core, memory and swap, network and "
 "disk traffic"
-msgstr "Завантаження процесора загалом і за ядрами, пам’ять і підкачка, мережевий і дисковий обмін"
+msgstr ""
+"Завантаження процесора загалом і за ядрами, пам’ять і підкачка, мережевий і "
+"дисковий обмін"
 
 #: data/io.github.sachesi.locus.metainfo.xml:14
 msgid "Room left on each mounted disk"
@@ -96,7 +104,8 @@ msgstr "Вільне місце на кожному підключеному д�
 msgid ""
 "Everything is read from /proc and /sys, and processes are read only while "
 "their list is on screen."
-msgstr "Усе читається з /proc і /sys, а процеси — лише поки їхній список на екрані."
+msgstr ""
+"Усе читається з /proc і /sys, а процеси — лише поки їхній список на екрані."
 
 #: data/io.github.sachesi.locus.metainfo.xml:22
 msgid "sachesi"
@@ -108,7 +117,11 @@ msgid ""
 "which can be ended, killed, stopped and continued; graphs of the processor, "
 "each of its cores, memory and swap, the network and the disks; and the room "
 "left on each mounted disk."
-msgstr "Перший випуск: процеси з їхнім навантаженням на процесор, пам’ять і диск, які можна завершити, примусово завершити, зупинити й продовжити; графіки процесора й кожного його ядра, пам’яті та підкачки, мережі й дисків; вільне місце на кожному підключеному диску."
+msgstr ""
+"Перший випуск: процеси з їхнім навантаженням на процесор, пам’ять і диск, "
+"які можна завершити, примусово завершити, зупинити й продовжити; графіки "
+"процесора й кожного його ядра, пам’яті та підкачки, мережі й дисків; вільне "
+"місце на кожному підключеному диску."
 
 #. Translators: a transfer rate, such as "1.5 MB/s".
 #: src/format.rs:14
@@ -133,96 +146,96 @@ msgstr "вільно {available} з {total}"
 msgid ""
 "See what the processor, the memory, the network and the disks are busy with, "
 "and which processes keep them busy."
-msgstr "Дивіться, чим зайняті процесор, пам’ять, мережа й диски та які процеси їх займають."
+msgstr ""
+"Дивіться, чим зайняті процесор, пам’ять, мережа й диски та які процеси їх "
+"займають."
 
 #: src/main.rs:69
 #, no-c-format
 msgid "translator-credits"
 msgstr "sachesi"
 
-#: src/processes_page.rs:318
+#: src/processes_page.rs:333
 #, no-c-format
 msgid "ID {pid}"
 msgstr "ID {pid}"
 
-#: src/processes_page.rs:320
+#: src/processes_page.rs:335
 #, no-c-format
 msgid "{detail}, stopped"
 msgstr "{detail}, зупинено"
 
-#: src/processes_page.rs:420
+#: src/processes_page.rs:435
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr "Примусово завершити «{name}»?"
 
-#: src/processes_page.rs:422
+#: src/processes_page.rs:437
 #, no-c-format
 msgid ""
 "The process is stopped at once, without a chance to save its work or clean "
 "up."
-msgstr "Процес буде зупинено одразу, без змоги зберегти роботу чи прибрати за собою."
+msgstr ""
+"Процес буде зупинено одразу, без змоги зберегти роботу чи прибрати за собою."
 
-#: src/processes_page.rs:424
+#: src/processes_page.rs:439
 #, no-c-format
 msgid "_Kill Process"
 msgstr "Завершити _примусово"
 
-#: src/processes_page.rs:427
+#: src/processes_page.rs:442
 #, no-c-format
 msgid "End “{name}”?"
 msgstr "Завершити «{name}»?"
 
-#: src/processes_page.rs:428
+#: src/processes_page.rs:443
 #, no-c-format
 msgid "The process is asked to quit. Work it has not saved may be lost."
-msgstr "Процесу буде запропоновано завершитися. Незбережену роботу може бути втрачено."
+msgstr ""
+"Процесу буде запропоновано завершитися. Незбережену роботу може бути "
+"втрачено."
 
-#: src/processes_page.rs:429 ui/processes_page.ui:185
+#: src/processes_page.rs:444 ui/processes_page.ui:201
 #, no-c-format
 msgid "_End Process"
 msgstr "_Завершити процес"
 
-#: src/processes_page.rs:433
+#: src/processes_page.rs:448
 #, no-c-format
 msgid "_Cancel"
 msgstr "_Скасувати"
 
-#: src/processes_page.rs:459 src/processes_page.rs:462
+#: src/processes_page.rs:477 src/processes_page.rs:480
 #, no-c-format
 msgid "“{name}” belongs to another user"
 msgstr "«{name}» належить іншому користувачеві"
 
-#: src/processes_page.rs:460
+#: src/processes_page.rs:478
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr "«{name}» вже завершився"
 
-#: src/processes_page.rs:465
+#: src/processes_page.rs:483
 #, no-c-format
 msgid "Could not signal “{name}”: {error}"
 msgstr "Не вдалося надіслати сигнал «{name}»: {error}"
 
-#: src/resources_page.rs:222
+#: src/resources_page.rs:223
 #, no-c-format
 msgid "CPU {number}"
 msgstr "ЦП {number}"
 
-#: src/resources_page.rs:273
-#, no-c-format
-msgid "{device}, {type}"
-msgstr "{device}, {type}"
-
-#: src/window.rs:102
+#: src/window.rs:99
 #, no-c-format
 msgid "Every Second"
 msgstr "Щосекунди"
 
-#: src/window.rs:103
+#: src/window.rs:100
 #, no-c-format
 msgid "Every 2 Seconds"
 msgstr "Кожні 2 секунди"
 
-#: src/window.rs:104
+#: src/window.rs:101
 #, no-c-format
 msgid "Every 5 Seconds"
 msgstr "Кожні 5 секунд"
@@ -231,51 +244,55 @@ msgstr "Кожні 5 секунд"
 msgid "Search processes"
 msgstr "Пошук процесів"
 
-#: ui/processes_page.ui:92
+#: ui/processes_page.ui:70
+msgid "Reading processes"
+msgstr "Читання процесів"
+
+#: ui/processes_page.ui:108
 msgid "Process Name"
 msgstr "Назва процесу"
 
-#: ui/processes_page.ui:99
+#: ui/processes_page.ui:115
 msgid "User"
 msgstr "Користувач"
 
-#: ui/processes_page.ui:107
+#: ui/processes_page.ui:123
 msgid "CPU"
 msgstr "ЦП"
 
-#: ui/processes_page.ui:113 ui/resources_page.ui:107 ui/resources_page.ui:152
+#: ui/processes_page.ui:129 ui/resources_page.ui:107 ui/resources_page.ui:152
 msgid "Memory"
 msgstr "Пам’ять"
 
-#: ui/processes_page.ui:119
+#: ui/processes_page.ui:135
 msgid "Disk"
 msgstr "Диск"
 
-#: ui/processes_page.ui:126
+#: ui/processes_page.ui:142
 msgid "ID"
 msgstr "ID"
 
-#: ui/processes_page.ui:146
+#: ui/processes_page.ui:162
 msgid "No Matching Processes"
 msgstr "Немає відповідних процесів"
 
-#: ui/processes_page.ui:189
+#: ui/processes_page.ui:205
 msgid "More Actions"
 msgstr "Інші дії"
 
-#: ui/processes_page.ui:200 ui/processes_page.ui:224
+#: ui/processes_page.ui:216 ui/processes_page.ui:240
 msgid "_Stop"
 msgstr "_Зупинити"
 
-#: ui/processes_page.ui:205 ui/processes_page.ui:229
+#: ui/processes_page.ui:221 ui/processes_page.ui:245
 msgid "_Continue"
 msgstr "_Продовжити"
 
-#: ui/processes_page.ui:212
+#: ui/processes_page.ui:228
 msgid "_End"
 msgstr "_Завершити"
 
-#: ui/processes_page.ui:216 ui/processes_page.ui:234
+#: ui/processes_page.ui:232 ui/processes_page.ui:250
 msgid "_Kill"
 msgstr "Завершити _примусово"
 
@@ -335,13 +352,13 @@ msgstr "Файлові системи"
 msgid "General"
 msgstr "Загальні"
 
-#: ui/shortcuts_dialog.ui:15 ui/shortcuts_dialog.ui:47 ui/window.ui:67
-msgid "Processes"
-msgstr "Процеси"
-
-#: ui/shortcuts_dialog.ui:21 ui/window.ui:77
+#: ui/shortcuts_dialog.ui:15 ui/window.ui:67
 msgid "Resources"
 msgstr "Ресурси"
+
+#: ui/shortcuts_dialog.ui:21 ui/shortcuts_dialog.ui:47 ui/window.ui:77
+msgid "Processes"
+msgstr "Процеси"
 
 #: ui/shortcuts_dialog.ui:27
 msgid "Keyboard Shortcuts"

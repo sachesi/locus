@@ -3,12 +3,13 @@
 Locus is a system monitor for Wayland desktops, written in Rust with GTK 4 and libadwaita.
 It was made for the Meridian desktop and depends on nothing of it, so it runs on any other.
 
-Processes lists what runs, with the share of the processor, the memory and the disk traffic
-of each, sorted by any of them and searchable by name, command line or ID. A process can be
-ended, killed, stopped and continued from its menu, a right click or a long press, or from
-the bar beneath the list; ending and killing ask first. Resources graphs the processor as a
-whole and each of its cores, memory and swap, the network and the disks, and shows the room
-left on each mounted disk.
+Resources, the page Locus opens on, graphs the processor as a whole and each of its cores,
+memory and swap, the network and the disks, and shows the room left on each mounted disk,
+with a warning colour once a disk is nine tenths full. Processes lists what runs, with the
+share of the processor, the memory and the disk traffic of each, sorted by any of them and
+searchable by name, command line or ID. A process can be ended, killed, stopped and
+continued from its menu, a right click or a long press, or from the bar beneath the list;
+ending and killing ask first, and the list holds still while they do.
 
 Everything comes from `/proc` and `/sys`, read on a worker thread. The processes are read
 only while their list is on screen, since reading every one of them is most of what a

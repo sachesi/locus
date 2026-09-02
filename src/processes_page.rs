@@ -66,6 +66,7 @@ mod imp {
         pub by_pid: RefCell<HashMap<u32, Process>>,
         pub generation: Cell<u64>,
         pub own_uid: Cell<u32>,
+        pub confirming: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -152,6 +153,8 @@ mod imp {
                         .chain_property::<Process>("disk")
                         .chain_closure::<String>(glib::closure!(
                             |_: Option<glib::Object>, disk: i64| match u64::try_from(disk) {
+                                // Left blank, so the few processes using the disks stand out.
+                                Ok(0) => String::new(),
                                 Ok(disk) => format::rate(disk as f64),
                                 // Processes of other users do not show their input and output.
                                 Err(_) => "—".to_owned(),
@@ -213,9 +216,14 @@ mod imp {
 
         #[template_callback]
         fn on_filtered_changed(&self) {
-            let empty = self.filter_model.n_items() == 0 && !self.by_pid.borrow().is_empty();
-            self.stack
-                .set_visible_child_name(if empty { "empty" } else { "list" });
+            let page = if self.by_pid.borrow().is_empty() {
+                "loading"
+            } else if self.filter_model.n_items() == 0 {
+                "empty"
+            } else {
+                "list"
+            };
+            self.stack.set_visible_child_name(page);
         }
 
         fn set_search_mode(&self, search_mode: bool) {
@@ -266,8 +274,11 @@ impl ProcessesPage {
                 .is_some_and(|p| p.generation() == generation)
         });
         imp.store.extend_from_slice(&added);
-        // The sort list model does not watch the values it sorts by.
-        if let Some(sorter) = imp.view.sorter() {
+        // The sort list model does not watch the values it sorts by. Rows stay where they
+        // are while the user is choosing what to do with one of them.
+        let choosing =
+            imp.confirming.get() || imp.context_bin.popover().is_some_and(|p| p.is_visible());
+        if !choosing && let Some(sorter) = imp.view.sorter() {
             sorter.changed(gtk::SorterChange::Different);
         }
         self.update_selection();
@@ -311,6 +322,10 @@ impl ProcessesPage {
         self.action_set_enabled("process.stop", stopped == Some(false));
         self.action_set_enabled("process.continue", stopped == Some(true));
         let Some(process) = process else {
+            // The process the menu was opened for has exited.
+            if let Some(popover) = imp.context_bin.popover() {
+                popover.popdown();
+            }
             return;
         };
 
@@ -438,7 +453,10 @@ impl ProcessesPage {
             #[weak(rename_to = page)]
             self,
             async move {
-                if dialog.choose_future(Some(&page)).await == "signal" {
+                page.imp().confirming.set(true);
+                let response = dialog.choose_future(Some(&page)).await;
+                page.imp().confirming.set(false);
+                if response == "signal" {
                     page.send(&process, signal);
                 }
             }
