@@ -316,10 +316,17 @@ impl ProcessesPage {
         let imp = self.imp();
         let process = self.selected();
         imp.action_bar.set_revealed(process.is_some());
-        self.action_set_enabled("process.end", process.is_some());
-        self.action_set_enabled("process.kill", process.is_some());
-        let stopped = process.as_ref().map(Process::stopped);
-        self.action_set_enabled("process.stop", stopped == Some(false));
+        // The kernel lets a user signal only their own processes, and root every one.
+        let own_uid = imp.own_uid.get();
+        let signalled = process
+            .as_ref()
+            .filter(|p| own_uid == 0 || p.uid() == own_uid);
+        self.action_set_enabled("process.end", signalled.is_some());
+        self.action_set_enabled("process.kill", signalled.is_some());
+        let stopped = signalled.map(Process::stopped);
+        // Stopped, Locus could not take the signal to continue from itself.
+        let is_locus = signalled.is_some_and(|p| p.pid() == std::process::id());
+        self.action_set_enabled("process.stop", stopped == Some(false) && !is_locus);
         self.action_set_enabled("process.continue", stopped == Some(true));
         let Some(process) = process else {
             // The process the menu was opened for has exited.
@@ -333,6 +340,12 @@ impl ProcessesPage {
         let mut detail = gettext("ID {pid}").replace("{pid}", &process.pid().to_string());
         if process.stopped() {
             detail = gettext("{detail}, stopped").replace("{detail}", &detail);
+        }
+        if process.uid() != own_uid {
+            // Translators: {detail} is "ID 1234", or "ID 1234, stopped"; {user} is a login name.
+            detail = gettext("{detail}, owned by {user}")
+                .replace("{detail}", &detail)
+                .replace("{user}", &process.user());
         }
         let command = process.command();
         if !command.is_empty() {
