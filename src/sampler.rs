@@ -426,10 +426,16 @@ fn usage(path: &str) -> Option<(u64, u64, u64)> {
     }
     // SAFETY: statvfs returned 0, so it filled `stat` in.
     let stat = unsafe { stat.assume_init() };
-    let block = stat.f_frsize;
-    let size = stat.f_blocks * block;
-    let free = stat.f_bfree * block;
-    Some((size, size.saturating_sub(free), stat.f_bavail * block))
+    // The fields are 32 bits wide on 32-bit targets without large file support.
+    #[allow(clippy::useless_conversion)]
+    let (block, blocks, free, available) = (
+        u64::from(stat.f_frsize),
+        u64::from(stat.f_blocks),
+        u64::from(stat.f_bfree),
+        u64::from(stat.f_bavail),
+    );
+    let size = blocks * block;
+    Some((size, size.saturating_sub(free * block), available * block))
 }
 
 /// The login name of `uid`, through NSS, so users from systemd-homed or a directory
