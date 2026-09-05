@@ -201,7 +201,8 @@ impl LocusWindow {
         });
     }
 
-    fn wake(&self) {
+    /// Takes a reading now rather than at the end of the interval.
+    pub fn wake(&self) {
         if let Some(wake) = &*self.imp().wake.borrow() {
             let _ = wake.try_send(());
         }

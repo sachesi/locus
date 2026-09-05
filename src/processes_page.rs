@@ -1,6 +1,7 @@
 use crate::format;
 use crate::process::{Process, Signal};
 use crate::sampler::ProcessSample;
+use crate::window::LocusWindow;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gettextrs::gettext;
@@ -8,6 +9,7 @@ use gtk::{gdk, gio, glib, graphene};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::io;
+use std::time::Duration;
 
 mod imp {
     use super::*;
@@ -483,7 +485,22 @@ impl ProcessesPage {
     }
 
     fn send(&self, process: &Process, signal: Signal) {
-        let Err(error) = process.send(signal) else {
+        let sent = process.send(signal);
+        // The list shows what the signal did at once, rather than at the next reading; a
+        // process asked to quit gets a moment to do so first.
+        glib::timeout_add_local_once(
+            Duration::from_millis(250),
+            glib::clone!(
+                #[weak(rename_to = page)]
+                self,
+                move || {
+                    if let Some(window) = page.root().and_downcast::<LocusWindow>() {
+                        window.wake();
+                    }
+                }
+            ),
+        );
+        let Err(error) = sent else {
             return;
         };
         let message = match error.raw_os_error() {
