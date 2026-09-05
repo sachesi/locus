@@ -508,15 +508,25 @@ impl ProcessesPage {
         let Err(error) = sent else {
             return;
         };
-        let message = match error.raw_os_error() {
-            Some(libc::EPERM) => gettext("“{name}” belongs to another user"),
-            Some(libc::ESRCH) => gettext("“{name}” has already exited"),
-            _ if error.kind() == io::ErrorKind::PermissionDenied => {
-                gettext("“{name}” belongs to another user")
-            }
-            _ => {
-                gettext("Could not signal “{name}”: {error}").replace("{error}", &error.to_string())
-            }
+        let message = if error.raw_os_error() == Some(libc::ESRCH) {
+            gettext("“{name}” has already exited")
+        } else {
+            let failure = match signal {
+                Signal::Terminate => {
+                    // Translators: {reason} is "it belongs to another user", or an error
+                    // message of the system; so too in the three messages after this one.
+                    gettext("Could not end “{name}”: {reason}")
+                }
+                Signal::Kill => gettext("Could not kill “{name}”: {reason}"),
+                Signal::Stop => gettext("Could not stop “{name}”: {reason}"),
+                Signal::Continue => gettext("Could not continue “{name}”: {reason}"),
+            };
+            let reason = if error.kind() == io::ErrorKind::PermissionDenied {
+                gettext("it belongs to another user")
+            } else {
+                error.to_string()
+            };
+            failure.replace("{reason}", &reason)
         };
         let toast = adw::Toast::new(&message.replace("{name}", &process.name()));
         if let Some(overlay) = self
