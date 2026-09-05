@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-03 19:32+0300\n"
+"POT-Creation-Date: 2026-09-05 11:09+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -136,70 +136,70 @@ msgstr ""
 msgid "translator-credits"
 msgstr ""
 
-#: src/processes_page.rs:340
+#: src/processes_page.rs:342
 #, no-c-format
 msgid "ID {pid}"
 msgstr ""
 
-#: src/processes_page.rs:342
+#: src/processes_page.rs:344
 #, no-c-format
 msgid "{detail}, stopped"
 msgstr ""
 
 #. Translators: {detail} is "ID 1234", or "ID 1234, stopped"; {user} is a login name.
-#: src/processes_page.rs:346
+#: src/processes_page.rs:348
 #, no-c-format
 msgid "{detail}, owned by {user}"
 msgstr ""
 
-#: src/processes_page.rs:448
+#: src/processes_page.rs:450
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr ""
 
-#: src/processes_page.rs:450
+#: src/processes_page.rs:453
 #, no-c-format
 msgid ""
-"The process is stopped at once, without a chance to save its work or clean "
-"up."
-msgstr ""
-
-#: src/processes_page.rs:452
-#, no-c-format
-msgid "_Kill Process"
+"Process {pid} ends at once, without a chance to save its work or clean up."
 msgstr ""
 
 #: src/processes_page.rs:455
 #, no-c-format
+msgid "_Kill Process"
+msgstr ""
+
+#: src/processes_page.rs:458
+#, no-c-format
 msgid "End “{name}”?"
 msgstr ""
 
-#: src/processes_page.rs:456
+#. Translators: {pid} is the ID of the process, a number.
+#: src/processes_page.rs:460
 #, no-c-format
-msgid "The process is asked to quit. Work it has not saved may be lost."
+msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 
-#: src/processes_page.rs:457 ui/processes_page.ui:201
+#: src/processes_page.rs:461 ui/processes_page.ui:201
 #, no-c-format
 msgid "_End Process"
 msgstr ""
 
-#: src/processes_page.rs:461
+#: src/processes_page.rs:468
 #, no-c-format
 msgid "_Cancel"
 msgstr ""
 
-#: src/processes_page.rs:490 src/processes_page.rs:493
+#: src/processes_page.rs:512 src/processes_page.rs:515
 #, no-c-format
 msgid "“{name}” belongs to another user"
 msgstr ""
 
-#: src/processes_page.rs:491
+#: src/processes_page.rs:513
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr ""
 
-#: src/processes_page.rs:496
+#: src/processes_page.rs:518
 #, no-c-format
 msgid "Could not signal “{name}”: {error}"
 msgstr ""

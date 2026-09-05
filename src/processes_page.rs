@@ -448,18 +448,23 @@ impl ProcessesPage {
         let (heading, body, response) = match signal {
             Signal::Kill => (
                 gettext("Kill “{name}”?"),
+                // Translators: {pid} is the ID of the process, a number.
                 gettext(
-                    "The process is stopped at once, without a chance to save its work or clean up.",
+                    "Process {pid} ends at once, without a chance to save its work or clean up.",
                 ),
                 gettext("_Kill Process"),
             ),
             _ => (
                 gettext("End “{name}”?"),
-                gettext("The process is asked to quit. Work it has not saved may be lost."),
+                // Translators: {pid} is the ID of the process, a number.
+                gettext("Process {pid} is asked to quit. Work it has not saved may be lost."),
                 gettext("_End Process"),
             ),
         };
-        let dialog = adw::AlertDialog::new(Some(&heading.replace("{name}", &name)), Some(&body));
+        let dialog = adw::AlertDialog::new(
+            Some(&heading.replace("{name}", &name)),
+            Some(&body.replace("{pid}", &process.pid().to_string())),
+        );
         dialog.add_responses(&[("cancel", &gettext("_Cancel")), ("signal", &response)]);
         dialog.set_response_appearance("signal", adw::ResponseAppearance::Destructive);
         dialog.set_default_response(Some("cancel"));
