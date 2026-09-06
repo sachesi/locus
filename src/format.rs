@@ -1,8 +1,23 @@
 use gettextrs::gettext;
 use gtk::glib;
+use std::ffi::CStr;
+use std::sync::OnceLock;
 
 pub fn percent(value: f64, decimals: usize) -> String {
-    format!("{value:.decimals$}%")
+    let number = format!("{value:.decimals$}").replace('.', decimal_point());
+    // Translators: a share of something, such as "12.3%".
+    gettext("{value}%").replace("{value}", &number)
+}
+
+/// The decimal separator of the locale, which GLib writes sizes with too.
+fn decimal_point() -> &'static str {
+    static POINT: OnceLock<String> = OnceLock::new();
+    POINT.get_or_init(|| {
+        // SAFETY: localeconv returns a struct owned by the C library, whose decimal_point
+        // is a NUL-terminated string; the locale is set once, before any number is shown.
+        let point = unsafe { CStr::from_ptr((*libc::localeconv()).decimal_point) };
+        point.to_string_lossy().into_owned()
+    })
 }
 
 pub fn size(bytes: u64) -> String {

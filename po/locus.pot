@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-05 11:45+0300\n"
+"POT-Creation-Date: 2026-09-06 15:20+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -106,20 +106,26 @@ msgid ""
 "left on each mounted disk."
 msgstr ""
 
+#. Translators: a share of something, such as "12.3%".
+#: src/format.rs:9
+#, no-c-format
+msgid "{value}%"
+msgstr ""
+
 #. Translators: a transfer rate, such as "1.5 MB/s".
-#: src/format.rs:14
+#: src/format.rs:29
 #, no-c-format
 msgid "{size}/s"
 msgstr ""
 
 #. Translators: memory in use out of what there is, such as "5.2 GB of 16.0 GB".
-#: src/format.rs:19
+#: src/format.rs:34
 #, no-c-format
 msgid "{used} of {total}"
 msgstr ""
 
 #. Translators: room left on a disk, such as "120 GB free of 500 GB".
-#: src/format.rs:26
+#: src/format.rs:41
 #, no-c-format
 msgid "{available} free of {total}"
 msgstr ""
