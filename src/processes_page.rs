@@ -47,6 +47,8 @@ mod imp {
         #[template_child]
         pub pid_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
+        pub empty_page: TemplateChild<adw::StatusPage>,
+        #[template_child]
         pub action_bar: TemplateChild<gtk::ActionBar>,
         #[template_child]
         pub selected_name: TemplateChild<gtk::Label>,
@@ -226,6 +228,14 @@ mod imp {
                 "list"
             };
             self.stack.set_visible_child_name(page);
+            let hint = if self.obj().show_all() {
+                gettext("Try a different search")
+            } else {
+                gettext(
+                    "Only your own processes are searched. Turn on “Show All Processes” in the main menu to search every one.",
+                )
+            };
+            self.empty_page.set_description(Some(&hint));
         }
 
         fn set_search_mode(&self, search_mode: bool) {
@@ -236,6 +246,8 @@ mod imp {
         fn set_show_all(&self, show_all: bool) {
             self.show_all.set(show_all);
             self.obj().refilter();
+            // Refiltering an empty list to an empty list changes no items.
+            self.on_filtered_changed();
         }
     }
 }

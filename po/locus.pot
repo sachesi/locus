@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-06 15:20+0300\n"
+"POT-Creation-Date: 2026-09-06 16:43+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -142,87 +142,99 @@ msgstr ""
 msgid "translator-credits"
 msgstr ""
 
-#: src/processes_page.rs:342
+#: src/processes_page.rs:232
+#, no-c-format
+msgid "Try a different search"
+msgstr ""
+
+#: src/processes_page.rs:235
+#, no-c-format
+msgid ""
+"Only your own processes are searched. Turn on “Show All Processes” in the "
+"main menu to search every one."
+msgstr ""
+
+#: src/processes_page.rs:354
 #, no-c-format
 msgid "ID {pid}"
 msgstr ""
 
-#: src/processes_page.rs:344
+#: src/processes_page.rs:356
 #, no-c-format
 msgid "{detail}, stopped"
 msgstr ""
 
 #. Translators: {detail} is "ID 1234", or "ID 1234, stopped"; {user} is a login name.
-#: src/processes_page.rs:348
+#: src/processes_page.rs:360
 #, no-c-format
 msgid "{detail}, owned by {user}"
 msgstr ""
 
-#: src/processes_page.rs:450
+#: src/processes_page.rs:462
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr ""
 
-#: src/processes_page.rs:453
+#: src/processes_page.rs:465
 #, no-c-format
 msgid ""
 "Process {pid} ends at once, without a chance to save its work or clean up."
 msgstr ""
 
-#: src/processes_page.rs:455
+#: src/processes_page.rs:467
 #, no-c-format
 msgid "_Kill Process"
 msgstr ""
 
-#: src/processes_page.rs:458
+#: src/processes_page.rs:470
 #, no-c-format
 msgid "End “{name}”?"
 msgstr ""
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:460
+#: src/processes_page.rs:472
 #, no-c-format
 msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 
-#: src/processes_page.rs:461 ui/processes_page.ui:201
+#: src/processes_page.rs:473 ui/processes_page.ui:201
 #, no-c-format
 msgid "_End Process"
 msgstr ""
 
-#: src/processes_page.rs:468
+#: src/processes_page.rs:480
 #, no-c-format
 msgid "_Cancel"
 msgstr ""
 
-#: src/processes_page.rs:512
+#: src/processes_page.rs:524
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr ""
 
 #. Translators: {reason} is "it belongs to another user", or an error
 #. message of the system; so too in the three messages after this one.
-#: src/processes_page.rs:518
+#: src/processes_page.rs:530
 #, no-c-format
 msgid "Could not end “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:520
+#: src/processes_page.rs:532
 #, no-c-format
 msgid "Could not kill “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:521
+#: src/processes_page.rs:533
 #, no-c-format
 msgid "Could not stop “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:522
+#: src/processes_page.rs:534
 #, no-c-format
 msgid "Could not continue “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:525
+#: src/processes_page.rs:537
 #, no-c-format
 msgid "it belongs to another user"
 msgstr ""
