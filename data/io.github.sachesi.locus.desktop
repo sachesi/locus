@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Locus
 GenericName=System Monitor
-Comment=See and end processes, and watch processor, memory, network and disk use
+Comment=Watch resources and end processes
 Exec=locus
 Icon=io.github.sachesi.locus
 Terminal=false

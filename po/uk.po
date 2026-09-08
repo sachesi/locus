@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-06 16:43+0300\n"
-"PO-Revision-Date: 2026-09-06 16:42+0300\n"
+"POT-Creation-Date: 2026-09-08 20:28+0300\n"
+"PO-Revision-Date: 2026-09-08 20:30+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
@@ -27,11 +27,10 @@ msgid "System Monitor"
 msgstr "Системний монітор"
 
 #: data/io.github.sachesi.locus.desktop:4
-msgid ""
-"See and end processes, and watch processor, memory, network and disk use"
-msgstr ""
-"Перегляд і завершення процесів, спостереження за процесором, пам’яттю, "
-"мережею та дисками"
+#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:66
+#, no-c-format
+msgid "Watch resources and end processes"
+msgstr "Стежте за ресурсами й завершуйте процеси"
 
 #: data/io.github.sachesi.locus.desktop:11
 msgid "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usage;"
@@ -58,37 +57,17 @@ msgstr "Розмір вікна"
 msgid "Window maximized"
 msgstr "Вікно розгорнуто"
 
-#: data/io.github.sachesi.locus.metainfo.xml:7
-msgid "Watch processes and what they use"
-msgstr "Стежте за процесами й тим, що вони споживають"
-
 #: data/io.github.sachesi.locus.metainfo.xml:9
 msgid ""
 "Locus is a system monitor for Wayland desktops, built with GTK 4 and "
-"libadwaita. It lists the running processes with what each takes of the "
-"processor, the memory and the disks, and graphs the whole machine."
+"libadwaita. It graphs the whole machine, and lists the running processes "
+"with what each takes of the processor, the memory and the disks."
 msgstr ""
 "Locus — системний монітор для робочих столів Wayland, створений на GTK 4 і "
-"libadwaita. Він показує запущені процеси й те, скільки кожен бере від "
-"процесора, пам’яті та дисків, і будує графіки для всієї машини."
+"libadwaita. Він будує графіки для всієї машини й показує запущені процеси та "
+"те, скільки кожен бере від процесора, пам’яті та дисків."
 
 #: data/io.github.sachesi.locus.metainfo.xml:11
-msgid ""
-"Processes sorted by processor, memory or disk use, searchable by name, "
-"command line or ID"
-msgstr ""
-"Процеси, упорядковані за навантаженням на процесор, пам’ять чи диск, з "
-"пошуком за назвою, командним рядком або ID"
-
-#: data/io.github.sachesi.locus.metainfo.xml:12
-msgid ""
-"End, kill, stop and continue a process, from its menu or the bar beneath the "
-"list"
-msgstr ""
-"Завершення, примусове завершення, зупинка й продовження процесу з його меню "
-"або панелі під списком"
-
-#: data/io.github.sachesi.locus.metainfo.xml:13
 msgid ""
 "Processor usage as a whole and for each core, memory and swap, network and "
 "disk traffic"
@@ -96,9 +75,25 @@ msgstr ""
 "Завантаження процесора загалом і за ядрами, пам’ять і підкачка, мережевий і "
 "дисковий обмін"
 
-#: data/io.github.sachesi.locus.metainfo.xml:14
+#: data/io.github.sachesi.locus.metainfo.xml:12
 msgid "Room left on each mounted disk"
 msgstr "Вільне місце на кожному підключеному диску"
+
+#: data/io.github.sachesi.locus.metainfo.xml:13
+msgid ""
+"Processes sorted by processor, memory or disk use, searchable by name, "
+"command line or ID"
+msgstr ""
+"Процеси, упорядковані за навантаженням на процесор, пам’ять чи диск, з "
+"пошуком за назвою, командним рядком або ID"
+
+#: data/io.github.sachesi.locus.metainfo.xml:14
+msgid ""
+"End, kill, stop and continue a process, from its menu or the bar beneath the "
+"list"
+msgstr ""
+"Завершення, примусове завершення, зупинка й продовження процесу з його меню "
+"або панелі під списком"
 
 #: data/io.github.sachesi.locus.metainfo.xml:16
 msgid ""
@@ -148,15 +143,6 @@ msgid "{available} free of {total}"
 msgstr "вільно {available} з {total}"
 
 #: src/main.rs:67
-#, no-c-format
-msgid ""
-"See what the processor, the memory, the network and the disks are busy with, "
-"and which processes keep them busy."
-msgstr ""
-"Дивіться, чим зайняті процесор, пам’ять, мережа й диски та які процеси їх "
-"займають."
-
-#: src/main.rs:69
 #, no-c-format
 msgid "translator-credits"
 msgstr "sachesi"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-06 16:43+0300\n"
+"POT-Creation-Date: 2026-09-08 20:28+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,8 +27,9 @@ msgid "System Monitor"
 msgstr ""
 
 #: data/io.github.sachesi.locus.desktop:4
-msgid ""
-"See and end processes, and watch processor, memory, network and disk use"
+#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:66
+#, no-c-format
+msgid "Watch resources and end processes"
 msgstr ""
 
 #: data/io.github.sachesi.locus.desktop:11
@@ -55,37 +56,33 @@ msgstr ""
 msgid "Window maximized"
 msgstr ""
 
-#: data/io.github.sachesi.locus.metainfo.xml:7
-msgid "Watch processes and what they use"
-msgstr ""
-
 #: data/io.github.sachesi.locus.metainfo.xml:9
 msgid ""
 "Locus is a system monitor for Wayland desktops, built with GTK 4 and "
-"libadwaita. It lists the running processes with what each takes of the "
-"processor, the memory and the disks, and graphs the whole machine."
+"libadwaita. It graphs the whole machine, and lists the running processes "
+"with what each takes of the processor, the memory and the disks."
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:11
-msgid ""
-"Processes sorted by processor, memory or disk use, searchable by name, "
-"command line or ID"
-msgstr ""
-
-#: data/io.github.sachesi.locus.metainfo.xml:12
-msgid ""
-"End, kill, stop and continue a process, from its menu or the bar beneath the "
-"list"
-msgstr ""
-
-#: data/io.github.sachesi.locus.metainfo.xml:13
 msgid ""
 "Processor usage as a whole and for each core, memory and swap, network and "
 "disk traffic"
 msgstr ""
 
-#: data/io.github.sachesi.locus.metainfo.xml:14
+#: data/io.github.sachesi.locus.metainfo.xml:12
 msgid "Room left on each mounted disk"
+msgstr ""
+
+#: data/io.github.sachesi.locus.metainfo.xml:13
+msgid ""
+"Processes sorted by processor, memory or disk use, searchable by name, "
+"command line or ID"
+msgstr ""
+
+#: data/io.github.sachesi.locus.metainfo.xml:14
+msgid ""
+"End, kill, stop and continue a process, from its menu or the bar beneath the "
+"list"
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:16
@@ -131,13 +128,6 @@ msgid "{available} free of {total}"
 msgstr ""
 
 #: src/main.rs:67
-#, no-c-format
-msgid ""
-"See what the processor, the memory, the network and the disks are busy with, "
-"and which processes keep them busy."
-msgstr ""
-
-#: src/main.rs:69
 #, no-c-format
 msgid "translator-credits"
 msgstr ""

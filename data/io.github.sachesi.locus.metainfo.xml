@@ -4,14 +4,14 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <name>Locus</name>
-  <summary>Watch processes and what they use</summary>
+  <summary>Watch resources and end processes</summary>
   <description>
-    <p>Locus is a system monitor for Wayland desktops, built with GTK 4 and libadwaita. It lists the running processes with what each takes of the processor, the memory and the disks, and graphs the whole machine.</p>
+    <p>Locus is a system monitor for Wayland desktops, built with GTK 4 and libadwaita. It graphs the whole machine, and lists the running processes with what each takes of the processor, the memory and the disks.</p>
     <ul>
-      <li>Processes sorted by processor, memory or disk use, searchable by name, command line or ID</li>
-      <li>End, kill, stop and continue a process, from its menu or the bar beneath the list</li>
       <li>Processor usage as a whole and for each core, memory and swap, network and disk traffic</li>
       <li>Room left on each mounted disk</li>
+      <li>Processes sorted by processor, memory or disk use, searchable by name, command line or ID</li>
+      <li>End, kill, stop and continue a process, from its menu or the bar beneath the list</li>
     </ul>
     <p>Everything is read from /proc and /sys, and processes are read only while their list is on screen.</p>
   </description>

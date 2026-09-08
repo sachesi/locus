@@ -7,7 +7,7 @@ Name:           locus
 # The release workflow and Copr set Version to the tag they build.
 Version:        0.1.0
 Release:        1%{?dist}
-Summary:        Watch processes and what they use
+Summary:        Watch resources and end processes
 
 License:        GPL-3.0-or-later
 URL:            https://github.com/sachesi/locus
@@ -31,10 +31,10 @@ Requires:       hicolor-icon-theme
 
 %description
 Locus is a system monitor for Wayland desktops, built with GTK 4 and
-libadwaita. It lists the running processes with the share of the processor,
-the memory and the disk traffic of each, and ends, kills, stops and continues
-them; it graphs the processor and each of its cores, memory and swap, the
-network and the disks, and shows the room left on each mounted disk.
+libadwaita. It graphs the processor and each of its cores, memory and swap,
+the network and the disks, and shows the room left on each mounted disk; it
+lists the running processes with the share of the processor, the memory and
+the disk traffic of each, and ends, kills, stops and continues them.
 
 Everything is read from /proc and /sys, and processes are read only while
 their list is on screen.

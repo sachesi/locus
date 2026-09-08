@@ -63,9 +63,7 @@ fn show_about(app: &adw::Application) {
         .version(env!("CARGO_PKG_VERSION"))
         .developer_name("sachesi")
         .license_type(gtk::License::Gpl30)
-        .comments(gettext(
-            "See what the processor, the memory, the network and the disks are busy with, and which processes keep them busy.",
-        ))
+        .comments(gettext("Watch resources and end processes"))
         .translator_credits(gettext("translator-credits"))
         .website("https://github.com/sachesi/locus")
         .issue_url("https://github.com/sachesi/locus/issues")
