@@ -15,6 +15,16 @@
     </ul>
     <p>Everything is read from /proc and /sys, and processes are read only while their list is on screen.</p>
   </description>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/sachesi/locus/main/data/screenshots/resources.png</image>
+      <caption>The processor, memory, network and disks of the machine</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/sachesi/locus/main/data/screenshots/processes.png</image>
+      <caption>Processes, busiest first</caption>
+    </screenshot>
+  </screenshots>
   <launchable type="desktop-id">io.github.sachesi.locus.desktop</launchable>
   <url type="homepage">https://github.com/sachesi/locus</url>
   <url type="bugtracker">https://github.com/sachesi/locus/issues</url>

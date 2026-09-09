@@ -3,6 +3,8 @@
 Locus is a system monitor for Wayland desktops, written in Rust with GTK 4 and libadwaita.
 It was made for the Meridian desktop and depends on nothing of it, so it runs on any other.
 
+![The Resources page, with graphs of the processor and each of its cores, memory, the network and the disks](data/screenshots/resources.png)
+
 Resources, the page Locus opens on, graphs the processor as a whole and each of its cores,
 memory and swap, the network and the disks, and shows the room left on each mounted disk,
 with a warning colour once a disk is nine tenths full. Processes lists what runs, with the
