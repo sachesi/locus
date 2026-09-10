@@ -363,8 +363,11 @@ impl ProcessesPage {
         };
 
         imp.selected_name.set_label(&process.name());
+        // Translators: {pid} is the ID of the process, a number.
         let mut detail = gettext("ID {pid}").replace("{pid}", &process.pid().to_string());
         if process.stopped() {
+            // Translators: {detail} is "ID 1234"; a stopped process is paused until it is
+            // continued.
             detail = gettext("{detail}, stopped").replace("{detail}", &detail);
         }
         if process.uid() != own_uid {
@@ -518,8 +521,8 @@ impl ProcessesPage {
         let (heading, body, response) = match signal {
             Signal::Kill => (
                 gettext("Kill “{name}”?"),
-                // Translators: {pid} is the ID of the process, a number.
                 gettext(
+                    // Translators: {pid} is the ID of the process, a number.
                     "Process {pid} ends at once, without a chance to save its work or clean up.",
                 ),
                 gettext("_Kill Process"),

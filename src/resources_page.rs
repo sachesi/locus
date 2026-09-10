@@ -220,6 +220,7 @@ fn core_view(number: usize) -> (CoreView, gtk::Widget) {
     graph.set_maximum(100.0);
     graph.set_plain(true);
     graph.set_height_request(36);
+    // Translators: one core of the processor; {number} counts from 1.
     let name = gettext("CPU {number}").replace("{number}", &number.to_string());
     graph.update_property(&[gtk::accessible::Property::Label(&name)]);
     let label = gtk::Label::builder()
