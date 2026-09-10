@@ -71,6 +71,7 @@ mod imp {
         pub generation: Cell<u64>,
         pub own_uid: Cell<u32>,
         pub confirming: Cell<bool>,
+        pub focus_before_menu: RefCell<Option<glib::WeakRef<gtk::Widget>>>,
     }
 
     #[glib::object_subclass]
@@ -89,6 +90,9 @@ mod imp {
             });
             klass.install_action("process.kill", None, |page, _, _| {
                 page.confirm(Signal::Kill);
+            });
+            klass.install_action("process.menu", None, |page, _, _| {
+                page.open_context_menu_at_focus();
             });
             klass.install_action("process.stop", None, |page, _, _| {
                 page.signal_selected(Signal::Stop);
@@ -197,6 +201,14 @@ mod imp {
             }
             self.view
                 .sort_by_column(Some(&*self.cpu_column), gtk::SortType::Ascending);
+
+            if let Some(popover) = self.context_bin.popover() {
+                popover.connect_closed(glib::clone!(
+                    #[weak]
+                    obj,
+                    move |popover| obj.restore_focus(popover)
+                ));
+            }
 
             obj.update_selection();
         }
@@ -438,17 +450,63 @@ impl ProcessesPage {
         else {
             return;
         };
-        let Some(popover) = imp.context_bin.popover() else {
-            return;
-        };
-        popover.set_pointing_to(Some(&gdk::Rectangle::new(
+        self.popup_context_menu(&gdk::Rectangle::new(
             point.x() as i32,
             point.y() as i32,
             1,
             1,
-        )));
+        ));
+    }
+
+    /// Opens the process menu beneath the row with the keyboard focus, which is the one
+    /// selected.
+    fn open_context_menu_at_focus(&self) {
+        let imp = self.imp();
+        let Some(focus) = self.root().and_then(|root| root.focus()) else {
+            return;
+        };
+        if self.selected().is_none() || !focus.is_ancestor(&*imp.view) {
+            return;
+        }
+        let Some(bounds) = focus.compute_bounds(&*imp.context_bin) else {
+            return;
+        };
+        self.popup_context_menu(&gdk::Rectangle::new(
+            bounds.x() as i32,
+            bounds.y() as i32,
+            bounds.width() as i32,
+            bounds.height() as i32,
+        ));
+    }
+
+    fn popup_context_menu(&self, pointing_to: &gdk::Rectangle) {
+        let imp = self.imp();
+        let Some(popover) = imp.context_bin.popover() else {
+            return;
+        };
+        let focus = self.root().and_then(|root| root.focus());
+        imp.focus_before_menu
+            .replace(focus.map(|widget| widget.downgrade()));
+        popover.set_pointing_to(Some(pointing_to));
         // PopoverBin's own popup points the popover at the whole bin again.
         popover.popup();
+    }
+
+    /// Gives the focus back to where it was when the menu opened, unless what the menu
+    /// opened, such as a confirmation, has taken it.
+    fn restore_focus(&self, popover: &gtk::Popover) {
+        let Some(widget) = self
+            .imp()
+            .focus_before_menu
+            .take()
+            .and_then(|widget| widget.upgrade())
+        else {
+            return;
+        };
+        let focus = self.root().and_then(|root| root.focus());
+        if focus.is_none_or(|focus| focus.is_ancestor(popover)) {
+            widget.grab_focus();
+        }
     }
 
     /// Ending and killing lose whatever the process had not saved, so they ask first.

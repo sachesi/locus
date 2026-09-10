@@ -15,6 +15,11 @@ template $LocusProcessesPage: Adw.Bin {
       trigger: "<Shift>Delete";
       action: "action(process.kill)";
     }
+
+    Shortcut {
+      trigger: "Menu|<Shift>F10";
+      action: "action(process.menu)";
+    }
   }
 
   child: Box {
