@@ -57,16 +57,13 @@ fn setup_actions(app: &adw::Application) {
 }
 
 fn show_about(app: &adw::Application) {
-    adw::AboutDialog::builder()
-        .application_name("Locus")
-        .application_icon(config::APP_ID)
-        .version(env!("CARGO_PKG_VERSION"))
-        .developer_name("sachesi")
-        .license_type(gtk::License::Gpl30)
-        .comments(gettext("Watch resources and end processes"))
-        .translator_credits(gettext("translator-credits"))
-        .website("https://github.com/sachesi/locus")
-        .issue_url("https://github.com/sachesi/locus/issues")
-        .build()
-        .present(app.active_window().as_ref());
+    // The metainfo gives the name, version, release notes, links and licence; what the user
+    // reads is set again from the catalogue, since the bundled metainfo is not translated.
+    let about = adw::AboutDialog::from_appdata(
+        &format!("{}/{}.metainfo.xml", config::RESOURCE_PATH, config::APP_ID),
+        Some(env!("CARGO_PKG_VERSION")),
+    );
+    about.set_comments(&gettext("Watch resources and end processes"));
+    about.set_translator_credits(&gettext("translator-credits"));
+    about.present(app.active_window().as_ref());
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-10 20:23+0300\n"
+"POT-Creation-Date: 2026-09-12 11:31+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -103,7 +103,7 @@ msgstr ""
 msgid "sachesi"
 msgstr ""
 
-#: data/io.github.sachesi.locus.metainfo.xml:45
+#: data/io.github.sachesi.locus.metainfo.xml:49
 msgid ""
 "The first release: processes with their processor, memory and disk use, "
 "which can be ended, killed, stopped and continued; graphs of the processor, "

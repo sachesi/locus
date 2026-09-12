@@ -27,6 +27,11 @@ fn main() {
     copy_dir(Path::new("data/icons"), &resource_dir.join("icons"));
     fs::copy("data/style.css", resource_dir.join("style.css")).unwrap();
     fs::copy(
+        "data/io.github.sachesi.locus.metainfo.xml",
+        resource_dir.join("io.github.sachesi.locus.metainfo.xml"),
+    )
+    .unwrap();
+    fs::copy(
         "data/locus.gresource.xml",
         resource_dir.join("locus.gresource.xml"),
     )
@@ -41,6 +46,7 @@ fn main() {
     println!("cargo:rerun-if-changed=data/ui");
     println!("cargo:rerun-if-changed=data/icons");
     println!("cargo:rerun-if-changed=data/style.css");
+    println!("cargo:rerun-if-changed=data/io.github.sachesi.locus.metainfo.xml");
     println!("cargo:rerun-if-changed=data/locus.gresource.xml");
     // option_env! bakes this in, so a prefix change has to force a rebuild.
     println!("cargo:rerun-if-env-changed=LOCUS_LOCALEDIR");
