@@ -30,6 +30,10 @@
   <url type="bugtracker">https://github.com/sachesi/locus/issues</url>
   <url type="vcs-browser">https://github.com/sachesi/locus</url>
   <developer id="io.github.sachesi"><name>sachesi</name></developer>
+  <branding>
+    <color type="primary" scheme_preference="light">#99c1f1</color>
+    <color type="primary" scheme_preference="dark">#1c71d8</color>
+  </branding>
   <content_rating type="oars-1.1"/>
   <requires>
     <display_length compare="ge">360</display_length>
