@@ -130,15 +130,15 @@ mod imp {
 
             let item = || gtk::ListItem::this_expression("item");
             self.name_column
-                .set_factory(Some(&obj.cell_factory(0.0, false, move || {
+                .set_factory(Some(&obj.cell_factory(0.0, false, None, move || {
                     item().chain_property::<Process>("name").upcast()
                 })));
             self.user_column
-                .set_factory(Some(&obj.cell_factory(0.0, false, move || {
+                .set_factory(Some(&obj.cell_factory(0.0, false, None, move || {
                     item().chain_property::<Process>("user").upcast()
                 })));
             self.cpu_column
-                .set_factory(Some(&obj.cell_factory(1.0, true, move || {
+                .set_factory(Some(&obj.cell_factory(1.0, true, None, move || {
                     item()
                         .chain_property::<Process>("cpu")
                         .chain_closure::<String>(glib::closure!(
@@ -147,7 +147,7 @@ mod imp {
                         .upcast()
                 })));
             self.memory_column
-                .set_factory(Some(&obj.cell_factory(1.0, true, move || {
+                .set_factory(Some(&obj.cell_factory(1.0, true, None, move || {
                     item()
                         .chain_property::<Process>("memory")
                         .chain_closure::<String>(glib::closure!(
@@ -155,8 +155,18 @@ mod imp {
                         ))
                         .upcast()
                 })));
-            self.disk_column
-                .set_factory(Some(&obj.cell_factory(1.0, true, move || {
+            let unshown = item()
+                .chain_property::<Process>("disk")
+                .chain_closure::<Option<String>>(glib::closure!(
+                    |_: Option<glib::Object>, disk: i64| (disk < 0)
+                        .then(|| gettext("Disk use of other users' processes is not shown"))
+                ))
+                .upcast();
+            self.disk_column.set_factory(Some(&obj.cell_factory(
+                1.0,
+                true,
+                Some(unshown),
+                move || {
                     item()
                         .chain_property::<Process>("disk")
                         .chain_closure::<String>(glib::closure!(
@@ -169,9 +179,10 @@ mod imp {
                             }
                         ))
                         .upcast()
-                })));
+                },
+            )));
             self.pid_column
-                .set_factory(Some(&obj.cell_factory(1.0, true, move || {
+                .set_factory(Some(&obj.cell_factory(1.0, true, None, move || {
                     item()
                         .chain_property::<Process>("pid")
                         .chain_closure::<String>(glib::closure!(
@@ -390,6 +401,7 @@ impl ProcessesPage {
         &self,
         xalign: f32,
         numeric: bool,
+        tooltip: Option<gtk::Expression>,
         text: impl Fn() -> gtk::Expression + 'static,
     ) -> gtk::SignalListItemFactory {
         let factory = gtk::SignalListItemFactory::new();
@@ -406,6 +418,9 @@ impl ProcessesPage {
                     cell.add_css_class("numeric");
                 }
                 text().bind(&cell, "text", Some(item));
+                if let Some(tooltip) = &tooltip {
+                    tooltip.bind(&cell, "tooltip-text", Some(item));
+                }
                 page.add_context_menu(&cell, item);
                 item.set_child(Some(&cell));
             }
