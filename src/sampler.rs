@@ -94,8 +94,10 @@ pub struct Sampler {
     path: String,
     at: Option<Instant>,
     cpu: Vec<CpuTimes>,
-    network: (u64, u64),
-    disks: (u64, u64),
+    /// Bytes received and sent by each network interface counted, and read and written by
+    /// each disk, at the last reading.
+    links: HashMap<String, (u64, u64)>,
+    disks: HashMap<String, (u64, u64)>,
     /// Whether an interface or a block device is hardware, by name.
     physical_links: HashMap<String, bool>,
     physical_disks: HashMap<String, bool>,
@@ -134,8 +136,8 @@ impl Sampler {
             path: String::new(),
             at: None,
             cpu: Vec::new(),
-            network: (0, 0),
-            disks: (0, 0),
+            links: HashMap::new(),
+            disks: HashMap::new(),
             physical_links: HashMap::new(),
             physical_disks: HashMap::new(),
             processes_at: None,
@@ -175,8 +177,7 @@ impl Sampler {
             cpu_model: self.cpu_model.clone(),
             ..System::default()
         };
-        let per_second =
-            |now: u64, before: u64| seconds.map_or(0.0, |s| now.saturating_sub(before) as f64 / s);
+        let per_second = |bytes: u64| seconds.map_or(0.0, |s| bytes as f64 / s);
 
         if read_text("/proc/stat", &mut self.text).is_ok() {
             let times = procfs::parse_cpu_times(&self.text);
@@ -195,42 +196,39 @@ impl Sampler {
         }
 
         if read_text("/proc/net/dev", &mut self.text).is_ok() {
-            let links = procfs::parse_net_dev(&self.text);
-            let mut hardware = (0, 0, false);
-            let mut others = (0, 0);
-            for (name, received, sent) in links {
-                if name == "lo" {
-                    continue;
-                }
-                if is_physical(&mut self.physical_links, "/sys/class/net", name) {
-                    hardware = (hardware.0 + received, hardware.1 + sent, true);
-                } else {
-                    others = (others.0 + received, others.1 + sent);
-                }
-            }
+            let links: Vec<_> = procfs::parse_net_dev(&self.text)
+                .into_iter()
+                .filter(|(name, _, _)| *name != "lo")
+                .map(|(name, received, sent)| {
+                    let physical = is_physical(&mut self.physical_links, "/sys/class/net", name);
+                    (name, received, sent, physical)
+                })
+                .collect();
             // Bridges, tunnels and container links carry traffic the hardware carries too,
             // so they count only where there is no hardware, as in a container.
-            let (received, sent) = if hardware.2 {
-                (hardware.0, hardware.1)
-            } else {
-                others
-            };
-            system.received = per_second(received, self.network.0);
-            system.sent = per_second(sent, self.network.1);
-            self.network = (received, sent);
+            let hardware = links.iter().any(|link| link.3);
+            let counters = links
+                .into_iter()
+                .filter(|link| link.3 == hardware)
+                .map(|(name, received, sent, _)| (name.to_owned(), (received, sent)))
+                .collect();
+            let (received, sent) = moved(&counters, &self.links);
+            system.received = per_second(received);
+            system.sent = per_second(sent);
+            self.links = counters;
         }
 
         if read_text("/proc/diskstats", &mut self.text).is_ok() {
             // Partitions, device mapper and RAID devices repeat what their disks do.
-            let (read, written) = procfs::parse_diskstats(&self.text)
+            let counters = procfs::parse_diskstats(&self.text)
                 .into_iter()
                 .filter(|(name, _, _)| is_physical(&mut self.physical_disks, "/sys/block", name))
-                .fold((0, 0), |(r, w), (_, read, written)| {
-                    (r + read * 512, w + written * 512)
-                });
-            system.read = per_second(read, self.disks.0);
-            system.written = per_second(written, self.disks.1);
-            self.disks = (read, written);
+                .map(|(name, read, written)| (name.to_owned(), (read * 512, written * 512)))
+                .collect();
+            let (read, written) = moved(&counters, &self.disks);
+            system.read = per_second(read);
+            system.written = per_second(written);
+            self.disks = counters;
         }
 
         if read_text("/proc/self/mountinfo", &mut self.text).is_ok() {
@@ -405,6 +403,17 @@ fn proc_path<'a>(path: &'a mut String, pid: u32, file: &str) -> &'a str {
     path
 }
 
+/// The bytes moved since the last reading, over the devices counted in both: one that
+/// has only now appeared, or is no longer counted, moves nothing.
+fn moved(now: &HashMap<String, (u64, u64)>, before: &HashMap<String, (u64, u64)>) -> (u64, u64) {
+    now.iter()
+        .filter_map(|(name, (a, b))| {
+            let (a_before, b_before) = before.get(name)?;
+            Some((a.saturating_sub(*a_before), b.saturating_sub(*b_before)))
+        })
+        .fold((0, 0), |(a, b), (da, db)| (a + da, b + db))
+}
+
 /// Whether `name` under `class` is backed by a device, remembered once asked.
 fn is_physical(known: &mut HashMap<String, bool>, class: &str, name: &str) -> bool {
     if let Some(&physical) = known.get(name) {
@@ -473,6 +482,19 @@ fn user_name(uid: u32) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_device_that_comes_or_goes_moves_nothing() {
+        let before = HashMap::from([
+            ("eth0".to_owned(), (100, 10)),
+            ("usb0".to_owned(), (5_000, 500)),
+        ]);
+        let now = HashMap::from([
+            ("eth0".to_owned(), (150, 30)),
+            ("wlan0".to_owned(), (9_000_000, 1)),
+        ]);
+        assert_eq!(moved(&now, &before), (50, 20));
+    }
 
     #[test]
     fn reading_the_running_machine() {
