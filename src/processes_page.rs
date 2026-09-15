@@ -9,7 +9,10 @@ use gtk::{gdk, gio, glib, graphene};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::io;
-use std::time::Duration;
+use std::time::{Duration, Instant};
+
+/// How long after the pointer last moved over the list its rows keep their order.
+const AIMING: Duration = Duration::from_secs(1);
 
 mod imp {
     use super::*;
@@ -72,6 +75,8 @@ mod imp {
         pub own_uid: Cell<u32>,
         pub confirming: Cell<bool>,
         pub focus_before_menu: RefCell<Option<glib::WeakRef<gtk::Widget>>>,
+        /// When the pointer last moved over the list, while it is over it.
+        pub pointer_moved: Cell<Option<Instant>>,
     }
 
     #[glib::object_subclass]
@@ -213,6 +218,19 @@ mod imp {
             self.view
                 .sort_by_column(Some(&*self.cpu_column), gtk::SortType::Ascending);
 
+            let motion = gtk::EventControllerMotion::new();
+            motion.connect_motion(glib::clone!(
+                #[weak]
+                obj,
+                move |_, _, _| obj.imp().pointer_moved.set(Some(Instant::now()))
+            ));
+            motion.connect_leave(glib::clone!(
+                #[weak]
+                obj,
+                move |_| obj.imp().pointer_moved.set(None)
+            ));
+            self.view.add_controller(motion);
+
             if let Some(popover) = self.context_bin.popover() {
                 popover.connect_closed(glib::clone!(
                     #[weak]
@@ -312,9 +330,15 @@ impl ProcessesPage {
         });
         imp.store.extend_from_slice(&added);
         // The sort list model does not watch the values it sorts by. Rows stay where they
-        // are while the user is choosing what to do with one of them.
-        let choosing =
-            imp.confirming.get() || imp.context_bin.popover().is_some_and(|p| p.is_visible());
+        // are while the user is choosing what to do with one of them, or aiming the pointer
+        // at one, so a click lands on the process it was meant for.
+        let aiming = imp
+            .pointer_moved
+            .get()
+            .is_some_and(|moved| moved.elapsed() < AIMING);
+        let choosing = aiming
+            || imp.confirming.get()
+            || imp.context_bin.popover().is_some_and(|p| p.is_visible());
         if !choosing && let Some(sorter) = imp.view.sorter() {
             sorter.changed(gtk::SorterChange::Different);
         }
