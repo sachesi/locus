@@ -589,20 +589,25 @@ impl ProcessesPage {
                 let response = dialog.choose_future(Some(&page)).await;
                 page.imp().confirming.set(false);
                 if response == "signal" {
-                    page.send(&process, signal);
+                    page.send(&process, signal).await;
                 }
             }
         ));
     }
 
     fn signal_selected(&self, signal: Signal) {
-        if let Some(process) = self.selected() {
-            self.send(&process, signal);
-        }
+        let Some(process) = self.selected() else {
+            return;
+        };
+        glib::spawn_future_local(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            async move { page.send(&process, signal).await }
+        ));
     }
 
-    fn send(&self, process: &Process, signal: Signal) {
-        let sent = process.send(signal);
+    async fn send(&self, process: &Process, signal: Signal) {
+        let sent = process.send(signal).await;
         // The list shows what the signal did at once, rather than at the next reading; a
         // process asked to quit gets a moment to do so first.
         glib::timeout_add_local_once(

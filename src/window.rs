@@ -172,7 +172,8 @@ impl LocusWindow {
         self.imp().wake.replace(Some(wake));
         let window = self.downgrade();
         glib::spawn_future_local(async move {
-            let mut sampler = Sampler::new();
+            // Made on the worker, since making it reads the processor's model.
+            let mut sampler: Option<Sampler> = None;
             loop {
                 let Some(win) = window.upgrade() else {
                     break;
@@ -182,6 +183,7 @@ impl LocusWindow {
                 drop(win);
 
                 let Ok((returned, snapshot)) = gio::spawn_blocking(move || {
+                    let mut sampler = sampler.unwrap_or_default();
                     let snapshot = sampler.sample(with_processes);
                     (sampler, snapshot)
                 })
@@ -189,7 +191,7 @@ impl LocusWindow {
                 else {
                     break;
                 };
-                sampler = returned;
+                sampler = Some(returned);
 
                 let Some(win) = window.upgrade() else {
                     break;

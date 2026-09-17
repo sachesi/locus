@@ -1,8 +1,8 @@
 use crate::procfs;
 use crate::sampler::ProcessSample;
-use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use gtk::{gio, glib};
 use std::fs;
 use std::io;
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
@@ -96,8 +96,13 @@ impl Process {
         }
     }
 
-    pub fn send(&self, signal: Signal) -> io::Result<()> {
-        send_signal(self.pid(), self.start_time(), signal)
+    /// Signals the process from a worker thread, as checking it is still the same process
+    /// reads its entry under /proc.
+    pub async fn send(&self, signal: Signal) -> io::Result<()> {
+        let (pid, start_time) = (self.pid(), self.start_time());
+        gio::spawn_blocking(move || send_signal(pid, start_time, signal))
+            .await
+            .unwrap_or_else(|_| Err(io::Error::other("the worker sending the signal failed")))
     }
 }
 
