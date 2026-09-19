@@ -182,21 +182,25 @@ impl LocusWindow {
                 let interval = win.interval();
                 drop(win);
 
-                let Ok((returned, snapshot)) = gio::spawn_blocking(move || {
-                    let mut sampler = sampler.unwrap_or_default();
+                let taken = sampler.take();
+                let reading = gio::spawn_blocking(move || {
+                    let mut sampler = taken.unwrap_or_default();
                     let snapshot = sampler.sample(with_processes);
                     (sampler, snapshot)
                 })
-                .await
-                else {
-                    break;
-                };
-                sampler = Some(returned);
+                .await;
+                // A reading that panicked took its sampler with it; the next starts afresh.
+                let snapshot = reading.ok().map(|(returned, snapshot)| {
+                    sampler = Some(returned);
+                    snapshot
+                });
 
                 let Some(win) = window.upgrade() else {
                     break;
                 };
-                win.apply(&snapshot);
+                if let Some(snapshot) = &snapshot {
+                    win.apply(snapshot);
+                }
                 drop(win);
                 let _ = glib::future_with_timeout(interval, woken.recv()).await;
             }
