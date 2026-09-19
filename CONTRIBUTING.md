@@ -21,26 +21,30 @@ Before a change goes in:
     src/main.rs            the application: its actions, the About dialog, one window
     src/window.rs          the window, its win.* actions and settings, and the loop that
                            takes a reading, hands it to the pages and waits for the next
-    src/sampler.rs         a reading of the machine and its processes, on a worker thread,
-                           with the counters of the last one to measure rates against
+    src/sampler.rs         a reading of the machine and its processes, and the apps they are
+                           part of, on a worker thread, with the counters of the last one
+                           to measure rates against
     src/procfs.rs          parsers of the /proc files, pure functions over their text
     src/process.rs         LocusProcess, one process in the list model, and signalling it
-    src/processes_page.rs  the process list: columns, sorting, search, the process.* actions
-                           and their confirmations
+    src/processes_page.rs  the process list: the trees of apps and processes, columns,
+                           sorting, search, the process.* actions and their confirmations
     src/resources_page.rs  the processor, memory, network, disk and file system cards
     src/graph.rs           LocusGraph, a line graph drawn with GtkSnapshot
     src/format.rs          percentages, sizes and rates as the interface writes them
 
-Nothing in `sampler.rs` or `procfs.rs` touches GTK: a `Sampler` moves to a
-`gio::spawn_blocking` worker for each reading and comes back with a `Snapshot` of plain
-values. One reading runs at a time, and the window waits for the update interval, or for
+Nothing in `sampler.rs` or `procfs.rs` touches GTK, and the sampler asks GIO only for the
+installed apps: a `Sampler` moves to a `gio::spawn_blocking` worker for each reading and
+comes back with a `Snapshot` of plain values. One reading runs at a time, and the window waits for the update interval, or for
 something that changes what the next reading covers, before it asks for another.
 
-The list is a `GtkColumnView` over a `GListStore` of `LocusProcess`, filtered and sorted in
-the Blueprint file. A reading updates the objects of the processes it has seen before, so
-the rows showing them keep their place and selection, and only properties that changed are
-set. The sort list model does not watch the values it sorts by, so the view's sorter is told
-after each reading.
+The list is a `GtkColumnView` over two `GtkTreeListModel`s, of the apps and of the other
+processes, each sorted one level at a time by a `GtkTreeListRowSorter`, filtered for the
+search, and flattened into a section each. Every `LocusProcess` holds the store of what is
+listed beneath it; an app's row is a `LocusProcess` too, adding up its processes. A reading
+updates the objects of the processes it has seen before, so the rows showing them keep their
+place and selection, sets only properties that changed, and moves a process whose parent
+has changed. The sort list models do not watch the values they sort by, so the view's
+sorter is told after each reading.
 
 A process is signalled through a pidfd, after checking that the process holding the pid
 still has the start time it was listed with: a pid reused since the last reading gets

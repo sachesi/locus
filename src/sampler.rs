@@ -2,6 +2,7 @@
 //! here touches GTK, and a [`Sampler`] moves to the worker and back for each reading.
 
 use crate::procfs::{self, CpuTimes, Memory};
+use gtk::gio::{self, prelude::*};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fmt::Write as _;
@@ -12,6 +13,10 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+/// How long the list of installed apps is kept before a process started from one it does
+/// not have makes it read again.
+const APPS_KEPT: Duration = Duration::from_secs(10);
+
 /// How long a first reading waits for its second, so that the first rates shown are
 /// measured rather than zero.
 const BASELINE: Duration = Duration::from_millis(250);
@@ -19,7 +24,10 @@ const BASELINE: Duration = Duration::from_millis(250);
 #[derive(Debug, Clone)]
 pub struct ProcessSample {
     pub pid: u32,
+    pub ppid: u32,
     pub start_time: u64,
+    /// The installed app the process is part of.
+    pub app: Option<Arc<App>>,
     pub name: Arc<str>,
     pub command: Arc<str>,
     pub uid: u32,
@@ -62,6 +70,16 @@ pub struct System {
     pub filesystems: Vec<FileSystem>,
 }
 
+/// An app a launcher shows, as its desktop file describes it.
+#[derive(Debug)]
+pub struct App {
+    /// The desktop file's name.
+    pub id: Arc<str>,
+    pub name: Arc<str>,
+    /// Its icon, in the form `gio::Icon::for_string` takes.
+    pub icon: Option<Arc<str>>,
+}
+
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     pub system: System,
@@ -79,6 +97,9 @@ struct Tracked {
     command: Arc<str>,
     uid: u32,
     user: Arc<str>,
+    app: Option<Arc<App>>,
+    /// Whether the app has been looked for again since the process was first seen.
+    app_settled: bool,
     generation: u64,
 }
 
@@ -105,6 +126,7 @@ pub struct Sampler {
     processes: HashMap<u32, Tracked>,
     generation: u64,
     users: HashMap<u32, Arc<str>>,
+    apps: AppIndex,
 }
 
 impl Default for Sampler {
@@ -144,6 +166,7 @@ impl Sampler {
             processes: HashMap::new(),
             generation: 0,
             users: HashMap::new(),
+            apps: AppIndex::default(),
         }
     }
 
@@ -301,6 +324,20 @@ impl Sampler {
                 continue;
             };
             tracked.generation = self.generation;
+            if !tracked.app_settled {
+                // A desktop moves an app it starts into a unit of its own once it has
+                // started it, which the first look may come before.
+                tracked.app_settled = known;
+                let program = tracked.name.clone();
+                tracked.app = app_of(
+                    pid,
+                    &program,
+                    &mut self.path,
+                    &mut self.text,
+                    &mut self.bytes,
+                    &mut self.apps,
+                );
+            }
 
             let cpu = match seconds {
                 Some(s) if known => {
@@ -342,7 +379,9 @@ impl Sampler {
 
             samples.push(ProcessSample {
                 pid,
+                ppid: stat.ppid,
                 start_time: stat.start_time,
+                app: tracked.app.clone(),
                 name: tracked.name.clone(),
                 command: tracked.command.clone(),
                 uid: tracked.uid,
@@ -388,8 +427,119 @@ fn track(
         command: procfs::command_line(bytes).into(),
         uid,
         user,
+        app: None,
+        app_settled: false,
         generation: 0,
     })
+}
+
+/// The app a process is part of: the one its unit is named after, else the one GLib
+/// started it, or what it descends from, from.
+fn app_of(
+    pid: u32,
+    program: &str,
+    path: &mut String,
+    text: &mut String,
+    bytes: &mut Vec<u8>,
+    apps: &mut AppIndex,
+) -> Option<Arc<App>> {
+    if read_text(proc_path(path, pid, "cgroup"), text).is_ok()
+        && let Some(app) = procfs::cgroup_app_ids(text)
+            .iter()
+            .find_map(|id| apps.find(id, false))
+    {
+        return Some(app);
+    }
+    // Only its owner, and root, may read the environment of a process.
+    bytes.clear();
+    File::open(proc_path(path, pid, "environ"))
+        .ok()?
+        .read_to_end(bytes)
+        .ok()?;
+    if let Some(file) = procfs::launched_desktop_file(bytes) {
+        let id = Path::new(file).file_stem()?.to_str()?;
+        return apps.find(id, true);
+    }
+    // An app D-Bus starts itself, rather than through systemd, has neither, and is known
+    // by its program.
+    if procfs::started_by_dbus(bytes) {
+        return apps.find_program(program);
+    }
+    None
+}
+
+/// The installed apps by desktop file name, `None` for those a launcher does not show.
+#[derive(Default)]
+struct AppIndex {
+    apps: HashMap<String, Option<Arc<App>>>,
+    /// The apps by the name of the program they run, where that program is theirs alone.
+    programs: HashMap<String, Arc<App>>,
+    read_at: Option<Instant>,
+}
+
+impl AppIndex {
+    /// The app of the desktop file `id` names, without ".desktop". A process `launched`
+    /// from a desktop file the index does not have may be from an app installed since it
+    /// was read, so it is read again, though not more often than every [`APPS_KEPT`].
+    fn find(&mut self, id: &str, launched: bool) -> Option<Arc<App>> {
+        let file = format!("{id}.desktop");
+        let stale = self.read_at.is_none_or(|at| {
+            launched && !self.apps.contains_key(&file) && at.elapsed() > APPS_KEPT
+        });
+        if stale {
+            self.read();
+        }
+        self.apps.get(&file).cloned().flatten()
+    }
+
+    fn find_program(&mut self, program: &str) -> Option<Arc<App>> {
+        if self.read_at.is_none() {
+            self.read();
+        }
+        self.programs.get(program).cloned()
+    }
+
+    fn read(&mut self) {
+        // Interpreters and launchers run many apps, and name none of them.
+        const SHARED: [&str; 12] = [
+            "sh", "bash", "env", "python", "python3", "perl", "ruby", "node", "gjs", "java",
+            "flatpak", "wine",
+        ];
+        self.apps.clear();
+        self.programs.clear();
+        for info in gio::AppInfo::all() {
+            let Some(file) = info.id() else {
+                continue;
+            };
+            let app = info.should_show().then(|| {
+                Arc::new(App {
+                    id: Arc::from(file.trim_end_matches(".desktop")),
+                    name: Arc::from(info.display_name().as_str()),
+                    icon: info
+                        .icon()
+                        .and_then(|icon| IconExt::to_string(&icon))
+                        .map(|icon| Arc::from(icon.as_str())),
+                })
+            });
+            // Not the executable, which is null for an entry that D-Bus alone starts.
+            let command = info.commandline();
+            let program = command
+                .as_deref()
+                .and_then(|command| command.to_str())
+                .and_then(|command| command.split_whitespace().next())
+                .map(|program| program.rsplit('/').next().unwrap_or(program));
+            if let Some(app) = &app
+                && let Some(program) = program
+                && !SHARED.contains(&program)
+            {
+                self.programs
+                    .entry(program.to_owned())
+                    .or_insert_with(|| app.clone());
+            }
+            self.apps.insert(file.to_string(), app);
+        }
+        self.read_at = Some(Instant::now());
+    }
 }
 
 fn read_text(path: impl AsRef<Path>, into: &mut String) -> io::Result<()> {

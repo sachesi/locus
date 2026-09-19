@@ -1,15 +1,16 @@
 use crate::procfs;
-use crate::sampler::ProcessSample;
+use crate::sampler::{App, ProcessSample};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 use std::fs;
 use std::io;
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
+use std::sync::Arc;
 
 mod imp {
     use super::*;
-    use std::cell::{Cell, RefCell};
+    use std::cell::{Cell, OnceCell, RefCell};
 
     #[derive(Default, glib::Properties)]
     #[properties(wrapper_type = super::Process)]
@@ -33,6 +34,18 @@ mod imp {
         disk: Cell<i64>,
         #[property(get, set)]
         stopped: Cell<bool>,
+        /// The app's icon, for the row of an app.
+        #[property(get, set, nullable)]
+        icon: RefCell<Option<gio::Icon>>,
+        /// Whether this stands for an app, its processes listed beneath it.
+        #[property(get, set)]
+        is_app: Cell<bool>,
+        /// How many processes are listed directly beneath this one.
+        #[property(get, set)]
+        child_count: Cell<u32>,
+        pub app_id: RefCell<Option<Arc<str>>>,
+        pub children: OnceCell<gio::ListStore>,
+        pub place: RefCell<Place>,
         pub start_time: Cell<u64>,
         /// The last reading that listed this process.
         pub generation: Cell<u64>,
@@ -64,6 +77,77 @@ impl Process {
         process.imp().start_time.set(sample.start_time);
         process.update(sample, generation);
         process
+    }
+
+    /// The row of an app, whose values are those of its processes added up.
+    pub fn for_app(app: &App) -> Self {
+        let icon = app
+            .icon
+            .as_deref()
+            .and_then(|icon| gio::Icon::for_string(icon).ok());
+        let process: Self = glib::Object::builder()
+            .property("name", &*app.name)
+            .property("icon", icon)
+            .property("is-app", true)
+            .build();
+        process.imp().app_id.replace(Some(app.id.clone()));
+        process
+    }
+
+    pub fn app_id(&self) -> Option<Arc<str>> {
+        self.imp().app_id.borrow().clone()
+    }
+
+    pub fn set_app_id(&self, app_id: Option<Arc<str>>) {
+        self.imp().app_id.replace(app_id);
+    }
+
+    /// The processes listed directly beneath this one.
+    pub fn children(&self) -> gio::ListStore {
+        self.imp()
+            .children
+            .get_or_init(gio::ListStore::new::<Process>)
+            .clone()
+    }
+
+    /// What this is listed beneath, if it is listed beneath anything.
+    pub fn parent(&self) -> Option<Process> {
+        match &*self.imp().place.borrow() {
+            Place::Under(parent) => parent.upgrade(),
+            _ => None,
+        }
+    }
+
+    /// Takes the added up values of the processes of the app this stands for.
+    pub fn add_up(&self, processes: &[Process]) {
+        let _batch = self.freeze_notify();
+        let cpu: f64 = processes.iter().map(Process::cpu).sum();
+        if self.cpu() != cpu {
+            self.set_cpu(cpu);
+        }
+        let memory: u64 = processes.iter().map(Process::memory).sum();
+        if self.memory() != memory {
+            self.set_memory(memory);
+        }
+        let readable: Vec<i64> = processes
+            .iter()
+            .map(Process::disk)
+            .filter(|disk| *disk >= 0)
+            .collect();
+        let disk = if readable.is_empty() {
+            -1
+        } else {
+            readable.iter().sum()
+        };
+        if self.disk() != disk {
+            self.set_disk(disk);
+        }
+        if let Some(first) = processes.first()
+            && self.uid() != first.uid()
+        {
+            self.set_uid(first.uid());
+            self.set_user(first.user());
+        }
     }
 
     pub fn start_time(&self) -> u64 {
@@ -103,6 +187,32 @@ impl Process {
         gio::spawn_blocking(move || send_signal(pid, start_time, signal))
             .await
             .unwrap_or_else(|_| Err(io::Error::other("the worker sending the signal failed")))
+    }
+}
+
+/// Where a process is listed.
+#[derive(Debug, Default)]
+pub enum Place {
+    #[default]
+    Nowhere,
+    /// Among the apps.
+    Apps,
+    /// At the top of the processes that are not part of an app.
+    Top,
+    Under(glib::WeakRef<Process>),
+}
+
+impl Place {
+    pub fn is(&self, other: &Place) -> bool {
+        match (self, other) {
+            (Place::Nowhere, Place::Nowhere)
+            | (Place::Apps, Place::Apps)
+            | (Place::Top, Place::Top) => true,
+            (Place::Under(a), Place::Under(b)) => a
+                .upgrade()
+                .is_some_and(|a| b.upgrade().as_ref() == Some(&a)),
+            _ => false,
+        }
     }
 }
 

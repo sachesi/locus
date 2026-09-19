@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-13 14:04+0300\n"
+"POT-Creation-Date: 2026-09-19 13:41+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: data/io.github.sachesi.locus.desktop:2
 #: data/io.github.sachesi.locus.metainfo.xml:6
@@ -59,8 +60,8 @@ msgstr ""
 #: data/io.github.sachesi.locus.metainfo.xml:9
 msgid ""
 "Locus is a system monitor for Wayland desktops, built with GTK 4 and "
-"libadwaita. It graphs the whole machine, and lists the running processes "
-"with what each takes of the processor, the memory and the disks."
+"libadwaita. It graphs the whole machine, and lists the running apps and "
+"processes with what each takes of the processor, the memory and the disks."
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:11
@@ -75,14 +76,15 @@ msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:13
 msgid ""
-"Processes sorted by processor, memory or disk use, searchable by name, "
-"command line or ID"
+"Running apps with their processes, and every other process beneath the one "
+"that started it, sorted by processor, memory or disk use and searchable by "
+"name, command line or ID"
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:14
 msgid ""
-"End, kill, stop and continue a process, from its menu or the bar beneath the "
-"list"
+"End, kill, stop and continue a process, or end an app with all its "
+"processes, from its menu or the buttons above the list"
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:16
@@ -105,10 +107,10 @@ msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:49
 msgid ""
-"The first release: processes with their processor, memory and disk use, "
-"which can be ended, killed, stopped and continued; graphs of the processor, "
-"each of its cores, memory and swap, the network and the disks; and the room "
-"left on each mounted disk."
+"The first release: running apps and processes with their processor, memory "
+"and disk use, which can be ended, killed, stopped and continued; graphs of "
+"the processor, each of its cores, memory and swap, the network and the "
+"disks; and the room left on each mounted disk."
 msgstr ""
 
 #. Translators: a share of something, such as "12.3%".
@@ -140,110 +142,168 @@ msgstr ""
 msgid "translator-credits"
 msgstr ""
 
-#: src/processes_page.rs:162
-#, no-c-format
-msgid "Disk use of other users' processes is not shown"
-msgstr ""
-
-#: src/processes_page.rs:255
+#: src/processes_page.rs:212
 #, no-c-format
 msgid "Try a different search"
 msgstr ""
 
-#: src/processes_page.rs:258
+#: src/processes_page.rs:215
 #, no-c-format
 msgid ""
 "Only your own processes are searched. Turn on “Show All Processes” in the "
 "main menu to search every one."
 msgstr ""
 
-#. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:378
+#: src/processes_page.rs:403
 #, no-c-format
-msgid "ID {pid}"
+msgid "Disk use of other users' processes is not shown"
 msgstr ""
 
-#. Translators: {detail} is "ID 1234"; a stopped process is paused until it is
-#. continued.
-#: src/processes_page.rs:382
+#: src/processes_page.rs:642
 #, no-c-format
-msgid "{detail}, stopped"
+msgid "{count} Running App"
+msgid_plural "{count} Running Apps"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/processes_page.rs:647
+#, no-c-format
+msgid "{count} Running Process"
+msgid_plural "{count} Running Processes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/processes_page.rs:667 ui/processes_page.ui:210
+#, no-c-format
+msgid "CPU"
 msgstr ""
 
-#. Translators: {detail} is "ID 1234", or "ID 1234, stopped"; {user} is a login name.
-#: src/processes_page.rs:386
+#: src/processes_page.rs:672 ui/processes_page.ui:216 ui/resources_page.ui:107
+#: ui/resources_page.ui:152
 #, no-c-format
-msgid "{detail}, owned by {user}"
+msgid "Memory"
 msgstr ""
 
-#: src/processes_page.rs:538
+#: src/processes_page.rs:677 ui/processes_page.ui:222
+#, no-c-format
+msgid "Disk"
+msgstr ""
+
+#: src/processes_page.rs:824
+#, no-c-format
+msgid "Stopped"
+msgstr ""
+
+#: src/processes_page.rs:1033
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr ""
 
+#: src/processes_page.rs:1036
+#, no-c-format
+msgid ""
+"Its {count} process ends at once, without a chance to save its work or clean "
+"up."
+msgid_plural ""
+"Its {count} processes end at once, without a chance to save their work or "
+"clean up."
+msgstr[0] ""
+msgstr[1] ""
+
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:541
+#: src/processes_page.rs:1043
 #, no-c-format
 msgid ""
 "Process {pid} ends at once, without a chance to save its work or clean up."
 msgstr ""
 
-#: src/processes_page.rs:543
+#: src/processes_page.rs:1047
+#, no-c-format
+msgid "_Kill App"
+msgstr ""
+
+#: src/processes_page.rs:1049
 #, no-c-format
 msgid "_Kill Process"
 msgstr ""
 
-#: src/processes_page.rs:546
+#: src/processes_page.rs:1053
 #, no-c-format
 msgid "End “{name}”?"
 msgstr ""
 
+#: src/processes_page.rs:1056
+#, no-c-format
+msgid ""
+"Its {count} process is asked to quit. Work it has not saved may be lost."
+msgid_plural ""
+"Its {count} processes are asked to quit. Work they have not saved may be "
+"lost."
+msgstr[0] ""
+msgstr[1] ""
+
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:548
+#: src/processes_page.rs:1062
 #, no-c-format
 msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 
-#: src/processes_page.rs:549 ui/processes_page.ui:207
+#: src/processes_page.rs:1065
+#, no-c-format
+msgid "_End App"
+msgstr ""
+
+#: src/processes_page.rs:1067
 #, no-c-format
 msgid "_End Process"
 msgstr ""
 
-#: src/processes_page.rs:556
+#: src/processes_page.rs:1079
 #, no-c-format
 msgid "_Cancel"
 msgstr ""
 
-#: src/processes_page.rs:600
+#: src/processes_page.rs:1139
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr ""
 
 #. Translators: {reason} is "it belongs to another user", or an error
 #. message of the system; so too in the three messages after this one.
-#: src/processes_page.rs:606
+#: src/processes_page.rs:1145
 #, no-c-format
 msgid "Could not end “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:608
+#: src/processes_page.rs:1147
 #, no-c-format
 msgid "Could not kill “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:609
+#: src/processes_page.rs:1148
 #, no-c-format
 msgid "Could not stop “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:610
+#: src/processes_page.rs:1149
 #, no-c-format
 msgid "Could not continue “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:613
+#: src/processes_page.rs:1152
 #, no-c-format
 msgid "it belongs to another user"
+msgstr ""
+
+#: src/processes_page.rs:1201
+#, no-c-format
+msgid "Apps"
+msgstr ""
+
+#: src/processes_page.rs:1203 ui/shortcuts_dialog.ui:21
+#: ui/shortcuts_dialog.ui:47 ui/window.ui:77
+#, no-c-format
+msgid "Processes"
 msgstr ""
 
 #. Translators: one core of the processor; {number} counts from 1.
@@ -271,56 +331,40 @@ msgstr ""
 msgid "Search processes"
 msgstr ""
 
-#: ui/processes_page.ui:76
-msgid "Reading processes"
-msgstr ""
-
-#: ui/processes_page.ui:114
-msgid "Process Name"
-msgstr ""
-
-#: ui/processes_page.ui:121
-msgid "User"
-msgstr ""
-
-#: ui/processes_page.ui:129
-msgid "CPU"
-msgstr ""
-
-#: ui/processes_page.ui:135 ui/resources_page.ui:107 ui/resources_page.ui:152
-msgid "Memory"
-msgstr ""
-
-#: ui/processes_page.ui:141
-msgid "Disk"
-msgstr ""
-
-#: ui/processes_page.ui:148
-msgid "ID"
-msgstr ""
-
-#: ui/processes_page.ui:168
-msgid "No Matching Processes"
-msgstr ""
-
-#: ui/processes_page.ui:211
-msgid "More Actions"
-msgstr ""
-
-#: ui/processes_page.ui:222 ui/processes_page.ui:246
+#: ui/processes_page.ui:112 ui/processes_page.ui:266
 msgid "_Stop"
 msgstr ""
 
-#: ui/processes_page.ui:227 ui/processes_page.ui:251
+#: ui/processes_page.ui:125 ui/processes_page.ui:271
 msgid "_Continue"
 msgstr ""
 
-#: ui/processes_page.ui:234
+#: ui/processes_page.ui:137 ui/processes_page.ui:278
 msgid "_End"
 msgstr ""
 
-#: ui/processes_page.ui:238 ui/processes_page.ui:256
+#: ui/processes_page.ui:149 ui/processes_page.ui:282
 msgid "_Kill"
+msgstr ""
+
+#: ui/processes_page.ui:175
+msgid "Reading processes"
+msgstr ""
+
+#: ui/processes_page.ui:195
+msgid "Process Name"
+msgstr ""
+
+#: ui/processes_page.ui:202
+msgid "User"
+msgstr ""
+
+#: ui/processes_page.ui:229
+msgid "ID"
+msgstr ""
+
+#: ui/processes_page.ui:249
+msgid "No Matching Processes"
 msgstr ""
 
 #: ui/resources_page.ui:38
@@ -381,10 +425,6 @@ msgstr ""
 
 #: ui/shortcuts_dialog.ui:15 ui/window.ui:67
 msgid "Resources"
-msgstr ""
-
-#: ui/shortcuts_dialog.ui:21 ui/shortcuts_dialog.ui:47 ui/window.ui:77
-msgid "Processes"
 msgstr ""
 
 #: ui/shortcuts_dialog.ui:27

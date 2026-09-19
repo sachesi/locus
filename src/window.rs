@@ -224,7 +224,7 @@ impl LocusWindow {
         let imp = self.imp();
         imp.resources_page.apply(&snapshot.system);
         if let Some(processes) = &snapshot.processes {
-            imp.processes_page.apply(processes);
+            imp.processes_page.apply(processes, &snapshot.system);
         }
     }
 }

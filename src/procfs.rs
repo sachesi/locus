@@ -9,6 +9,8 @@ const PF_KTHREAD: u64 = 0x0020_0000;
 pub struct Stat<'a> {
     pub comm: &'a str,
     pub state: char,
+    /// The parent's pid; 0 for what the kernel starts itself.
+    pub ppid: u32,
     pub kernel_thread: bool,
     /// User plus system time, in clock ticks.
     pub ticks: u64,
@@ -25,8 +27,9 @@ pub fn parse_stat(text: &str) -> Option<Stat<'_>> {
     let comm = text.get(open + 1..close)?;
     let mut fields = text.get(close + 1..)?.split_ascii_whitespace();
     let state = fields.next()?.chars().next()?;
-    // After the state: ppid, pgrp, session, tty_nr, tpgid, then flags.
-    let flags: u64 = fields.nth(5)?.parse().ok()?;
+    let ppid = fields.next()?.parse().ok()?;
+    // After the ppid: pgrp, session, tty_nr, tpgid, then flags.
+    let flags: u64 = fields.nth(4)?.parse().ok()?;
     // minflt, cminflt, majflt, cmajflt, then utime and stime.
     let utime: u64 = fields.nth(4)?.parse().ok()?;
     let stime: u64 = fields.next()?.parse().ok()?;
@@ -35,6 +38,7 @@ pub fn parse_stat(text: &str) -> Option<Stat<'_>> {
     Some(Stat {
         comm,
         state,
+        ppid,
         kernel_thread: flags & PF_KTHREAD != 0,
         ticks: utime + stime,
         start_time,
@@ -252,6 +256,80 @@ fn unescape(field: &str) -> String {
     String::from_utf8_lossy(&out).into_owned()
 }
 
+/// The desktop file ids, without ".desktop", that the unit holding a process may be named
+/// after, from `/proc/<pid>/cgroup`, likeliest first. Desktops start an app in a unit of its
+/// own, `app-[<launcher>-]<id>[@<instance>].service` or `app-[<launcher>-]<id>-<n>.scope`,
+/// and D-Bus starts the apps it activates as `dbus-:<connection>-<id>@<instance>.service`.
+pub fn cgroup_app_ids(text: &str) -> Vec<String> {
+    let Some(path) = text.lines().find_map(|line| line.strip_prefix("0::")) else {
+        return Vec::new();
+    };
+    let unit = path.rsplit('/').next().unwrap_or_default();
+    let name = if let Some(scope) = unit.strip_suffix(".scope") {
+        scope.rsplit_once('-').map_or(scope, |(name, _)| name)
+    } else if let Some(service) = unit.strip_suffix(".service") {
+        service.split_once('@').map_or(service, |(name, _)| name)
+    } else {
+        return Vec::new();
+    };
+    // Dashes inside the id are escaped, so the first bare one ends the launcher's name.
+    if let Some(rest) = name.strip_prefix("app-") {
+        let mut ids = vec![unescape_unit(rest)];
+        if let Some((_, id)) = rest.split_once('-') {
+            ids.push(unescape_unit(id));
+        }
+        ids
+    } else if let Some(rest) = name.strip_prefix("dbus-:") {
+        rest.split_once('-')
+            .map(|(_, id)| vec![unescape_unit(id)])
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    }
+}
+
+/// Undoes systemd's escaping in a unit name, which writes a dash as `\x2d`.
+fn unescape_unit(name: &str) -> String {
+    let mut out = String::with_capacity(name.len());
+    let mut rest = name;
+    while let Some(at) = rest.find("\\x") {
+        out.push_str(&rest[..at]);
+        let code = rest
+            .get(at + 2..at + 4)
+            .and_then(|hex| u8::from_str_radix(hex, 16).ok());
+        match code {
+            Some(byte) => {
+                out.push(char::from(byte));
+                rest = &rest[at + 4..];
+            }
+            None => {
+                out.push('\\');
+                rest = &rest[at + 1..];
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// The value of the variable `name` in `/proc/<pid>/environ`.
+pub fn environment_variable<'a>(environ: &'a [u8], name: &str) -> Option<&'a str> {
+    environ
+        .split(|&b| b == 0)
+        .find_map(|variable| variable.strip_prefix(name.as_bytes())?.strip_prefix(b"="))
+        .and_then(|value| std::str::from_utf8(value).ok())
+}
+
+/// The desktop file GLib started the process, or the one it descends from, from.
+pub fn launched_desktop_file(environ: &[u8]) -> Option<&str> {
+    environment_variable(environ, "GIO_LAUNCHED_DESKTOP_FILE").filter(|path| !path.is_empty())
+}
+
+/// Whether D-Bus started the process, as it starts a service it is asked for.
+pub fn started_by_dbus(environ: &[u8]) -> bool {
+    environment_variable(environ, "DBUS_STARTER_BUS_TYPE").is_some()
+}
+
 /// The processor's name from `/proc/cpuinfo`, where it gives one.
 pub fn parse_cpu_model(text: &str) -> Option<String> {
     text.lines().find_map(|line| {
@@ -279,9 +357,42 @@ mod tests {
         let stat = parse_stat(text).unwrap();
         assert_eq!(stat.comm, "Web Content (x)");
         assert_eq!(stat.state, 'S');
+        assert_eq!(stat.ppid, 1);
         assert!(!stat.kernel_thread);
         assert_eq!(stat.ticks, 300);
         assert_eq!(stat.start_time, 987654);
+    }
+
+    #[test]
+    fn apps_by_the_units_desktops_start_them_in() {
+        let scope = "0::/user.slice/user-1000.slice/user@1000.service/app.slice/\
+                     app-gnome-org.gnome.TextEditor-4242.scope\n";
+        assert_eq!(
+            cgroup_app_ids(scope),
+            ["gnome-org.gnome.TextEditor", "org.gnome.TextEditor"]
+        );
+        let flatpak = "0::/user.slice/app-flatpak-org.mozilla.firefox-1234.scope\n";
+        assert_eq!(cgroup_app_ids(flatpak)[1], "org.mozilla.firefox");
+        let escaped = "0::/app.slice/app-org.example.Two\\x2dWords@autostart.service\n";
+        assert_eq!(cgroup_app_ids(escaped), ["org.example.Two-Words"]);
+        let activated = "0::/app.slice/dbus-:1.2-org.gnome.Nautilus@0.service\n";
+        assert_eq!(cgroup_app_ids(activated), ["org.gnome.Nautilus"]);
+        assert!(cgroup_app_ids("0::/system.slice/sshd.service\n").is_empty());
+        assert!(cgroup_app_ids("0::/user.slice/user-1000.slice/session-2.scope\n").is_empty());
+    }
+
+    #[test]
+    fn desktop_file_glib_launched_from() {
+        let environ = b"HOME=/home/me\0GIO_LAUNCHED_DESKTOP_FILE=/usr/share/applications/foot.desktop\0GIO_LAUNCHED_DESKTOP_FILE_PID=12\0";
+        assert_eq!(
+            launched_desktop_file(environ),
+            Some("/usr/share/applications/foot.desktop")
+        );
+        assert_eq!(launched_desktop_file(b"HOME=/home/me\0"), None);
+        assert!(started_by_dbus(
+            b"DBUS_STARTER_BUS_TYPE=session\0HOME=/home/me\0"
+        ));
+        assert!(!started_by_dbus(environ));
     }
 
     #[test]
