@@ -25,16 +25,18 @@ Before a change goes in:
                            part of, on a worker thread, with the counters of the last one
                            to measure rates against
     src/procfs.rs          parsers of the /proc files, pure functions over their text
+    src/gpu.rs             the graphics cards under /sys/class/drm, and their names
     src/process.rs         LocusProcess, one process in the list model, and signalling it
     src/processes_page.rs  the process list: the trees of apps and processes, columns,
                            sorting, search, the process.* actions and their confirmations
-    src/resources_page.rs  the processor, memory, network, disk and file system cards
+    src/resources_page.rs  the processor, memory, network, disk, graphics card and file
+                           system cards
     src/graph.rs           LocusGraph, a line graph drawn with GtkSnapshot
     src/format.rs          percentages, sizes and rates as the interface writes them
 
-Nothing in `sampler.rs` or `procfs.rs` touches GTK, and the sampler asks GIO only for the
-installed apps: a `Sampler` moves to a `gio::spawn_blocking` worker for each reading and
-comes back with a `Snapshot` of plain values. One reading runs at a time, and the window waits for the update interval, or for
+Nothing in `sampler.rs`, `gpu.rs` or `procfs.rs` touches GTK, and the sampler asks GIO
+only for the installed apps: a `Sampler` moves to a `gio::spawn_blocking` worker for each
+reading and comes back with a `Snapshot` of plain values. One reading runs at a time, and the window waits for the update interval, or for
 something that changes what the next reading covers, before it asks for another.
 
 The list is a `GtkColumnView` over two `GtkTreeListModel`s, of the apps and of the other

@@ -1,4 +1,5 @@
 use crate::format;
+use crate::gpu::Gpu;
 use crate::graph::Graph;
 use crate::sampler::{FileSystem, System};
 use adw::prelude::*;
@@ -11,6 +12,19 @@ use std::cell::{Cell, RefCell};
 struct CoreView {
     graph: Graph,
     value: gtk::Label,
+}
+
+/// The widgets of one graphics card's card.
+struct GpuView {
+    slot: std::sync::Arc<str>,
+    graph: Graph,
+    legend: adw::WrapBox,
+    usage: gtk::Label,
+    memory_legend: gtk::Box,
+    memory: gtk::Label,
+    temperature_legend: gtk::Box,
+    temperature: gtk::Label,
+    unreported: gtk::Label,
 }
 
 /// The widgets of one file system's line.
@@ -60,6 +74,8 @@ mod imp {
         #[template_child]
         pub written: TemplateChild<gtk::Label>,
         #[template_child]
+        pub gpus: TemplateChild<gtk::Box>,
+        #[template_child]
         pub filesystems_card: TemplateChild<gtk::Box>,
         #[template_child]
         pub filesystems: TemplateChild<gtk::Box>,
@@ -70,6 +86,7 @@ mod imp {
         compact: Cell<bool>,
 
         pub(super) core_views: RefCell<Vec<CoreView>>,
+        pub(super) gpu_views: RefCell<Vec<GpuView>>,
         pub(super) filesystem_views: RefCell<Vec<FileSystemView>>,
     }
 
@@ -104,11 +121,13 @@ mod imp {
     impl ResourcesPage {
         fn set_compact(&self, compact: bool) {
             self.compact.set(compact);
-            self.cards.set_orientation(if compact {
+            let orientation = if compact {
                 gtk::Orientation::Vertical
             } else {
                 gtk::Orientation::Horizontal
-            });
+            };
+            self.cards.set_orientation(orientation);
+            self.gpus.set_orientation(orientation);
         }
     }
 }
@@ -134,13 +153,6 @@ impl ResourcesPage {
         self.apply_cores(&system.cores);
 
         let memory = &system.memory;
-        let share = |used: u64, total: u64| {
-            if total == 0 {
-                0.0
-            } else {
-                used as f64 * 100.0 / total as f64
-            }
-        };
         let memory_share = share(memory.used, memory.total);
         imp.memory_value
             .set_label(&format::percent(memory_share, 0));
@@ -163,7 +175,57 @@ impl ResourcesPage {
         imp.disk_graph.push(&[system.read, system.written]);
         imp.read.set_label(&format::rate(system.read));
         imp.written.set_label(&format::rate(system.written));
+        self.apply_gpus(&system.gpus);
         self.apply_filesystems(&system.filesystems);
+    }
+
+    fn apply_gpus(&self, gpus: &[Gpu]) {
+        let imp = self.imp();
+        let mut views = imp.gpu_views.borrow_mut();
+        let same = views.len() == gpus.len()
+            && views
+                .iter()
+                .zip(gpus)
+                .all(|(view, gpu)| view.slot == gpu.slot);
+        if !same {
+            while let Some(child) = imp.gpus.first_child() {
+                imp.gpus.remove(&child);
+            }
+            views.clear();
+            for (index, gpu) in gpus.iter().enumerate() {
+                let number = (gpus.len() > 1).then_some(index + 1);
+                let (view, widget) = gpu_view(gpu, number);
+                imp.gpus.append(&widget);
+                views.push(view);
+            }
+            imp.gpus.set_visible(!gpus.is_empty());
+        }
+        for (view, gpu) in views.iter().zip(gpus) {
+            let memory_share = gpu.memory.map(|(used, total)| share(used, total));
+            // Once shown, the graph stays through a reading the driver fails.
+            let reported = gpu.usage.is_some() || memory_share.is_some();
+            if reported {
+                view.graph.set_visible(true);
+                view.legend.set_visible(true);
+                view.unreported.set_visible(false);
+            }
+            let usage = gpu.usage.unwrap_or(0.0);
+            view.usage.set_label(&format::percent(usage, 0));
+            match memory_share {
+                Some(memory_share) => view.graph.push(&[usage, memory_share]),
+                None => view.graph.push(&[usage]),
+            }
+            view.memory_legend.set_visible(gpu.memory.is_some());
+            if let Some((used, total)) = gpu.memory {
+                view.memory.set_label(&format::used_of(used, total));
+            }
+            view.temperature_legend
+                .set_visible(gpu.temperature.is_some());
+            if let Some(temperature) = gpu.temperature {
+                view.temperature
+                    .set_label(&format::temperature(temperature));
+            }
+        }
     }
 
     fn apply_cores(&self, cores: &[f64]) {
@@ -213,6 +275,111 @@ impl ResourcesPage {
                 .set_value(filesystem.used as f64 / filesystem.size as f64);
         }
     }
+}
+
+fn share(used: u64, total: u64) -> f64 {
+    if total == 0 {
+        0.0
+    } else {
+        used as f64 * 100.0 / total as f64
+    }
+}
+
+/// `number` tells the cards apart where there are several.
+fn gpu_view(gpu: &Gpu, number: Option<usize>) -> (GpuView, gtk::Widget) {
+    let title = match number {
+        // Translators: one of several graphics cards; {number} counts from 1.
+        Some(number) => gettext("GPU {number}").replace("{number}", &number.to_string()),
+        None => gettext("GPU"),
+    };
+    let title = gtk::Label::builder()
+        .label(&title)
+        .xalign(0.0)
+        .css_classes(["title-4"])
+        .build();
+    let name = gtk::Label::builder()
+        .label(gpu.name.as_deref().unwrap_or_default())
+        .visible(gpu.name.is_some())
+        .xalign(0.0)
+        .ellipsize(gtk::pango::EllipsizeMode::End)
+        .css_classes(["caption", "dim-label"])
+        .build();
+    let names = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    names.append(&title);
+    names.append(&name);
+
+    let graph = Graph::default();
+    graph.set_maximum(100.0);
+    graph.set_height_request(100);
+    graph.set_visible(false);
+    graph.update_property(&[gtk::accessible::Property::Label(&gettext(
+        "GPU usage and video memory in use over the last readings",
+    ))]);
+
+    let (usage_legend, usage) = legend_item(Some("first"), &gettext("Usage"));
+    let (memory_legend, memory) = legend_item(Some("second"), &gettext("Video Memory"));
+    let (temperature_legend, temperature) = legend_item(None, &gettext("Temperature"));
+    let legend = adw::WrapBox::builder()
+        .child_spacing(24)
+        .line_spacing(6)
+        .visible(false)
+        .build();
+    legend.append(&usage_legend);
+    legend.append(&memory_legend);
+    legend.append(&temperature_legend);
+
+    let unreported = gtk::Label::builder()
+        .label(gettext("The driver does not report usage"))
+        .xalign(0.0)
+        .wrap(true)
+        .css_classes(["dim-label"])
+        .build();
+
+    let widget = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(12)
+        .css_classes(["card", "resource"])
+        .build();
+    widget.append(&names);
+    widget.append(&graph);
+    widget.append(&legend);
+    widget.append(&unreported);
+    (
+        GpuView {
+            slot: gpu.slot.clone(),
+            graph,
+            legend,
+            usage,
+            memory_legend,
+            memory,
+            temperature_legend,
+            temperature,
+            unreported,
+        },
+        widget.upcast(),
+    )
+}
+
+/// A line of a legend, with the swatch of the series it names, if it names one.
+fn legend_item(swatch: Option<&str>, label: &str) -> (gtk::Box, gtk::Label) {
+    let item = gtk::Box::new(gtk::Orientation::Horizontal, 6);
+    if let Some(swatch) = swatch {
+        item.append(
+            &gtk::Box::builder()
+                .valign(gtk::Align::Center)
+                .css_classes(["swatch", swatch])
+                .build(),
+        );
+    }
+    item.append(
+        &gtk::Label::builder()
+            .label(label)
+            .css_classes(["dim-label"])
+            .build(),
+    );
+    let value = gtk::Label::builder().css_classes(["numeric"]).build();
+    item.append(&value);
+    (item, value)
 }
 
 fn core_view(number: usize) -> (CoreView, gtk::Widget) {

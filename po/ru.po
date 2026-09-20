@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-19 13:41+0300\n"
-"PO-Revision-Date: 2026-09-19 13:39+0300\n"
+"POT-Creation-Date: 2026-09-20 16:50+0300\n"
+"PO-Revision-Date: 2026-09-20 16:50+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
@@ -27,7 +27,7 @@ msgid "System Monitor"
 msgstr "Системный монитор"
 
 #: data/io.github.sachesi.locus.desktop:4
-#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:66
+#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:67
 #, no-c-format
 msgid "Watch resources and end processes"
 msgstr "Следите за ресурсами и завершайте процессы"
@@ -72,10 +72,12 @@ msgstr ""
 #: data/io.github.sachesi.locus.metainfo.xml:11
 msgid ""
 "Processor usage as a whole and for each core, memory and swap, network and "
-"disk traffic"
+"disk traffic, and the usage, video memory and temperature of each graphics "
+"card its driver reports"
 msgstr ""
 "Загрузка процессора в целом и по ядрам, память и подкачка, сетевой и "
-"дисковый обмен"
+"дисковый обмен, а также нагрузка, видеопамять и температура каждой "
+"видеокарты, о которых сообщает её драйвер"
 
 #: data/io.github.sachesi.locus.metainfo.xml:12
 msgid "Room left on each mounted disk"
@@ -108,8 +110,8 @@ msgstr ""
 "Всё читается из /proc и /sys, а процессы — только пока их список на экране."
 
 #: data/io.github.sachesi.locus.metainfo.xml:21
-msgid "The processor, memory, network and disks of the machine"
-msgstr "Процессор, память, сеть и диски машины"
+msgid "The processor, memory, network, disks and graphics cards of the machine"
+msgstr "Процессор, память, сеть, диски и видеокарты машины"
 
 #: data/io.github.sachesi.locus.metainfo.xml:25
 msgid "Processes, busiest first"
@@ -123,13 +125,13 @@ msgstr ""
 msgid ""
 "The first release: running apps and processes with their processor, memory "
 "and disk use, which can be ended, killed, stopped and continued; graphs of "
-"the processor, each of its cores, memory and swap, the network and the "
-"disks; and the room left on each mounted disk."
+"the processor, each of its cores, memory and swap, the network, the disks "
+"and the graphics cards; and the room left on each mounted disk."
 msgstr ""
 "Первый выпуск: запущенные приложения и процессы с их нагрузкой на процессор, "
 "память и диск, которые можно завершить, принудительно завершить, остановить "
-"и продолжить; графики процессора и каждого его ядра, памяти и подкачки, сети "
-"и дисков; свободное место на каждом подключённом диске."
+"и продолжить; графики процессора и каждого его ядра, памяти и подкачки, "
+"сети, дисков и видеокарт; свободное место на каждом подключённом диске."
 
 #. Translators: a share of something, such as "12.3%".
 #: src/format.rs:9
@@ -155,7 +157,13 @@ msgstr "{used} из {total}"
 msgid "{available} free of {total}"
 msgstr "свободно {available} из {total}"
 
-#: src/main.rs:67
+#. Translators: a temperature in degrees Celsius, such as "45 °C".
+#: src/format.rs:48
+#, no-c-format
+msgid "{value} °C"
+msgstr "{value} °C"
+
+#: src/main.rs:68
 #, no-c-format
 msgid "translator-credits"
 msgstr "sachesi"
@@ -346,8 +354,44 @@ msgstr "Приложения"
 msgid "Processes"
 msgstr "Процессы"
 
+#. Translators: one of several graphics cards; {number} counts from 1.
+#: src/resources_page.rs:292
+#, no-c-format
+msgid "GPU {number}"
+msgstr "ГП {number}"
+
+#: src/resources_page.rs:293
+#, no-c-format
+msgid "GPU"
+msgstr "ГП"
+
+#: src/resources_page.rs:316
+#, no-c-format
+msgid "GPU usage and video memory in use over the last readings"
+msgstr "Нагрузка ГП и занятая видеопамять за последние замеры"
+
+#: src/resources_page.rs:319
+#, no-c-format
+msgid "Usage"
+msgstr "Нагрузка"
+
+#: src/resources_page.rs:320
+#, no-c-format
+msgid "Video Memory"
+msgstr "Видеопамять"
+
+#: src/resources_page.rs:321
+#, no-c-format
+msgid "Temperature"
+msgstr "Температура"
+
+#: src/resources_page.rs:332
+#, no-c-format
+msgid "The driver does not report usage"
+msgstr "Драйвер не сообщает о нагрузке"
+
 #. Translators: one core of the processor; {number} counts from 1.
-#: src/resources_page.rs:224
+#: src/resources_page.rs:391
 #, no-c-format
 msgid "CPU {number}"
 msgstr "ЦП {number}"
@@ -455,7 +499,7 @@ msgstr "Чтение"
 msgid "Writing"
 msgstr "Запись"
 
-#: ui/resources_page.ui:395
+#: ui/resources_page.ui:402
 msgid "File Systems"
 msgstr "Файловые системы"
 

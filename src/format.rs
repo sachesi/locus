@@ -43,6 +43,11 @@ pub fn free_of(available: u64, total: u64) -> String {
         .replace("{total}", &size(total))
 }
 
+pub fn temperature(celsius: f64) -> String {
+    // Translators: a temperature in degrees Celsius, such as "45 °C".
+    gettext("{value} °C").replace("{value}", &format!("{celsius:.0}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -62,5 +67,6 @@ mod tests {
             "5.2\u{a0}GB of 16.0\u{a0}GB"
         );
         assert_eq!(free_of(0, 1000), "0 bytes free of 1.0\u{a0}kB");
+        assert_eq!(temperature(44.6), "45 °C");
     }
 }

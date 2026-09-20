@@ -32,9 +32,10 @@ Requires:       hicolor-icon-theme
 %description
 Locus is a system monitor for Wayland desktops, built with GTK 4 and
 libadwaita. It graphs the processor and each of its cores, memory and swap,
-the network and the disks, and shows the room left on each mounted disk; it
-lists the running apps and processes with the share of the processor, the
-memory and the disk traffic of each, and ends, kills, stops and continues them.
+the network, the disks and the graphics cards, and shows the room left on
+each mounted disk; it lists the running apps and processes with the share of
+the processor, the memory and the disk traffic of each, and ends, kills,
+stops and continues them.
 
 Everything is read from /proc and /sys, and processes are read only while
 their list is on screen.

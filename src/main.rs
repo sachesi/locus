@@ -1,5 +1,6 @@
 mod config;
 mod format;
+mod gpu;
 mod graph;
 mod process;
 mod processes_page;

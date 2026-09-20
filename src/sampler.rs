@@ -1,6 +1,7 @@
 //! Reads the state of the machine from /proc and /sys. Runs on a worker thread: nothing in
 //! here touches GTK, and a [`Sampler`] moves to the worker and back for each reading.
 
+use crate::gpu::{self, Gpu};
 use crate::procfs::{self, CpuTimes, Memory};
 use gtk::gio::{self, prelude::*};
 use std::collections::HashMap;
@@ -68,6 +69,7 @@ pub struct System {
     pub read: f64,
     pub written: f64,
     pub filesystems: Vec<FileSystem>,
+    pub gpus: Vec<Gpu>,
 }
 
 /// An app a launcher shows, as its desktop file describes it.
@@ -108,6 +110,7 @@ pub struct Sampler {
     ticks_per_second: f64,
     page_size: u64,
     cpu_model: Option<Arc<str>>,
+    gpus: Vec<gpu::Card>,
     /// Reused for every file read, so a reading allocates only for what it keeps.
     text: String,
     stat: String,
@@ -152,6 +155,7 @@ impl Sampler {
             ticks_per_second: if ticks > 0 { ticks as f64 } else { 100.0 },
             page_size: u64::try_from(page).unwrap_or(4096),
             cpu_model,
+            gpus: gpu::cards(),
             text: String::new(),
             stat: String::new(),
             bytes: Vec::new(),
@@ -271,6 +275,7 @@ impl Sampler {
                 .collect();
         }
 
+        system.gpus = self.gpus.iter().map(gpu::Card::read).collect();
         system
     }
 
