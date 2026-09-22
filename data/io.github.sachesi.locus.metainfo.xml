@@ -10,7 +10,7 @@
     <ul>
       <li>Processor usage as a whole and for each core, memory and swap, network and disk traffic, and the usage, video memory and temperature of each graphics card its driver reports</li>
       <li>Room left on each mounted disk</li>
-      <li>Running apps with their processes, and every other process beneath the one that started it, sorted by processor, memory or disk use and searchable by name, command line or ID</li>
+      <li>Running apps with their processes, and every other process beneath the one that started it, sorted by processor, memory, disk or graphics card use and searchable by name, command line or ID</li>
       <li>End, kill, stop and continue a process, or end an app with all its processes, from its menu or the buttons above the list</li>
     </ul>
     <p>Everything is read from /proc and /sys, and processes are read only while their list is on screen.</p>
@@ -46,7 +46,7 @@
   <releases>
     <release version="0.1.0" date="2026-08-28">
       <description>
-        <p>The first release: running apps and processes with their processor, memory and disk use, which can be ended, killed, stopped and continued; graphs of the processor, each of its cores, memory and swap, the network, the disks and the graphics cards; and the room left on each mounted disk.</p>
+        <p>The first release: running apps and processes with their processor, memory, disk and graphics card use, which can be ended, killed, stopped and continued; graphs of the processor, each of its cores, memory and swap, the network, the disks and the graphics cards; and the room left on each mounted disk.</p>
       </description>
     </release>
   </releases>

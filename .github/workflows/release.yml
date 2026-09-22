@@ -191,8 +191,8 @@ jobs:
            libadwaita. It graphs the processor and each of its cores, memory and swap,
            the network, the disks and the graphics cards, and shows the room left on
            each mounted disk; it lists the running apps and processes with the share of
-           the processor, the memory and the disk traffic of each, and ends, kills,
-           stops and continues them.
+           the processor, the memory, the disk traffic and the graphics cards of each,
+           and ends, kills, stops and continues them.
            .
            Everything is read from /proc and /sys, and processes are read only while
            their list is on screen.

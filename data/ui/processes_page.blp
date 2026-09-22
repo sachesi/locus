@@ -196,6 +196,12 @@ template $LocusProcessesPage: Adw.Bin {
                   visible: bind template.narrow inverted;
                 }
 
+                ColumnViewColumn gpu_column {
+                  title: _("GPU");
+                  fixed-width: 80;
+                  visible: false;
+                }
+
                 ColumnViewColumn pid_column {
                   title: _("ID");
                   fixed-width: 80;

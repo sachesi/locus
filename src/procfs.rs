@@ -340,6 +340,53 @@ pub fn parse_cpu_model(text: &str) -> Option<String> {
     })
 }
 
+/// What `/proc/<pid>/fdinfo/<fd>` tells of a file open on a graphics card.
+#[derive(Debug, PartialEq, Eq)]
+pub struct DrmClient<'a> {
+    /// The PCI address of the card.
+    pub pdev: &'a str,
+    /// The client the file is to the card's driver, which a file shared between
+    /// descriptors or processes stays.
+    pub id: u64,
+    /// For each kind of engine: its name, the nanoseconds its engines spent on the
+    /// client's work, and how many engines of the kind there are.
+    pub engines: Vec<(&'a str, u64, u64)>,
+}
+
+/// The client of a card a file is, or `None` for a file that is not one.
+pub fn parse_drm_fdinfo(text: &str) -> Option<DrmClient<'_>> {
+    let mut pdev = "";
+    let mut id = None;
+    let mut engines: Vec<(&str, u64, u64)> = Vec::new();
+    let mut capacities: Vec<(&str, u64)> = Vec::new();
+    for line in text.lines() {
+        let Some((key, value)) = line.split_once(':') else {
+            continue;
+        };
+        let value = value.trim();
+        let number = || value.split_ascii_whitespace().next()?.parse().ok();
+        if key == "drm-pdev" {
+            pdev = value;
+        } else if key == "drm-client-id" {
+            id = number();
+        } else if let Some(engine) = key.strip_prefix("drm-engine-capacity-") {
+            capacities.extend(number().map(|capacity| (engine, capacity)));
+        } else if let Some(engine) = key.strip_prefix("drm-engine-") {
+            engines.extend(number().map(|ns| (engine, ns, 1)));
+        }
+    }
+    for (engine, capacity) in capacities {
+        if let Some(entry) = engines.iter_mut().find(|entry| entry.0 == engine) {
+            entry.2 = capacity.max(1);
+        }
+    }
+    Some(DrmClient {
+        pdev,
+        id: id?,
+        engines,
+    })
+}
+
 /// The number after `key` on its own line of a `key: value` file.
 fn field(text: &str, key: &str) -> Option<u64> {
     let rest = text.lines().find_map(|l| l.strip_prefix(key))?;
@@ -349,6 +396,33 @@ fn field(text: &str, key: &str) -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn graphics_card_clients() {
+        let amdgpu = "pos:\t0\nflags:\t02100002\ndrm-driver:\tamdgpu\n\
+                      drm-client-id:\t5805\ndrm-pdev:\t0000:2d:00.0\n\
+                      drm-memory-vram:\t81756 KiB\ndrm-engine-gfx:\t56860464 ns\n\
+                      drm-engine-compute:\t848216 ns\n";
+        assert_eq!(
+            parse_drm_fdinfo(amdgpu),
+            Some(DrmClient {
+                pdev: "0000:2d:00.0",
+                id: 5805,
+                engines: vec![("gfx", 56_860_464, 1), ("compute", 848_216, 1)],
+            })
+        );
+        // i915 counts the time of all engines of a kind, and says how many there are.
+        let i915 = "drm-driver:\ti915\ndrm-pdev:\t0000:00:02.0\ndrm-client-id:\t7\n\
+                    drm-engine-video:\t4000 ns\ndrm-engine-capacity-video:\t2\n";
+        assert_eq!(
+            parse_drm_fdinfo(i915).unwrap().engines,
+            vec![("video", 4000, 2)]
+        );
+        assert_eq!(
+            parse_drm_fdinfo("pos:\t0\nflags:\t0100002\nmnt_id:\t27\n"),
+            None
+        );
+    }
 
     #[test]
     fn stat_with_parentheses_and_spaces_in_the_name() {

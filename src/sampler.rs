@@ -4,12 +4,13 @@
 use crate::gpu::{self, Gpu};
 use crate::procfs::{self, CpuTimes, Memory};
 use gtk::gio::{self, prelude::*};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ffi::{CStr, CString};
 use std::fmt::Write as _;
 use std::fs::{self, File};
 use std::io::{self, Read};
 use std::mem::MaybeUninit;
+use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -40,6 +41,9 @@ pub struct ProcessSample {
     /// Bytes per second read from and written to storage; `None` where the process does
     /// not let this user see it.
     pub disk: Option<u64>,
+    /// Share of the time the busiest engine of a graphics card spent on the process's
+    /// work, from 0 to 100; `None` where the process does not let this user see it.
+    pub gpu: Option<f64>,
     pub stopped: bool,
 }
 
@@ -95,6 +99,10 @@ struct Tracked {
     ticks: u64,
     io: Option<u64>,
     io_denied: bool,
+    /// Nanoseconds each kind of engine spent on the process's work, by card and engine,
+    /// with how many engines of the kind there are.
+    engines: HashMap<String, (u64, u64)>,
+    fds_denied: bool,
     name: Arc<str>,
     command: Arc<str>,
     uid: u32,
@@ -292,6 +300,7 @@ impl Sampler {
             return Vec::new();
         };
         let mut samples = Vec::with_capacity(self.processes.len());
+        let mut clients = HashSet::new();
         for entry in entries.flatten() {
             let Some(pid) = entry.file_name().to_str().and_then(|n| n.parse().ok()) else {
                 continue;
@@ -382,6 +391,33 @@ impl Sampler {
                 }
             };
 
+            let gpu = if tracked.fds_denied {
+                None
+            } else {
+                match gpu_engines(pid, &mut self.path, &mut self.text, &mut clients) {
+                    Err(e) if e.kind() == io::ErrorKind::PermissionDenied => {
+                        tracked.fds_denied = true;
+                        None
+                    }
+                    Err(_) => Some(0.0),
+                    Ok(engines) => {
+                        let busiest = match seconds {
+                            Some(s) if known => engines
+                                .iter()
+                                .map(|(key, &(ns, capacity))| {
+                                    let before = tracked.engines.get(key).map_or(ns, |b| b.0);
+                                    ns.saturating_sub(before) as f64 / (s * 1e7 * capacity as f64)
+                                })
+                                .fold(0.0, f64::max)
+                                .min(100.0),
+                            _ => 0.0,
+                        };
+                        tracked.engines = engines;
+                        Some(busiest)
+                    }
+                }
+            };
+
             samples.push(ProcessSample {
                 pid,
                 ppid: stat.ppid,
@@ -394,6 +430,7 @@ impl Sampler {
                 cpu,
                 memory,
                 disk,
+                gpu,
                 stopped: matches!(stat.state, 'T' | 't'),
             });
         }
@@ -428,6 +465,8 @@ fn track(
         ticks: stat.ticks,
         io: None,
         io_denied: false,
+        engines: HashMap::new(),
+        fds_denied: false,
         name: procfs::display_name(stat.comm, bytes).into(),
         command: procfs::command_line(bytes).into(),
         uid,
@@ -436,6 +475,45 @@ fn track(
         app_settled: false,
         generation: 0,
     })
+}
+
+/// The time each kind of engine of each card has spent on the work of the process, by card
+/// and engine. A client of a card that an earlier process shares, having started this one
+/// or been started by it, is left to that process, which then has all of its time.
+fn gpu_engines(
+    pid: u32,
+    path: &mut String,
+    text: &mut String,
+    clients: &mut HashSet<(String, u64)>,
+) -> io::Result<HashMap<String, (u64, u64)>> {
+    let mut engines: HashMap<String, (u64, u64)> = HashMap::new();
+    for entry in fs::read_dir(proc_path(path, pid, "fd"))?.flatten() {
+        let Ok(target) = fs::read_link(entry.path()) else {
+            continue;
+        };
+        if !target.as_os_str().as_bytes().starts_with(b"/dev/dri/") {
+            continue;
+        }
+        let fd = entry.file_name();
+        path.clear();
+        let _ = write!(path, "/proc/{pid}/fdinfo/{}", fd.to_string_lossy());
+        if read_text(&*path, text).is_err() {
+            continue;
+        }
+        let Some(client) = procfs::parse_drm_fdinfo(text) else {
+            continue;
+        };
+        if !clients.insert((client.pdev.to_owned(), client.id)) {
+            continue;
+        }
+        for (engine, ns, capacity) in client.engines {
+            let total = engines
+                .entry(format!("{} {engine}", client.pdev))
+                .or_insert((0, capacity));
+            total.0 += ns;
+        }
+    }
+    Ok(engines)
 }
 
 /// The app a process is part of: the one its unit is named after, else the one GLib

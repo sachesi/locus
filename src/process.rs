@@ -32,6 +32,10 @@ mod imp {
         /// Bytes per second to and from storage, or -1 where it cannot be read.
         #[property(get, set, minimum = -1)]
         disk: Cell<i64>,
+        /// Share of the busiest engine of a graphics card, from 0 to 100, or -1 where it
+        /// cannot be read.
+        #[property(get, set, minimum = -1.0)]
+        gpu: Cell<f64>,
         #[property(get, set)]
         stopped: Cell<bool>,
         /// The app's icon, for the row of an app.
@@ -142,6 +146,19 @@ impl Process {
         if self.disk() != disk {
             self.set_disk(disk);
         }
+        let readable: Vec<f64> = processes
+            .iter()
+            .map(Process::gpu)
+            .filter(|gpu| *gpu >= 0.0)
+            .collect();
+        let gpu = if readable.is_empty() {
+            -1.0
+        } else {
+            readable.iter().sum::<f64>().min(100.0)
+        };
+        if self.gpu() != gpu {
+            self.set_gpu(gpu);
+        }
         if let Some(first) = processes.first()
             && self.uid() != first.uid()
         {
@@ -174,6 +191,10 @@ impl Process {
             .map_or(-1, |d| i64::try_from(d).unwrap_or(i64::MAX));
         if self.disk() != disk {
             self.set_disk(disk);
+        }
+        let gpu = sample.gpu.unwrap_or(-1.0);
+        if self.gpu() != gpu {
+            self.set_gpu(gpu);
         }
         if self.stopped() != sample.stopped {
             self.set_stopped(sample.stopped);

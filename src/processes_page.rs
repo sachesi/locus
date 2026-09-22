@@ -60,6 +60,8 @@ mod imp {
         #[template_child]
         pub disk_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
+        pub gpu_column: TemplateChild<gtk::ColumnViewColumn>,
+        #[template_child]
         pub pid_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
         pub empty_page: TemplateChild<adw::StatusPage>,
@@ -92,6 +94,8 @@ mod imp {
         /// hidden.
         pub samples: RefCell<Vec<ProcessSample>>,
         pub read: Cell<bool>,
+        /// Whether the machine has a graphics card to list the use of.
+        pub has_gpus: Cell<bool>,
         pub generation: Cell<u64>,
         pub own_uid: Cell<u32>,
         pub confirming: Cell<bool>,
@@ -234,20 +238,7 @@ mod imp {
                 widget.set_margin_end(margin);
             }
             self.stack.set_margin_bottom(margin);
-            // Rows made before columns were shown or hidden lay their section headers out
-            // with the cells of those columns over them; given its model again, the view
-            // makes new rows.
-            glib::idle_add_local_once(glib::clone!(
-                #[weak(rename_to = page)]
-                self.obj(),
-                move || {
-                    let imp = page.imp();
-                    if let Some(selection) = imp.selection.get() {
-                        imp.view.set_model(None::<&gtk::SelectionModel>);
-                        imp.view.set_model(Some(selection));
-                    }
-                }
-            ));
+            self.show_columns();
             // The labels of the buttons do not fit beside one another in a narrow window,
             // in every language.
             for (button, content) in &*self.button_contents.borrow() {
@@ -259,6 +250,29 @@ mod imp {
                     button.set_tooltip_text(None);
                 }
             }
+        }
+
+        /// Shows the GPU column where there is a card and room for it.
+        pub fn show_columns(&self) {
+            self.gpu_column
+                .set_visible(self.has_gpus.get() && !self.narrow.get());
+            // Rows made before columns were shown or hidden lay their section headers out
+            // with the cells of those columns over them; given its model again, the view
+            // makes new rows. Before the first reading there are none.
+            if !self.read.get() {
+                return;
+            }
+            glib::idle_add_local_once(glib::clone!(
+                #[weak(rename_to = page)]
+                self.obj(),
+                move || {
+                    let imp = page.imp();
+                    if let Some(selection) = imp.selection.get() {
+                        imp.view.set_model(None::<&gtk::SelectionModel>);
+                        imp.view.set_model(Some(selection));
+                    }
+                }
+            ));
         }
 
         fn set_search_mode(&self, search_mode: bool) {
@@ -291,7 +305,11 @@ impl ProcessesPage {
     /// drops those that have exited and moves those whose parent has changed.
     pub fn apply(&self, samples: &[ProcessSample], system: &System) {
         let imp = self.imp();
-        self.show_totals(system);
+        let has_gpus = !system.gpus.is_empty();
+        if imp.has_gpus.replace(has_gpus) != has_gpus {
+            imp.show_columns();
+        }
+        self.show_totals(samples, system);
         self.list(samples);
         imp.samples.replace(samples.to_vec());
         let first = !imp.read.replace(true);
@@ -422,6 +440,32 @@ impl ProcessesPage {
                     .upcast()
             },
         )));
+        let unshown = process_of_row()
+            .chain_property::<Process>("gpu")
+            .chain_closure::<Option<String>>(glib::closure!(|_: Option<glib::Object>, gpu: f64| {
+                (gpu < 0.0).then(|| gettext("GPU use of other users' processes is not shown"))
+            }))
+            .upcast();
+        imp.gpu_column.set_factory(Some(&self.cell_factory(
+            1.0,
+            true,
+            Some(unshown),
+            move || {
+                process_of_row()
+                    .chain_property::<Process>("gpu")
+                    .chain_closure::<String>(glib::closure!(|_: Option<glib::Object>, gpu: f64| {
+                        if gpu < 0.0 {
+                            "—".to_owned()
+                        } else if gpu < 0.05 {
+                            // Left blank, so the few processes using a card stand out.
+                            String::new()
+                        } else {
+                            format::percent(gpu, 1)
+                        }
+                    }))
+                    .upcast()
+            },
+        )));
         imp.pid_column
             .set_factory(Some(&self.cell_factory(1.0, true, None, move || {
                 process_of_row()
@@ -450,6 +494,7 @@ impl ProcessesPage {
             (&imp.cpu_column, "cpu"),
             (&imp.memory_column, "memory"),
             (&imp.disk_column, "disk"),
+            (&imp.gpu_column, "gpu"),
             (&imp.pid_column, "pid"),
         ] {
             let sorter = gtk::NumericSorter::new(Some(property(name)));
@@ -653,8 +698,22 @@ impl ProcessesPage {
     }
 
     /// Heads the columns of the machine's use with how much of it there is in all.
-    fn show_totals(&self, system: &System) {
+    fn show_totals(&self, samples: &[ProcessSample], system: &System) {
         let imp = self.imp();
+        // The busiest card, where the cards say how busy they are; else what the processes
+        // that can be read keep them busy with.
+        let gpu = system
+            .gpus
+            .iter()
+            .filter_map(|gpu| gpu.usage)
+            .reduce(f64::max)
+            .unwrap_or_else(|| {
+                samples
+                    .iter()
+                    .filter_map(|sample| sample.gpu)
+                    .sum::<f64>()
+                    .min(100.0)
+            });
         let memory = &system.memory;
         let memory_share = if memory.total == 0 {
             0.0
@@ -677,6 +736,7 @@ impl ProcessesPage {
                 gettext("Disk"),
                 format::rate(system.read + system.written),
             ),
+            (&imp.gpu_column, gettext("GPU"), format::percent(gpu, 0)),
         ] {
             column.set_title(Some(&format!("{title}\n{total}")));
         }
