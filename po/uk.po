@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-22 21:22+0300\n"
-"PO-Revision-Date: 2026-09-22 21:23+0300\n"
+"POT-Creation-Date: 2026-09-23 20:08+0300\n"
+"PO-Revision-Date: 2026-09-23 20:07+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
@@ -111,8 +111,8 @@ msgid "The processor, memory, network, disks and graphics cards of the machine"
 msgstr "Процесор, пам’ять, мережа, диски й відеокарти машини"
 
 #: data/io.github.sachesi.locus.metainfo.xml:25
-msgid "Processes, busiest first"
-msgstr "Процеси, найзавантаженіші вгорі"
+msgid "Running apps, and the other processes beneath what started them"
+msgstr "Запущені програми та інші процеси під тими, що їх запустили"
 
 #: data/io.github.sachesi.locus.metainfo.xml:32
 msgid "sachesi"

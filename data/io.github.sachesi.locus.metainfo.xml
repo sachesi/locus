@@ -22,7 +22,7 @@
     </screenshot>
     <screenshot>
       <image>https://raw.githubusercontent.com/sachesi/locus/main/data/screenshots/processes.png</image>
-      <caption>Processes, busiest first</caption>
+      <caption>Running apps, and the other processes beneath what started them</caption>
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">io.github.sachesi.locus.desktop</launchable>

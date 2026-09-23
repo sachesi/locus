@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-22 21:22+0300\n"
+"POT-Creation-Date: 2026-09-23 20:08+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -99,7 +99,7 @@ msgid "The processor, memory, network, disks and graphics cards of the machine"
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:25
-msgid "Processes, busiest first"
+msgid "Running apps, and the other processes beneath what started them"
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:32
