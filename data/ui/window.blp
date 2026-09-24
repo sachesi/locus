@@ -62,6 +62,14 @@ template $LocusWindow: Adw.ApplicationWindow {
         }
 
         Adw.ViewStackPage {
+          name: "filesystems";
+          title: _("File Systems");
+          icon-name: "drive-harddisk-symbolic";
+
+          child: $LocusFileSystemsPage filesystems_page {};
+        }
+
+        Adw.ViewStackPage {
           name: "processes";
           title: _("Processes");
           icon-name: "view-list-symbolic";

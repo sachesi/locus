@@ -1,4 +1,5 @@
 mod config;
+mod filesystems_page;
 mod format;
 mod gpu;
 mod graph;
@@ -54,7 +55,8 @@ fn setup_actions(app: &adw::Application) {
     app.set_accels_for_action("window.close", &["<Control>w"]);
     app.set_accels_for_action("win.search", &["<Control>f"]);
     app.set_accels_for_action("win.page::resources", &["<Alt>1"]);
-    app.set_accels_for_action("win.page::processes", &["<Alt>2"]);
+    app.set_accels_for_action("win.page::filesystems", &["<Alt>2"]);
+    app.set_accels_for_action("win.page::processes", &["<Alt>3"]);
 }
 
 fn show_about(app: &adw::Application) {

@@ -1,7 +1,7 @@
 use crate::format;
 use crate::gpu::Gpu;
 use crate::graph::Graph;
-use crate::sampler::{FileSystem, System};
+use crate::sampler::System;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gettextrs::gettext;
@@ -25,13 +25,6 @@ struct GpuView {
     temperature_legend: gtk::Box,
     temperature: gtk::Label,
     unreported: gtk::Label,
-}
-
-/// The widgets of one file system's line.
-struct FileSystemView {
-    mount_point: String,
-    free: gtk::Label,
-    bar: gtk::LevelBar,
 }
 
 mod imp {
@@ -75,10 +68,6 @@ mod imp {
         pub written: TemplateChild<gtk::Label>,
         #[template_child]
         pub gpus: TemplateChild<gtk::Box>,
-        #[template_child]
-        pub filesystems_card: TemplateChild<gtk::Box>,
-        #[template_child]
-        pub filesystems: TemplateChild<gtk::Box>,
 
         /// Set by the window's breakpoints; stacks the memory, network and disk cards
         /// rather than setting them side by side.
@@ -87,7 +76,6 @@ mod imp {
 
         pub(super) core_views: RefCell<Vec<CoreView>>,
         pub(super) gpu_views: RefCell<Vec<GpuView>>,
-        pub(super) filesystem_views: RefCell<Vec<FileSystemView>>,
     }
 
     #[glib::object_subclass]
@@ -176,7 +164,6 @@ impl ResourcesPage {
         imp.read.set_label(&format::rate(system.read));
         imp.written.set_label(&format::rate(system.written));
         self.apply_gpus(&system.gpus);
-        self.apply_filesystems(&system.filesystems);
     }
 
     fn apply_gpus(&self, gpus: &[Gpu]) {
@@ -245,34 +232,6 @@ impl ResourcesPage {
         for (view, &usage) in views.iter().zip(cores) {
             view.graph.push(&[usage]);
             view.value.set_label(&format::percent(usage, 0));
-        }
-    }
-
-    fn apply_filesystems(&self, filesystems: &[FileSystem]) {
-        let imp = self.imp();
-        let mut views = imp.filesystem_views.borrow_mut();
-        let same = views.len() == filesystems.len()
-            && views
-                .iter()
-                .zip(filesystems)
-                .all(|(view, fs)| view.mount_point == fs.mount_point);
-        if !same {
-            while let Some(child) = imp.filesystems.first_child() {
-                imp.filesystems.remove(&child);
-            }
-            views.clear();
-            for filesystem in filesystems {
-                let (view, widget) = filesystem_view(filesystem);
-                imp.filesystems.append(&widget);
-                views.push(view);
-            }
-            imp.filesystems_card.set_visible(!filesystems.is_empty());
-        }
-        for (view, filesystem) in views.iter().zip(filesystems) {
-            view.free
-                .set_label(&format::free_of(filesystem.available, filesystem.size));
-            view.bar
-                .set_value(filesystem.used as f64 / filesystem.size as f64);
         }
     }
 }
@@ -410,53 +369,4 @@ fn core_view(number: usize) -> (CoreView, gtk::Widget) {
         .focusable(false)
         .build();
     (CoreView { graph, value }, child.upcast())
-}
-
-fn filesystem_view(filesystem: &FileSystem) -> (FileSystemView, gtk::Widget) {
-    let name = gtk::Label::builder()
-        .label(&filesystem.mount_point)
-        .xalign(0.0)
-        .ellipsize(gtk::pango::EllipsizeMode::Middle)
-        .build();
-    let device = gtk::Label::builder()
-        .label(format!("{} · {}", filesystem.fs_type, filesystem.source))
-        .xalign(0.0)
-        .ellipsize(gtk::pango::EllipsizeMode::Middle)
-        .css_classes(["caption", "dim-label"])
-        .build();
-    let names = gtk::Box::new(gtk::Orientation::Vertical, 0);
-    names.set_hexpand(true);
-    names.append(&name);
-    names.append(&device);
-    let free = gtk::Label::builder()
-        .valign(gtk::Align::End)
-        .css_classes(["dim-label", "numeric"])
-        .build();
-    let top = gtk::Box::new(gtk::Orientation::Horizontal, 12);
-    top.append(&names);
-    top.append(&free);
-    let bar = gtk::LevelBar::new();
-    // The default offsets colour a nearly empty bar as a warning, as for a battery; here
-    // the bar turns to one past nine tenths full.
-    for offset in [
-        gtk::LEVEL_BAR_OFFSET_LOW,
-        gtk::LEVEL_BAR_OFFSET_HIGH,
-        gtk::LEVEL_BAR_OFFSET_FULL,
-    ] {
-        bar.remove_offset_value(Some(offset));
-    }
-    bar.add_offset_value("roomy", 0.9);
-    bar.add_offset_value("almost-full", 1.0);
-    bar.update_property(&[gtk::accessible::Property::Label(&filesystem.mount_point)]);
-    let widget = gtk::Box::new(gtk::Orientation::Vertical, 6);
-    widget.append(&top);
-    widget.append(&bar);
-    (
-        FileSystemView {
-            mount_point: filesystem.mount_point.clone(),
-            free,
-            bar,
-        },
-        widget.upcast(),
-    )
 }

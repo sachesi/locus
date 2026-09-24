@@ -4,6 +4,7 @@
     <file>style.css</file>
     <file preprocess="xml-stripblanks">io.github.sachesi.locus.metainfo.xml</file>
     <file preprocess="xml-stripblanks">ui/window.ui</file>
+    <file preprocess="xml-stripblanks">ui/filesystems_page.ui</file>
     <file preprocess="xml-stripblanks">ui/processes_page.ui</file>
     <file preprocess="xml-stripblanks">ui/resources_page.ui</file>
     <file preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">ui/shortcuts_dialog.ui</file>

@@ -1,4 +1,5 @@
 use crate::config;
+use crate::filesystems_page::FileSystemsPage;
 use crate::processes_page::ProcessesPage;
 use crate::resources_page::ResourcesPage;
 use crate::sampler::{Sampler, Snapshot};
@@ -20,6 +21,8 @@ mod imp {
         #[template_child]
         pub stack: TemplateChild<adw::ViewStack>,
         #[template_child]
+        pub filesystems_page: TemplateChild<FileSystemsPage>,
+        #[template_child]
         pub processes_page: TemplateChild<ProcessesPage>,
         #[template_child]
         pub resources_page: TemplateChild<ResourcesPage>,
@@ -36,6 +39,7 @@ mod imp {
             Self {
                 toasts: TemplateChild::default(),
                 stack: TemplateChild::default(),
+                filesystems_page: TemplateChild::default(),
                 processes_page: TemplateChild::default(),
                 resources_page: TemplateChild::default(),
                 interval_menu: TemplateChild::default(),
@@ -52,6 +56,7 @@ mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
+            FileSystemsPage::ensure_type();
             ProcessesPage::ensure_type();
             ResourcesPage::ensure_type();
             klass.bind_template();
@@ -227,6 +232,7 @@ impl LocusWindow {
     fn apply(&self, snapshot: &Snapshot) {
         let imp = self.imp();
         imp.resources_page.apply(&snapshot.system);
+        imp.filesystems_page.apply(&snapshot.system.filesystems);
         if let Some(processes) = &snapshot.processes {
             imp.processes_page.apply(processes, &snapshot.system);
         }

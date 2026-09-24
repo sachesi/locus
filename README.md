@@ -6,15 +6,15 @@ It was made for the Meridian desktop and depends on nothing of it, so it runs on
 ![The Resources page, with graphs of the processor and each of its cores, memory, the network, the disks and the graphics cards](data/screenshots/resources.png)
 
 Resources, the page Locus opens on, graphs the processor as a whole and each of its cores,
-memory and swap, the network, the disks and each graphics card, and shows the room left on
-each mounted disk, with a warning colour once a disk is nine tenths full. Processes lists
-the running apps, each with its processes beneath it, then the other processes, each
-beneath the one that started it, with the share of the processor, the memory, the disk
-traffic and the graphics cards of each, sorted by any of them and searchable by name,
-command line or ID. A process can be ended, killed, stopped and continued, and an app
-ended or killed with all of its processes, from its menu, a right click or a long press,
-or from the buttons above the list; ending and killing ask first, and the list holds still
-while they do.
+memory and swap, the network, the disks and each graphics card. File Systems shows the
+room left on each mounted disk, with a warning colour once a disk is nine tenths full.
+Processes lists the running apps, each with its processes beneath it, then the other
+processes, each beneath the one that started it, with the share of the processor, the
+memory, the disk traffic and the graphics cards of each, sorted by any of them and
+searchable by name, command line or ID. A process can be ended, killed, stopped and
+continued, and an app ended or killed with all of its processes, from its menu, a right
+click or a long press, or from the buttons above the list; ending and killing ask first,
+and the list holds still while they do.
 
 Everything comes from `/proc` and `/sys`, read on a worker thread. An app is known by the
 unit the desktop starts it in, by the desktop file GLib launched it from, or, for one that

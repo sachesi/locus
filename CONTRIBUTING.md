@@ -15,24 +15,24 @@ Before a change goes in:
 
 ## Where things are
 
-    build.rs               runs blueprint-compiler and bundles the GResource
-    data/ui/*.blp          the window, the two pages and the shortcuts dialog
-    data/style.css         structural CSS, colours come from libadwaita
-    src/main.rs            the application: its actions, the About dialog, one window
-    src/window.rs          the window, its win.* actions and settings, and the loop that
-                           takes a reading, hands it to the pages and waits for the next
-    src/sampler.rs         a reading of the machine and its processes, and the apps they are
-                           part of, on a worker thread, with the counters of the last one
-                           to measure rates against
-    src/procfs.rs          parsers of the /proc files, pure functions over their text
-    src/gpu.rs             the graphics cards under /sys/class/drm, and their names
-    src/process.rs         LocusProcess, one process in the list model, and signalling it
-    src/processes_page.rs  the process list: the trees of apps and processes, columns,
-                           sorting, search, the process.* actions and their confirmations
-    src/resources_page.rs  the processor, memory, network, disk, graphics card and file
-                           system cards
-    src/graph.rs           LocusGraph, a line graph drawn with GtkSnapshot
-    src/format.rs          percentages, sizes and rates as the interface writes them
+    build.rs                 runs blueprint-compiler and bundles the GResource
+    data/ui/*.blp            the window, the three pages and the shortcuts dialog
+    data/style.css           structural CSS, colours come from libadwaita
+    src/main.rs              the application: its actions, the About dialog, one window
+    src/window.rs            the window, its win.* actions and settings, and the loop that
+                             takes a reading, hands it to the pages and waits for the next
+    src/sampler.rs           a reading of the machine and its processes, and the apps they are
+                             part of, on a worker thread, with the counters of the last one
+                             to measure rates against
+    src/procfs.rs            parsers of the /proc files, pure functions over their text
+    src/gpu.rs               the graphics cards under /sys/class/drm, and their names
+    src/process.rs           LocusProcess, one process in the list model, and signalling it
+    src/processes_page.rs    the process list: the trees of apps and processes, columns,
+                             sorting, search, the process.* actions and their confirmations
+    src/resources_page.rs    the processor, memory, network, disk and graphics card cards
+    src/filesystems_page.rs  the mounted file systems and the room left on each
+    src/graph.rs             LocusGraph, a line graph drawn with GtkSnapshot
+    src/format.rs            percentages, sizes and rates as the interface writes them
 
 Nothing in `sampler.rs`, `gpu.rs` or `procfs.rs` touches GTK, and the sampler asks GIO
 only for the installed apps: a `Sampler` moves to a `gio::spawn_blocking` worker for each
