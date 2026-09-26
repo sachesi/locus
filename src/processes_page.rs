@@ -12,6 +12,10 @@ use std::io;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+/// A value the kernel does not let this user read, drawn faint so that the few values
+/// there are stand out.
+const UNSHOWN: &str = "<span alpha=\"55%\">—</span>";
+
 /// How long after the pointer last moved over the list its rows keep their order.
 const AIMING: Duration = Duration::from_secs(1);
 
@@ -76,13 +80,14 @@ mod imp {
         #[property(get, set = Self::set_show_all)]
         show_all: Cell<bool>,
 
-        /// The apps, each with its processes beneath it.
-        pub apps_store: OnceCell<gio::ListStore>,
-        /// The processes that are not part of an app, and are listed beneath no other.
-        pub top_store: OnceCell<gio::ListStore>,
-        /// The rows of the apps and of the other processes, one section each.
-        pub trees: OnceCell<[gtk::TreeListModel; 2]>,
-        pub listed: OnceCell<gtk::FlattenListModel>,
+        /// The rows heading the apps, each with its processes beneath it, and the processes
+        /// that are not part of an app and are listed beneath no other.
+        pub groups: OnceCell<[Process; 2]>,
+        pub tree: OnceCell<gtk::TreeListModel>,
+        /// The row heading the apps. The model lets go of a row no one holds, and with it
+        /// the handler that closes the apps each time the row opens.
+        pub apps_row: OnceCell<gtk::TreeListRow>,
+        pub listed: OnceCell<gtk::FilterListModel>,
         pub selection: OnceCell<gtk::SingleSelection>,
         pub filter: OnceCell<gtk::CustomFilter>,
         pub query: RefCell<String>,
@@ -256,23 +261,6 @@ mod imp {
         pub fn show_columns(&self) {
             self.gpu_column
                 .set_visible(self.has_gpus.get() && !self.narrow.get());
-            // Rows made before columns were shown or hidden lay their section headers out
-            // with the cells of those columns over them; given its model again, the view
-            // makes new rows. Before the first reading there are none.
-            if !self.read.get() {
-                return;
-            }
-            glib::idle_add_local_once(glib::clone!(
-                #[weak(rename_to = page)]
-                self.obj(),
-                move || {
-                    let imp = page.imp();
-                    if let Some(selection) = imp.selection.get() {
-                        imp.view.set_model(None::<&gtk::SelectionModel>);
-                        imp.view.set_model(Some(selection));
-                    }
-                }
-            ));
         }
 
         fn set_search_mode(&self, search_mode: bool) {
@@ -327,13 +315,30 @@ impl ProcessesPage {
         self.imp().search_entry.grab_focus();
     }
 
-    /// The apps and the processes that are not part of one each make a tree, of what
-    /// started what, sorted by the view's sorter one level at a time.
+    /// The apps and the processes that are not part of one each head a tree of what
+    /// started what, sorted by the view's sorter one level at a time, the apps first.
     fn set_up_model(&self) {
         let imp = self.imp();
-        let apps_store = gio::ListStore::new::<Process>();
-        let top_store = gio::ListStore::new::<Process>();
-        let sorter = gtk::TreeListRowSorter::new(imp.view.sorter());
+        let groups = [
+            Process::group(&gettext("Apps")),
+            Process::group(&gettext("Processes")),
+        ];
+        let root = gio::ListStore::new::<Process>();
+        root.extend_from_slice(&groups);
+        let apps = groups[0].clone();
+        let apps_first = gtk::CustomSorter::new(move |a, b| {
+            let is_apps = |item: &glib::Object| item == apps.upcast_ref::<glib::Object>();
+            match (is_apps(a), is_apps(b)) {
+                (true, false) => gtk::Ordering::Smaller,
+                (false, true) => gtk::Ordering::Larger,
+                _ => gtk::Ordering::Equal,
+            }
+        });
+        let sorter = gtk::MultiSorter::new();
+        sorter.append(apps_first);
+        if let Some(columns) = imp.view.sorter() {
+            sorter.append(columns);
+        }
         let filter = gtk::CustomFilter::new(glib::clone!(
             #[weak(rename_to = page)]
             self,
@@ -346,44 +351,50 @@ impl ProcessesPage {
                     .is_some_and(|process| page.shows(&process))
             }
         ));
-        // An app's processes are there to be looked into; other processes are shown with
-        // what they started.
-        let trees = [(&apps_store, false), (&top_store, true)].map(|(root, expanded)| {
-            gtk::TreeListModel::new(root.clone(), false, expanded, |item| {
-                item.downcast_ref::<Process>()
-                    .map(|process| process.children().upcast())
-            })
+        let tree = gtk::TreeListModel::new(root, false, true, |item| {
+            item.downcast_ref::<Process>()
+                .map(|process| process.children().upcast())
         });
-        let sections = gio::ListStore::new::<gtk::FilterListModel>();
-        for tree in &trees {
-            let sorted = gtk::SortListModel::new(Some(tree.clone()), Some(sorter.clone()));
-            sections.append(&gtk::FilterListModel::new(
-                Some(sorted),
-                Some(filter.clone()),
-            ));
+        // An app's processes are there to be looked into, and stay out of the way until
+        // they are; other processes are shown with what they started.
+        if let Some(apps_row) = tree.row(0) {
+            apps_row.connect_expanded_notify(|apps_row| {
+                if apps_row.is_expanded() {
+                    let mut index = 0;
+                    while let Some(row) = apps_row.child_row(index) {
+                        row.set_expanded(false);
+                        index += 1;
+                    }
+                }
+            });
+            let _ = imp.apps_row.set(apps_row);
         }
-        let listed = gtk::FlattenListModel::new(Some(sections));
+        let sorted = gtk::SortListModel::new(
+            Some(tree.clone()),
+            Some(gtk::TreeListRowSorter::new(Some(sorter))),
+        );
+        let listed = gtk::FilterListModel::new(Some(sorted), Some(filter.clone()));
         listed.connect_items_changed(glib::clone!(
             #[weak(rename_to = page)]
             self,
             move |_, _, _, _| page.imp().on_listed_changed()
         ));
         let selection = gtk::SingleSelection::builder()
-            .model(&listed)
             .autoselect(false)
             .can_unselect(true)
             .build();
+        // Given with the others, the model would come first, and have its first row
+        // selected before autoselect is turned off.
+        selection.set_model(Some(&listed));
         selection.connect_selected_item_notify(glib::clone!(
             #[weak(rename_to = page)]
             self,
             move |_| page.update_selection()
         ));
         imp.view.set_model(Some(&selection));
-        imp.view.set_header_factory(Some(&section_header_factory()));
 
-        let _ = imp.apps_store.set(apps_store);
-        let _ = imp.top_store.set(top_store);
-        let _ = imp.trees.set(trees);
+        let _ = imp.groups.set(groups);
+        let _ = imp.tree.set(tree);
         let _ = imp.listed.set(listed);
         let _ = imp.selection.set(selection);
         let _ = imp.filter.set(filter);
@@ -392,28 +403,41 @@ impl ProcessesPage {
     fn set_up_columns(&self) {
         let imp = self.imp();
         imp.name_column.set_factory(Some(&self.name_factory()));
-        imp.user_column
-            .set_factory(Some(&self.cell_factory(0.0, false, None, move || {
-                process_of_row().chain_property::<Process>("user").upcast()
-            })));
-        imp.cpu_column
-            .set_factory(Some(&self.cell_factory(1.0, true, None, move || {
+        imp.user_column.set_factory(Some(&self.cell_factory(
+            0.0,
+            false,
+            false,
+            None,
+            move || process_of_row().chain_property::<Process>("user").upcast(),
+        )));
+        imp.cpu_column.set_factory(Some(&self.cell_factory(
+            1.0,
+            true,
+            false,
+            None,
+            move || {
                 process_of_row()
                     .chain_property::<Process>("cpu")
                     .chain_closure::<String>(glib::closure!(|_: Option<glib::Object>, cpu: f64| {
                         format::percent(cpu, 1)
                     }))
                     .upcast()
-            })));
-        imp.memory_column
-            .set_factory(Some(&self.cell_factory(1.0, true, None, move || {
+            },
+        )));
+        imp.memory_column.set_factory(Some(&self.cell_factory(
+            1.0,
+            true,
+            false,
+            None,
+            move || {
                 process_of_row()
                     .chain_property::<Process>("memory")
                     .chain_closure::<String>(glib::closure!(
                         |_: Option<glib::Object>, memory: u64| format::size(memory)
                     ))
                     .upcast()
-            })));
+            },
+        )));
         let unshown = process_of_row()
             .chain_property::<Process>("disk")
             .chain_closure::<Option<String>>(glib::closure!(
@@ -423,6 +447,7 @@ impl ProcessesPage {
             .upcast();
         imp.disk_column.set_factory(Some(&self.cell_factory(
             1.0,
+            true,
             true,
             Some(unshown),
             move || {
@@ -434,7 +459,7 @@ impl ProcessesPage {
                             Ok(0) => String::new(),
                             Ok(disk) => format::rate(disk as f64),
                             // Processes of other users do not show their input and output.
-                            Err(_) => "—".to_owned(),
+                            Err(_) => UNSHOWN.to_owned(),
                         }
                     ))
                     .upcast()
@@ -449,13 +474,14 @@ impl ProcessesPage {
         imp.gpu_column.set_factory(Some(&self.cell_factory(
             1.0,
             true,
+            true,
             Some(unshown),
             move || {
                 process_of_row()
                     .chain_property::<Process>("gpu")
                     .chain_closure::<String>(glib::closure!(|_: Option<glib::Object>, gpu: f64| {
                         if gpu < 0.0 {
-                            "—".to_owned()
+                            UNSHOWN.to_owned()
                         } else if gpu < 0.05 {
                             // Left blank, so the few processes using a card stand out.
                             String::new()
@@ -466,8 +492,12 @@ impl ProcessesPage {
                     .upcast()
             },
         )));
-        imp.pid_column
-            .set_factory(Some(&self.cell_factory(1.0, true, None, move || {
+        imp.pid_column.set_factory(Some(&self.cell_factory(
+            1.0,
+            true,
+            false,
+            None,
+            move || {
                 process_of_row()
                     .chain_property::<Process>("pid")
                     .chain_closure::<String>(glib::closure!(
@@ -479,7 +509,8 @@ impl ProcessesPage {
                         }
                     ))
                     .upcast()
-            })));
+            },
+        )));
 
         let property = |name: &str| {
             gtk::PropertyExpression::new(Process::static_type(), gtk::Expression::NONE, name)
@@ -580,9 +611,10 @@ impl ProcessesPage {
                 }
             }
         }
-        for row in new_apps {
-            self.attach(&row, Place::Apps);
+        for row in &new_apps {
+            self.attach(row, Place::Apps);
         }
+        self.collapse(&new_apps);
 
         let places: Vec<(Process, Place)> = {
             let by_pid = imp.by_pid.borrow();
@@ -642,40 +674,54 @@ impl ProcessesPage {
         self.update_selection();
     }
 
-    fn store_of(&self, place: &Place) -> Option<gio::ListStore> {
-        let imp = self.imp();
+    /// The row a process listed in `place` is beneath.
+    fn owner_of(&self, place: &Place) -> Option<Process> {
+        let groups = self.imp().groups.get()?;
         match place {
             Place::Nowhere => None,
-            Place::Apps => imp.apps_store.get().cloned(),
-            Place::Top => imp.top_store.get().cloned(),
-            Place::Under(parent) => parent.upgrade().map(|parent| parent.children()),
+            Place::Apps => Some(groups[0].clone()),
+            Place::Top => Some(groups[1].clone()),
+            Place::Under(parent) => parent.upgrade(),
         }
     }
 
     fn detach(&self, process: &Process) {
         let place = process.imp().place.replace(Place::Nowhere);
-        if let Some(store) = self.store_of(&place)
-            && let Some(position) = store.find(process)
-        {
-            store.remove(position);
-            if let Place::Under(parent) = &place
-                && let Some(parent) = parent.upgrade()
-            {
-                parent.set_child_count(store.n_items());
+        if let Some(owner) = self.owner_of(&place) {
+            let store = owner.children();
+            if let Some(position) = store.find(process) {
+                store.remove(position);
+                owner.set_child_count(store.n_items());
             }
         }
     }
 
     fn attach(&self, process: &Process, place: Place) {
-        if let Some(store) = self.store_of(&place) {
+        if let Some(owner) = self.owner_of(&place) {
+            let store = owner.children();
             store.append(process);
-            if let Place::Under(parent) = &place
-                && let Some(parent) = parent.upgrade()
-            {
-                parent.set_child_count(store.n_items());
-            }
+            owner.set_child_count(store.n_items());
         }
         process.imp().place.replace(place);
+    }
+
+    /// Closes the rows of apps that have just been listed, which open as every row does.
+    fn collapse(&self, apps: &[Process]) {
+        let imp = self.imp();
+        let Some(apps_row) = imp.apps_row.get() else {
+            return;
+        };
+        let Some(groups) = imp.groups.get() else {
+            return;
+        };
+        let store = groups[0].children();
+        for app in apps {
+            if let Some(index) = store.find(app)
+                && let Some(row) = apps_row.child_row(index)
+            {
+                row.set_expanded(false);
+            }
+        }
     }
 
     fn show_counts(&self) {
@@ -772,7 +818,7 @@ impl ProcessesPage {
                     if !found.insert(process.clone()) {
                         break;
                     }
-                    next = process.parent();
+                    next = self.owner_of(&process.imp().place.borrow());
                 }
             }
         }
@@ -787,22 +833,20 @@ impl ProcessesPage {
 
     fn expand_found(&self) {
         let imp = self.imp();
-        let Some(trees) = imp.trees.get() else {
+        let Some(tree) = imp.tree.get() else {
             return;
         };
-        for tree in trees {
-            // Opening a row adds its children after it, where the loop comes to them next.
-            let mut position = 0;
-            while let Some(row) = tree.item(position).and_downcast::<gtk::TreeListRow>() {
-                if !row.is_expanded()
-                    && let Some(process) = row.item().and_downcast::<Process>()
-                    && process.child_count() > 0
-                    && imp.found.borrow().contains(&process)
-                {
-                    row.set_expanded(true);
-                }
-                position += 1;
+        // Opening a row adds its children after it, where the loop comes to them next.
+        let mut position = 0;
+        while let Some(row) = tree.item(position).and_downcast::<gtk::TreeListRow>() {
+            if !row.is_expanded()
+                && let Some(process) = row.item().and_downcast::<Process>()
+                && process.child_count() > 0
+                && imp.found.borrow().contains(&process)
+            {
+                row.set_expanded(true);
             }
+            position += 1;
         }
     }
 
@@ -822,7 +866,9 @@ impl ProcessesPage {
         let own_uid = self.imp().own_uid.get();
         // The kernel lets a user signal only their own processes, and root every one.
         let signalled = |process: &Process| own_uid == 0 || process.uid() == own_uid;
-        if process.is_app() {
+        if process.is_group() {
+            Vec::new()
+        } else if process.is_app() {
             let app = process.app_id();
             self.imp()
                 .by_pid
@@ -909,7 +955,7 @@ impl ProcessesPage {
                     .chain_closure::<gio::Icon>(glib::closure!(
                         |_: Option<glib::Object>, icon: Option<gio::Icon>| {
                             icon.unwrap_or_else(|| {
-                                gio::ThemedIcon::new("system-run-symbolic").upcast()
+                                gio::ThemedIcon::new("application-x-executable-symbolic").upcast()
                             })
                         }
                     ))
@@ -920,6 +966,22 @@ impl ProcessesPage {
                         |_: Option<glib::Object>, is_app: bool| if is_app { 24 } else { 16 }
                     ))
                     .bind(&icon, "pixel-size", Some(item));
+                process_of_row()
+                    .chain_property::<Process>("is-group")
+                    .chain_closure::<bool>(glib::closure!(
+                        |_: Option<glib::Object>, is_group: bool| !is_group
+                    ))
+                    .bind(&icon, "visible", Some(item));
+                process_of_row()
+                    .chain_property::<Process>("is-group")
+                    .chain_closure::<Vec<String>>(glib::closure!(
+                        |_: Option<glib::Object>, is_group: bool| if is_group {
+                            vec!["heading".to_owned()]
+                        } else {
+                            Vec::new()
+                        }
+                    ))
+                    .bind(&name, "css-classes", Some(item));
                 process_of_row()
                     .chain_property::<Process>("child-count")
                     .chain_closure::<bool>(glib::closure!(
@@ -945,10 +1007,12 @@ impl ProcessesPage {
         factory
     }
 
+    /// A cell showing `text`, or, where `markup` is set, Pango markup.
     fn cell_factory(
         &self,
         xalign: f32,
         numeric: bool,
+        markup: bool,
         tooltip: Option<gtk::Expression>,
         text: impl Fn() -> gtk::Expression + 'static,
     ) -> gtk::SignalListItemFactory {
@@ -965,7 +1029,14 @@ impl ProcessesPage {
                 if numeric {
                     cell.add_css_class("numeric");
                 }
-                text().bind(&cell, "text", Some(item));
+                text().bind(&cell, if markup { "markup" } else { "text" }, Some(item));
+                // The rows heading the groups have a name alone.
+                process_of_row()
+                    .chain_property::<Process>("is-group")
+                    .chain_closure::<bool>(glib::closure!(
+                        |_: Option<glib::Object>, is_group: bool| !is_group
+                    ))
+                    .bind(&cell, "visible", Some(item));
                 if let Some(tooltip) = &tooltip {
                     tooltip.bind(&cell, "tooltip-text", Some(item));
                 }
@@ -1013,6 +1084,9 @@ impl ProcessesPage {
         if let Some(selection) = imp.selection.get() {
             selection.set_selected(position);
         }
+        if self.selected().is_some_and(|process| process.is_group()) {
+            return;
+        }
         let Some(point) =
             cell.compute_point(&*imp.context_bin, &graphene::Point::new(x as f32, y as f32))
         else {
@@ -1033,7 +1107,9 @@ impl ProcessesPage {
         let Some(focus) = self.root().and_then(|root| root.focus()) else {
             return;
         };
-        if self.selected().is_none() || !focus.is_ancestor(&*imp.view) {
+        if self.selected().is_none_or(|process| process.is_group())
+            || !focus.is_ancestor(&*imp.view)
+        {
             return;
         }
         let Some(bounds) = focus.compute_bounds(&*imp.context_bin) else {
@@ -1228,41 +1304,4 @@ impl ProcessesPage {
 /// The process a row of the list stands for, from its list item.
 fn process_of_row() -> gtk::PropertyExpression {
     gtk::ListItem::this_expression("item").chain_property::<gtk::TreeListRow>("item")
-}
-
-/// Heads the section of the apps and that of the other processes.
-fn section_header_factory() -> gtk::SignalListItemFactory {
-    let factory = gtk::SignalListItemFactory::new();
-    factory.connect_setup(|_, header| {
-        let header = header
-            .downcast_ref::<gtk::ListHeader>()
-            .expect("a list header");
-        let label = gtk::Label::builder()
-            .xalign(0.0)
-            .margin_top(12)
-            .margin_bottom(6)
-            .margin_start(6)
-            .css_classes(["heading"])
-            .build();
-        header.set_child(Some(&label));
-    });
-    factory.connect_bind(|_, header| {
-        let header = header
-            .downcast_ref::<gtk::ListHeader>()
-            .expect("a list header");
-        let is_app = header
-            .item()
-            .and_downcast::<gtk::TreeListRow>()
-            .and_then(|row| row.item())
-            .and_downcast::<Process>()
-            .is_some_and(|process| process.is_app());
-        if let Some(label) = header.child().and_downcast::<gtk::Label>() {
-            label.set_label(&if is_app {
-                gettext("Apps")
-            } else {
-                gettext("Processes")
-            });
-        }
-    });
-    factory
 }

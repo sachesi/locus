@@ -39,10 +39,11 @@ only for the installed apps: a `Sampler` moves to a `gio::spawn_blocking` worker
 reading and comes back with a `Snapshot` of plain values. One reading runs at a time, and the window waits for the update interval, or for
 something that changes what the next reading covers, before it asks for another.
 
-The list is a `GtkColumnView` over two `GtkTreeListModel`s, of the apps and of the other
-processes, each sorted one level at a time by a `GtkTreeListRowSorter`, filtered for the
-search, and flattened into a section each. Every `LocusProcess` holds the store of what is
-listed beneath it; an app's row is a `LocusProcess` too, adding up its processes. A reading
+The list is a `GtkColumnView` over one `GtkTreeListModel`, sorted one level at a time by a
+`GtkTreeListRowSorter` and filtered for the search. Its two top rows head the apps and the
+other processes. Every `LocusProcess` holds the store of what is listed beneath it; the
+rows heading the groups and those of the apps are `LocusProcess`es too, an app's adding up
+its processes. A reading
 updates the objects of the processes it has seen before, so the rows showing them keep their
 place and selection, sets only properties that changed, and moves a process whose parent
 has changed. The sort list models do not watch the values they sort by, so the view's

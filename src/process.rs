@@ -44,6 +44,9 @@ mod imp {
         /// Whether this stands for an app, its processes listed beneath it.
         #[property(get, set)]
         is_app: Cell<bool>,
+        /// Whether this heads the apps, or the other processes, listed beneath it.
+        #[property(get, set)]
+        is_group: Cell<bool>,
         /// How many processes are listed directly beneath this one.
         #[property(get, set)]
         child_count: Cell<u32>,
@@ -98,6 +101,14 @@ impl Process {
         process
     }
 
+    /// The row heading a group of rows, which are its children.
+    pub fn group(name: &str) -> Self {
+        glib::Object::builder()
+            .property("name", name)
+            .property("is-group", true)
+            .build()
+    }
+
     pub fn app_id(&self) -> Option<Arc<str>> {
         self.imp().app_id.borrow().clone()
     }
@@ -112,14 +123,6 @@ impl Process {
             .children
             .get_or_init(gio::ListStore::new::<Process>)
             .clone()
-    }
-
-    /// What this is listed beneath, if it is listed beneath anything.
-    pub fn parent(&self) -> Option<Process> {
-        match &*self.imp().place.borrow() {
-            Place::Under(parent) => parent.upgrade(),
-            _ => None,
-        }
     }
 
     /// Takes the added up values of the processes of the app this stands for.
