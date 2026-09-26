@@ -1,11 +1,11 @@
 use crate::config;
 use crate::filesystems_page::FileSystemsPage;
+use crate::format;
 use crate::processes_page::ProcessesPage;
 use crate::resources_page::ResourcesPage;
 use crate::sampler::{Sampler, Snapshot};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gettextrs::gettext;
 use gtk::{gio, glib};
 use std::cell::RefCell;
 use std::time::Duration;
@@ -26,8 +26,6 @@ mod imp {
         pub processes_page: TemplateChild<ProcessesPage>,
         #[template_child]
         pub resources_page: TemplateChild<ResourcesPage>,
-        #[template_child]
-        pub interval_menu: TemplateChild<gio::Menu>,
 
         pub settings: gio::Settings,
         /// Cuts the wait for the next reading short.
@@ -42,7 +40,6 @@ mod imp {
                 filesystems_page: TemplateChild::default(),
                 processes_page: TemplateChild::default(),
                 resources_page: TemplateChild::default(),
-                interval_menu: TemplateChild::default(),
                 settings: gio::Settings::new(config::APP_ID),
                 wake: RefCell::default(),
             }
@@ -99,19 +96,7 @@ mod imp {
                 .get()
                 .build();
             obj.add_action(&self.settings.create_action("show-all-processes"));
-            obj.add_action(&self.settings.create_action("update-interval"));
-            for (seconds, label) in [
-                (1u32, gettext("Every Second")),
-                (2, gettext("Every 2 Seconds")),
-                (5, gettext("Every 5 Seconds")),
-            ] {
-                let item = gio::MenuItem::new(Some(&label), None);
-                item.set_action_and_target_value(
-                    Some("win.update-interval"),
-                    Some(&seconds.to_variant()),
-                );
-                self.interval_menu.append_item(&item);
-            }
+            format::set_binary(self.settings.boolean("binary-units"));
 
             // A reading is taken at once when what it has to cover changes.
             let wake = glib::clone!(
@@ -124,8 +109,24 @@ mod imp {
                 .connect_visible_child_name_notify(move |_| on_page());
             let on_suspended = wake.clone();
             obj.connect_suspended_notify(move |_| on_suspended());
-            self.settings
-                .connect_changed(Some("update-interval"), move |_, _| wake());
+            let on_interval = wake.clone();
+            self.settings.connect_changed(None, move |_, key| {
+                if key.ends_with("-update-interval") {
+                    on_interval();
+                }
+            });
+            self.settings.connect_changed(
+                Some("binary-units"),
+                glib::clone!(
+                    #[weak]
+                    obj,
+                    move |settings, key| {
+                        format::set_binary(settings.boolean(key));
+                        obj.imp().processes_page.show_units();
+                        wake();
+                    }
+                ),
+            );
 
             obj.start_sampling();
         }
@@ -224,8 +225,12 @@ impl LocusWindow {
             && !self.is_suspended()
     }
 
+    /// The update interval of the page on screen.
     fn interval(&self) -> Duration {
-        let seconds = self.imp().settings.uint("update-interval").clamp(1, 10);
+        let imp = self.imp();
+        let page = imp.stack.visible_child_name();
+        let key = format!("{}-update-interval", page.as_deref().unwrap_or("resources"));
+        let seconds = imp.settings.uint(&key).clamp(1, 10);
         Duration::from_secs(u64::from(seconds))
     }
 

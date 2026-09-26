@@ -92,13 +92,14 @@ menu primary_menu {
       label: _("Show _All Processes");
       action: "win.show-all-processes";
     }
-
-    submenu interval_menu {
-      label: _("_Update Interval");
-    }
   }
 
   section {
+    item {
+      label: _("_Preferences");
+      action: "app.preferences";
+    }
+
     item {
       label: _("_Keyboard Shortcuts");
       action: "app.shortcuts";

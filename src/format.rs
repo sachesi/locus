@@ -2,6 +2,18 @@ use gettextrs::gettext;
 use gtk::glib;
 use std::ffi::CStr;
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+/// Whether sizes are counted in 1024s, as KiB, MiB and GiB, rather than in 1000s.
+static BINARY: AtomicBool = AtomicBool::new(true);
+
+pub fn set_binary(binary: bool) {
+    BINARY.store(binary, Ordering::Relaxed);
+}
+
+pub fn is_binary() -> bool {
+    BINARY.load(Ordering::Relaxed)
+}
 
 pub fn percent(value: f64, decimals: usize) -> String {
     let number = format!("{value:.decimals$}").replace('.', decimal_point());
@@ -21,7 +33,16 @@ fn decimal_point() -> &'static str {
 }
 
 pub fn size(bytes: u64) -> String {
-    glib::format_size(bytes).into()
+    size_in(bytes, is_binary())
+}
+
+fn size_in(bytes: u64, binary: bool) -> String {
+    let flags = if binary {
+        glib::FormatSizeFlags::IEC_UNITS
+    } else {
+        glib::FormatSizeFlags::DEFAULT
+    };
+    glib::format_size_full(bytes, flags).into()
 }
 
 pub fn rate(bytes_per_second: f64) -> String {
@@ -61,12 +82,13 @@ mod tests {
     #[test]
     fn rates_and_amounts() {
         // GLib keeps a number and its unit together with a no-break space.
-        assert_eq!(rate(1_500_000.0), "1.5\u{a0}MB/s");
+        assert_eq!(rate(1_572_864.0), "1.5\u{a0}MiB/s");
         assert_eq!(
-            used_of(5_200_000_000, 16_000_000_000),
-            "5.2\u{a0}GB of 16.0\u{a0}GB"
+            used_of(5_583_457_485, 17_179_869_184),
+            "5.2\u{a0}GiB of 16.0\u{a0}GiB"
         );
-        assert_eq!(free_of(0, 1000), "0 bytes free of 1.0\u{a0}kB");
+        assert_eq!(free_of(0, 1024), "0 bytes free of 1.0\u{a0}KiB");
+        assert_eq!(size_in(1_500_000, false), "1.5\u{a0}MB");
         assert_eq!(temperature(44.6), "45 °C");
     }
 }

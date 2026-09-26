@@ -3,6 +3,7 @@ mod filesystems_page;
 mod format;
 mod gpu;
 mod graph;
+mod preferences_dialog;
 mod process;
 mod processes_page;
 mod procfs;
@@ -50,7 +51,13 @@ fn setup_actions(app: &adw::Application) {
     let about = gio::ActionEntry::builder("about")
         .activate(|app: &adw::Application, _, _| show_about(app))
         .build();
-    app.add_action_entries([quit, about]);
+    let preferences = gio::ActionEntry::builder("preferences")
+        .activate(|app: &adw::Application, _, _| {
+            preferences_dialog::PreferencesDialog::default().present(app.active_window().as_ref());
+        })
+        .build();
+    app.add_action_entries([quit, about, preferences]);
+    app.set_accels_for_action("app.preferences", &["<Control>comma"]);
     app.set_accels_for_action("app.quit", &["<Control>q"]);
     app.set_accels_for_action("window.close", &["<Control>w"]);
     app.set_accels_for_action("win.search", &["<Control>f"]);

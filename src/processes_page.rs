@@ -310,6 +310,17 @@ impl ProcessesPage {
         }
     }
 
+    /// Writes the sizes shown again, in the units now chosen.
+    pub fn show_units(&self) {
+        let imp = self.imp();
+        let by_pid = imp.by_pid.borrow();
+        let apps = imp.apps.borrow();
+        for process in by_pid.values().chain(apps.values()) {
+            process.notify("memory");
+            process.notify("disk");
+        }
+    }
+
     pub fn focus_search(&self) {
         self.set_search_mode(true);
         self.imp().search_entry.grab_focus();

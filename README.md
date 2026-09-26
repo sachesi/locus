@@ -20,7 +20,9 @@ Everything comes from `/proc` and `/sys`, read on a worker thread. An app is kno
 unit the desktop starts it in, by the desktop file GLib launched it from, or, for one that
 D-Bus starts, by its program. The processes are read only while their list is on screen,
 since reading every one of them is most of what a reading costs; the graphs keep going
-behind it. Readings come every 2 seconds, or every 1 or 5 as chosen in the main menu.
+behind it. Readings come every 2 seconds, or every 1, 5 or 10 as chosen for each page in
+Preferences, where sizes can also be counted in 1000s, as kB, MB and GB, rather than in
+1024s, as KiB, MiB and GiB.
 
 How busy a graphics card is, its video memory and its temperature are what its driver
 writes under `/sys`: amdgpu writes all three, most other drivers less, some nothing. A card

@@ -6,9 +6,6 @@ use std::collections::VecDeque;
 /// Readings kept per series, the width of the graph from edge to edge.
 pub const HISTORY: usize = 60;
 
-/// Top of a graph scaled to its data when it holds nothing larger.
-const SMALLEST_SCALE: f64 = 1000.0;
-
 type ScaleLabel = Box<dyn Fn(f64) -> String>;
 
 mod imp {
@@ -71,7 +68,10 @@ mod imp {
             let top = if maximum > 0.0 {
                 maximum
             } else {
-                scale_for(series.iter().flatten().copied().fold(0.0, f64::max))
+                scale_for(
+                    series.iter().flatten().copied().fold(0.0, f64::max),
+                    crate::format::is_binary(),
+                )
             };
 
             // A graph scaled to its data names its top in a strip of its own above the
@@ -198,13 +198,23 @@ impl Graph {
     }
 }
 
-/// The smallest of 1, 2 and 5 times a power of ten that holds `largest`.
-fn scale_for(largest: f64) -> f64 {
-    let largest = largest.max(SMALLEST_SCALE);
-    let magnitude = 10f64.powf(largest.log10().floor());
-    [1.0, 2.0, 5.0, 10.0]
-        .into_iter()
-        .map(|m| m * magnitude)
+/// The smallest round number that holds `largest`: 1, 2 or 5 times a power of ten, or,
+/// counting in 1024s, that many KiB, MiB or GiB, so that the label reads as round too.
+fn scale_for(largest: f64, binary: bool) -> f64 {
+    let (base, steps): (f64, &[f64]) = if binary {
+        (
+            1024.0,
+            &[1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1024.0],
+        )
+    } else {
+        (10.0, &[1.0, 2.0, 5.0, 10.0])
+    };
+    // A graph of nothing larger is topped at a kilobyte, or a KiB.
+    let largest = largest.max(if binary { 1024.0 } else { 1000.0 });
+    let unit = base.powf(largest.log(base).floor());
+    steps
+        .iter()
+        .map(|step| step * unit)
         .find(|&top| top >= largest)
         .unwrap_or(largest)
 }
@@ -215,10 +225,19 @@ mod tests {
 
     #[test]
     fn scale_rounds_up_to_a_round_number() {
-        assert_eq!(scale_for(0.0), 1000.0);
-        assert_eq!(scale_for(1000.0), 1000.0);
-        assert_eq!(scale_for(1001.0), 2000.0);
-        assert_eq!(scale_for(3_400_000.0), 5_000_000.0);
-        assert_eq!(scale_for(7_000.0), 10_000.0);
+        assert_eq!(scale_for(0.0, false), 1000.0);
+        assert_eq!(scale_for(1000.0, false), 1000.0);
+        assert_eq!(scale_for(1001.0, false), 2000.0);
+        assert_eq!(scale_for(3_400_000.0, false), 5_000_000.0);
+        assert_eq!(scale_for(7_000.0, false), 10_000.0);
+
+        assert_eq!(scale_for(0.0, true), 1024.0);
+        assert_eq!(scale_for(1024.0, true), 1024.0);
+        assert_eq!(scale_for(3_000.0, true), 5.0 * 1024.0);
+        assert_eq!(scale_for(600.0 * 1024.0, true), 1024.0 * 1024.0);
+        assert_eq!(
+            scale_for(3.4 * 1024.0 * 1024.0, true),
+            5.0 * 1024.0 * 1024.0
+        );
     }
 }

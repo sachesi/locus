@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="locus">
   <schema id="io.github.sachesi.locus" path="/io/github/sachesi/locus/">
-    <key name="update-interval" type="u">
+    <key name="resources-update-interval" type="u">
       <range min="1" max="10"/>
       <default>2</default>
-      <summary>Seconds between readings</summary>
+      <summary>Seconds between readings while Resources is shown</summary>
+    </key>
+    <key name="filesystems-update-interval" type="u">
+      <range min="1" max="10"/>
+      <default>2</default>
+      <summary>Seconds between readings while File Systems is shown</summary>
+    </key>
+    <key name="processes-update-interval" type="u">
+      <range min="1" max="10"/>
+      <default>2</default>
+      <summary>Seconds between readings while Processes is shown</summary>
+    </key>
+    <key name="binary-units" type="b">
+      <default>true</default>
+      <summary>Sizes in binary units</summary>
+      <description>When on, sizes are counted in 1024s and written as KiB, MiB and GiB; when off, in 1000s, as kB, MB and GB.</description>
     </key>
     <key name="show-all-processes" type="b">
       <default>true</default>

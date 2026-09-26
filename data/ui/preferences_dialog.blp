@@ -1,0 +1,32 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusPreferencesDialog: Adw.PreferencesDialog {
+  Adw.PreferencesPage {
+    Adw.PreferencesGroup {
+      title: _("Update Interval");
+      description: _("How often a page is read again while it is shown");
+
+      Adw.ComboRow resources_interval {
+        title: _("Resources");
+      }
+
+      Adw.ComboRow filesystems_interval {
+        title: _("File Systems");
+      }
+
+      Adw.ComboRow processes_interval {
+        title: _("Processes");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Units");
+
+      Adw.SwitchRow binary_units {
+        title: _("Binary Units");
+        subtitle: _("Count sizes in 1024s, as KiB, MiB and GiB, rather than in 1000s, as kB, MB and GB");
+      }
+    }
+  }
+}

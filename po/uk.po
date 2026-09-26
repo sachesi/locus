@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-26 12:28+0300\n"
-"PO-Revision-Date: 2026-09-26 12:32+0300\n"
+"POT-Creation-Date: 2026-09-26 17:43+0300\n"
+"PO-Revision-Date: 2026-09-26 17:44+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
@@ -27,7 +27,7 @@ msgid "System Monitor"
 msgstr "Системний монітор"
 
 #: data/io.github.sachesi.locus.desktop:4
-#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:69
+#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:76
 #, no-c-format
 msgid "Watch resources and end processes"
 msgstr "Стежте за ресурсами й завершуйте процеси"
@@ -37,23 +37,43 @@ msgid "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usag
 msgstr "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usage;процес;завдання;диспетчер;завершити;процесор;пам’ять;підкачка;мережа;диск;навантаження;"
 
 #: data/io.github.sachesi.locus.gschema.xml:7
-msgid "Seconds between readings"
-msgstr "Секунди між вимірами"
+msgid "Seconds between readings while Resources is shown"
+msgstr "Секунди між вимірами, поки відкрито «Ресурси»"
 
-#: data/io.github.sachesi.locus.gschema.xml:11
+#: data/io.github.sachesi.locus.gschema.xml:12
+msgid "Seconds between readings while File Systems is shown"
+msgstr "Секунди між вимірами, поки відкрито «Файлові системи»"
+
+#: data/io.github.sachesi.locus.gschema.xml:17
+msgid "Seconds between readings while Processes is shown"
+msgstr "Секунди між вимірами, поки відкрито «Процеси»"
+
+#: data/io.github.sachesi.locus.gschema.xml:21
+msgid "Sizes in binary units"
+msgstr "Розміри у двійкових одиницях"
+
+#: data/io.github.sachesi.locus.gschema.xml:22
+msgid ""
+"When on, sizes are counted in 1024s and written as KiB, MiB and GiB; when "
+"off, in 1000s, as kB, MB and GB."
+msgstr ""
+"Якщо увімкнено, розміри рахуються по 1024 і записуються в КіБ, МіБ і ГіБ; "
+"якщо вимкнено — по 1000, у кБ, МБ і ГБ."
+
+#: data/io.github.sachesi.locus.gschema.xml:26
 msgid "List the processes of every user"
 msgstr "Показувати процеси всіх користувачів"
 
-#: data/io.github.sachesi.locus.gschema.xml:12
+#: data/io.github.sachesi.locus.gschema.xml:27
 msgid "When off, only the processes of the user running Locus are listed."
 msgstr ""
 "Якщо вимкнено, показуються лише процеси користувача, який запустив Locus."
 
-#: data/io.github.sachesi.locus.gschema.xml:16
+#: data/io.github.sachesi.locus.gschema.xml:31
 msgid "Window size"
 msgstr "Розмір вікна"
 
-#: data/io.github.sachesi.locus.gschema.xml:20
+#: data/io.github.sachesi.locus.gschema.xml:35
 msgid "Window maximized"
 msgstr "Вікно розгорнуто"
 
@@ -133,46 +153,66 @@ msgstr ""
 "підключеному диску."
 
 #. Translators: a share of something, such as "12.3%".
-#: src/format.rs:9
+#: src/format.rs:21
 #, no-c-format
 msgid "{value}%"
 msgstr "{value} %"
 
 #. Translators: a transfer rate, such as "1.5 MB/s".
-#: src/format.rs:29
+#: src/format.rs:50
 #, no-c-format
 msgid "{size}/s"
 msgstr "{size}/с"
 
 #. Translators: memory in use out of what there is, such as "5.2 GB of 16.0 GB".
-#: src/format.rs:34
+#: src/format.rs:55
 #, no-c-format
 msgid "{used} of {total}"
 msgstr "{used} з {total}"
 
 #. Translators: room left on a disk, such as "120 GB free of 500 GB".
-#: src/format.rs:41
+#: src/format.rs:62
 #, no-c-format
 msgid "{available} free of {total}"
 msgstr "вільно {available} з {total}"
 
 #. Translators: a temperature in degrees Celsius, such as "45 °C".
-#: src/format.rs:48
+#: src/format.rs:69
 #, no-c-format
 msgid "{value} °C"
 msgstr "{value} °C"
 
-#: src/main.rs:70
+#: src/main.rs:77
 #, no-c-format
 msgid "translator-credits"
 msgstr "sachesi"
 
-#: src/processes_page.rs:220
+#: src/preferences_dialog.rs:59
+#, no-c-format
+msgid "Every Second"
+msgstr "Щосекунди"
+
+#: src/preferences_dialog.rs:60
+#, no-c-format
+msgid "Every 2 Seconds"
+msgstr "Кожні 2 секунди"
+
+#: src/preferences_dialog.rs:61
+#, no-c-format
+msgid "Every 5 Seconds"
+msgstr "Кожні 5 секунд"
+
+#: src/preferences_dialog.rs:62
+#, no-c-format
+msgid "Every 10 Seconds"
+msgstr "Кожні 10 секунд"
+
+#: src/processes_page.rs:221
 #, no-c-format
 msgid "Try a different search"
 msgstr "Спробуйте змінити запит"
 
-#: src/processes_page.rs:223
+#: src/processes_page.rs:224
 #, no-c-format
 msgid ""
 "Only your own processes are searched. Turn on “Show All Processes” in the "
@@ -181,28 +221,28 @@ msgstr ""
 "Пошук іде лише серед ваших процесів. Увімкніть «Показувати всі процеси» в "
 "головному меню, щоб шукати серед усіх."
 
-#: src/processes_page.rs:322
+#: src/processes_page.rs:334
 #, no-c-format
 msgid "Apps"
 msgstr "Програми"
 
-#: src/processes_page.rs:323 ui/shortcuts_dialog.ui:27
-#: ui/shortcuts_dialog.ui:53 ui/window.ui:87
+#: src/processes_page.rs:335 ui/preferences_dialog.ui:28
+#: ui/shortcuts_dialog.ui:27 ui/shortcuts_dialog.ui:59 ui/window.ui:87
 #, no-c-format
 msgid "Processes"
 msgstr "Процеси"
 
-#: src/processes_page.rs:444
+#: src/processes_page.rs:456
 #, no-c-format
 msgid "Disk use of other users' processes is not shown"
 msgstr "Використання диска процесами інших користувачів не показується"
 
-#: src/processes_page.rs:470
+#: src/processes_page.rs:482
 #, no-c-format
 msgid "GPU use of other users' processes is not shown"
 msgstr "Використання ГП процесами інших користувачів не показується"
 
-#: src/processes_page.rs:732
+#: src/processes_page.rs:744
 #, no-c-format
 msgid "{count} Running App"
 msgid_plural "{count} Running Apps"
@@ -210,7 +250,7 @@ msgstr[0] "{count} запущена програма"
 msgstr[1] "{count} запущені програми"
 msgstr[2] "{count} запущених програм"
 
-#: src/processes_page.rs:737
+#: src/processes_page.rs:749
 #, no-c-format
 msgid "{count} Running Process"
 msgid_plural "{count} Running Processes"
@@ -218,38 +258,38 @@ msgstr[0] "{count} запущений процес"
 msgstr[1] "{count} запущені процеси"
 msgstr[2] "{count} запущених процесів"
 
-#: src/processes_page.rs:771 ui/processes_page.ui:210
+#: src/processes_page.rs:783 ui/processes_page.ui:210
 #, no-c-format
 msgid "CPU"
 msgstr "ЦП"
 
-#: src/processes_page.rs:776 ui/processes_page.ui:216 ui/resources_page.ui:107
+#: src/processes_page.rs:788 ui/processes_page.ui:216 ui/resources_page.ui:107
 #: ui/resources_page.ui:152
 #, no-c-format
 msgid "Memory"
 msgstr "Пам’ять"
 
-#: src/processes_page.rs:781 ui/processes_page.ui:222
+#: src/processes_page.rs:793 ui/processes_page.ui:222
 #, no-c-format
 msgid "Disk"
 msgstr "Диск"
 
-#: src/processes_page.rs:784 src/resources_page.rs:252 ui/processes_page.ui:229
+#: src/processes_page.rs:796 src/resources_page.rs:252 ui/processes_page.ui:229
 #, no-c-format
 msgid "GPU"
 msgstr "ГП"
 
-#: src/processes_page.rs:929
+#: src/processes_page.rs:941
 #, no-c-format
 msgid "Stopped"
 msgstr "Зупинено"
 
-#: src/processes_page.rs:1168
+#: src/processes_page.rs:1180
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr "Примусово завершити «{name}»?"
 
-#: src/processes_page.rs:1171
+#: src/processes_page.rs:1183
 #, no-c-format
 msgid ""
 "Its {count} process ends at once, without a chance to save its work or clean "
@@ -268,7 +308,7 @@ msgstr[2] ""
 "прибрати за собою."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1178
+#: src/processes_page.rs:1190
 #, no-c-format
 msgid ""
 "Process {pid} ends at once, without a chance to save its work or clean up."
@@ -276,22 +316,22 @@ msgstr ""
 "Процес {pid} завершиться одразу, без змоги зберегти роботу чи прибрати за "
 "собою."
 
-#: src/processes_page.rs:1182
+#: src/processes_page.rs:1194
 #, no-c-format
 msgid "_Kill App"
 msgstr "Завершити програму _примусово"
 
-#: src/processes_page.rs:1184
+#: src/processes_page.rs:1196
 #, no-c-format
 msgid "_Kill Process"
 msgstr "Завершити _примусово"
 
-#: src/processes_page.rs:1188
+#: src/processes_page.rs:1200
 #, no-c-format
 msgid "End “{name}”?"
 msgstr "Завершити «{name}»?"
 
-#: src/processes_page.rs:1191
+#: src/processes_page.rs:1203
 #, no-c-format
 msgid ""
 "Its {count} process is asked to quit. Work it has not saved may be lost."
@@ -309,56 +349,56 @@ msgstr[2] ""
 "бути втрачено."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1197
+#: src/processes_page.rs:1209
 #, no-c-format
 msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 "Процесу {pid} буде запропоновано завершитися. Незбережену роботу може бути "
 "втрачено."
 
-#: src/processes_page.rs:1200
+#: src/processes_page.rs:1212
 #, no-c-format
 msgid "_End App"
 msgstr "_Завершити програму"
 
-#: src/processes_page.rs:1202
+#: src/processes_page.rs:1214
 #, no-c-format
 msgid "_End Process"
 msgstr "_Завершити процес"
 
-#: src/processes_page.rs:1214
+#: src/processes_page.rs:1226
 #, no-c-format
 msgid "_Cancel"
 msgstr "_Скасувати"
 
-#: src/processes_page.rs:1274
+#: src/processes_page.rs:1286
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr "«{name}» вже завершився"
 
 #. Translators: {reason} is "it belongs to another user", or an error
 #. message of the system; so too in the three messages after this one.
-#: src/processes_page.rs:1280
+#: src/processes_page.rs:1292
 #, no-c-format
 msgid "Could not end “{name}”: {reason}"
 msgstr "Не вдалося завершити «{name}»: {reason}"
 
-#: src/processes_page.rs:1282
+#: src/processes_page.rs:1294
 #, no-c-format
 msgid "Could not kill “{name}”: {reason}"
 msgstr "Не вдалося примусово завершити «{name}»: {reason}"
 
-#: src/processes_page.rs:1283
+#: src/processes_page.rs:1295
 #, no-c-format
 msgid "Could not stop “{name}”: {reason}"
 msgstr "Не вдалося зупинити «{name}»: {reason}"
 
-#: src/processes_page.rs:1284
+#: src/processes_page.rs:1296
 #, no-c-format
 msgid "Could not continue “{name}”: {reason}"
 msgstr "Не вдалося продовжити «{name}»: {reason}"
 
-#: src/processes_page.rs:1287
+#: src/processes_page.rs:1299
 #, no-c-format
 msgid "it belongs to another user"
 msgstr "процес належить іншому користувачеві"
@@ -400,20 +440,36 @@ msgstr "Драйвер не повідомляє про навантаження
 msgid "CPU {number}"
 msgstr "ЦП {number}"
 
-#: src/window.rs:104
-#, no-c-format
-msgid "Every Second"
-msgstr "Щосекунди"
+#: ui/preferences_dialog.ui:14
+msgid "Update Interval"
+msgstr "Інтервал оновлення"
 
-#: src/window.rs:105
-#, no-c-format
-msgid "Every 2 Seconds"
-msgstr "Кожні 2 секунди"
+#: ui/preferences_dialog.ui:15
+msgid "How often a page is read again while it is shown"
+msgstr "Як часто сторінка оновлюється, поки вона відкрита"
 
-#: src/window.rs:106
-#, no-c-format
-msgid "Every 5 Seconds"
-msgstr "Кожні 5 секунд"
+#: ui/preferences_dialog.ui:18 ui/shortcuts_dialog.ui:15 ui/window.ui:67
+msgid "Resources"
+msgstr "Ресурси"
+
+#: ui/preferences_dialog.ui:23 ui/shortcuts_dialog.ui:21 ui/window.ui:77
+msgid "File Systems"
+msgstr "Файлові системи"
+
+#: ui/preferences_dialog.ui:35
+msgid "Units"
+msgstr "Одиниці"
+
+#: ui/preferences_dialog.ui:38
+msgid "Binary Units"
+msgstr "Двійкові одиниці"
+
+#: ui/preferences_dialog.ui:39
+msgid ""
+"Count sizes in 1024s, as KiB, MiB and GiB, rather than in 1000s, as kB, MB "
+"and GB"
+msgstr ""
+"Рахувати розміри по 1024, у КіБ, МіБ і ГіБ, а не по 1000, у кБ, МБ і ГБ"
 
 #: ui/processes_page.ui:45
 msgid "Search processes"
@@ -507,39 +563,35 @@ msgstr "Запис"
 msgid "General"
 msgstr "Загальні"
 
-#: ui/shortcuts_dialog.ui:15 ui/window.ui:67
-msgid "Resources"
-msgstr "Ресурси"
-
-#: ui/shortcuts_dialog.ui:21 ui/window.ui:77
-msgid "File Systems"
-msgstr "Файлові системи"
-
 #: ui/shortcuts_dialog.ui:33
+msgid "Preferences"
+msgstr "Налаштування"
+
+#: ui/shortcuts_dialog.ui:39
 msgid "Keyboard Shortcuts"
 msgstr "Комбінації клавіш"
 
-#: ui/shortcuts_dialog.ui:39
+#: ui/shortcuts_dialog.ui:45
 msgid "Close Window"
 msgstr "Закрити вікно"
 
-#: ui/shortcuts_dialog.ui:45
+#: ui/shortcuts_dialog.ui:51
 msgid "Quit"
 msgstr "Вийти"
 
-#: ui/shortcuts_dialog.ui:56 ui/window.ui:37
+#: ui/shortcuts_dialog.ui:62 ui/window.ui:37
 msgid "Search"
 msgstr "Пошук"
 
-#: ui/shortcuts_dialog.ui:62
+#: ui/shortcuts_dialog.ui:68
 msgid "End Process"
 msgstr "Завершити процес"
 
-#: ui/shortcuts_dialog.ui:68
+#: ui/shortcuts_dialog.ui:74
 msgid "Kill Process"
 msgstr "Завершити примусово"
 
-#: ui/shortcuts_dialog.ui:74
+#: ui/shortcuts_dialog.ui:80
 msgid "Process Menu"
 msgstr "Меню процесу"
 
@@ -551,14 +603,14 @@ msgstr "Головне меню"
 msgid "Show _All Processes"
 msgstr "Показувати _всі процеси"
 
-#: ui/window.ui:113
-msgid "_Update Interval"
-msgstr "_Інтервал оновлення"
+#: ui/window.ui:115
+msgid "_Preferences"
+msgstr "_Налаштування"
 
-#: ui/window.ui:118
+#: ui/window.ui:119
 msgid "_Keyboard Shortcuts"
 msgstr "_Комбінації клавіш"
 
-#: ui/window.ui:122
+#: ui/window.ui:123
 msgid "_About Locus"
 msgstr "_Про Locus"
