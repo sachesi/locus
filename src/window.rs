@@ -3,7 +3,7 @@ use crate::filesystems_page::FileSystemsPage;
 use crate::format;
 use crate::processes_page::ProcessesPage;
 use crate::resources_page::ResourcesPage;
-use crate::sampler::{Sampler, Snapshot};
+use crate::sampler::{self, Sampler, Snapshot};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
@@ -212,7 +212,12 @@ impl LocusWindow {
                     win.apply(snapshot);
                 }
                 drop(win);
-                let _ = glib::future_with_timeout(interval, woken.recv()).await;
+                let wait = if snapshot.is_some_and(|s| s.processes_unmeasured) {
+                    sampler::BASELINE
+                } else {
+                    interval
+                };
+                let _ = glib::future_with_timeout(wait, woken.recv()).await;
             }
         });
     }

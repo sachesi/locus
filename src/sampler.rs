@@ -19,9 +19,8 @@ use std::time::{Duration, Instant};
 /// not have makes it read again.
 const APPS_KEPT: Duration = Duration::from_secs(10);
 
-/// How long a first reading waits for its second, so that the first rates shown are
-/// measured rather than zero.
-const BASELINE: Duration = Duration::from_millis(250);
+/// How long a first reading waits for its second, which measures the first rates.
+pub const BASELINE: Duration = Duration::from_millis(250);
 
 #[derive(Debug, Clone)]
 pub struct ProcessSample {
@@ -91,6 +90,9 @@ pub struct Snapshot {
     pub system: System,
     /// Every process but kernel threads, when they were asked for.
     pub processes: Option<Vec<ProcessSample>>,
+    /// The processes were read for the first time, and their rates are left for a second
+    /// reading `BASELINE` later.
+    pub processes_unmeasured: bool,
 }
 
 /// What is remembered of a process between readings.
@@ -183,13 +185,17 @@ impl Sampler {
     }
 
     /// Reads the machine, and its processes when `with_processes` is set. Blocks for a
-    /// moment when there is no earlier reading to measure rates against.
+    /// moment when there is no earlier reading of the machine to measure rates against;
+    /// processes are listed at once instead, since a list is of use before its rates.
     pub fn sample(&mut self, with_processes: bool) -> Snapshot {
-        if self.at.is_none() || (with_processes && self.processes_at.is_none()) {
+        if self.at.is_none() {
             self.take(with_processes);
             std::thread::sleep(BASELINE);
         }
-        self.take(with_processes)
+        let unmeasured = with_processes && self.processes_at.is_none();
+        let mut snapshot = self.take(with_processes);
+        snapshot.processes_unmeasured = unmeasured;
+        snapshot
     }
 
     fn take(&mut self, with_processes: bool) -> Snapshot {
@@ -204,7 +210,11 @@ impl Sampler {
             self.processes_at = None;
             None
         };
-        Snapshot { system, processes }
+        Snapshot {
+            system,
+            processes,
+            processes_unmeasured: false,
+        }
     }
 
     fn read_system(&mut self, seconds: Option<f64>) -> System {
