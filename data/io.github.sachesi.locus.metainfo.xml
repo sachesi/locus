@@ -48,7 +48,7 @@
     <control>touch</control>
   </supports>
   <releases>
-    <release version="0.1.0" date="2026-08-28">
+    <release version="0.1.0" date="2026-09-27">
       <description>
         <p>The first release: running apps and processes with their processor, memory, disk and graphics card use, which can be ended, killed, stopped and continued; graphs of the processor, each of its cores, memory and swap, the network, the disks and the graphics cards; and the room left on each mounted disk.</p>
       </description>
