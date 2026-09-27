@@ -53,6 +53,8 @@ template $LocusWindow: Adw.ApplicationWindow {
       }
 
       content: Adw.ViewStack stack {
+        opacity: 0;
+
         Adw.ViewStackPage {
           name: "resources";
           title: _("Resources");

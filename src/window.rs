@@ -7,7 +7,7 @@ use crate::sampler::{Sampler, Snapshot};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
-use std::cell::RefCell;
+use std::cell::{OnceCell, RefCell};
 use std::time::Duration;
 
 mod imp {
@@ -30,6 +30,9 @@ mod imp {
         pub settings: gio::Settings,
         /// Cuts the wait for the next reading short.
         pub wake: RefCell<Option<async_channel::Sender<()>>>,
+        /// Fades the pages in once the first reading has filled them, so the window does
+        /// not open on empty graphs.
+        pub reveal: OnceCell<adw::TimedAnimation>,
     }
 
     impl Default for LocusWindow {
@@ -42,6 +45,7 @@ mod imp {
                 resources_page: TemplateChild::default(),
                 settings: gio::Settings::new(config::APP_ID),
                 wake: RefCell::default(),
+                reveal: OnceCell::new(),
             }
         }
     }
@@ -241,5 +245,12 @@ impl LocusWindow {
         if let Some(processes) = &snapshot.processes {
             imp.processes_page.apply(processes, &snapshot.system);
         }
+        imp.reveal.get_or_init(|| {
+            let stack = &*imp.stack;
+            let target = adw::PropertyAnimationTarget::new(stack, "opacity");
+            let fade = adw::TimedAnimation::new(stack, 0.0, 1.0, 250, target);
+            fade.play();
+            fade
+        });
     }
 }
