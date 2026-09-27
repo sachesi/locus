@@ -36,20 +36,20 @@ Before a change goes in:
     src/graph.rs               LocusGraph, a line graph drawn with GtkSnapshot
     src/format.rs              percentages, sizes and rates as the interface writes them
 
-Nothing in `sampler.rs`, `gpu.rs` or `procfs.rs` touches GTK, and the sampler asks GIO
-only for the installed apps: a `Sampler` moves to a `gio::spawn_blocking` worker for each
-reading and comes back with a `Snapshot` of plain values. One reading runs at a time, and the window waits for the update interval of the page on screen, or for
-something that changes what the next reading covers, before it asks for another.
+Nothing in `sampler.rs`, `gpu.rs` or `procfs.rs` touches GTK; the sampler only asks GIO
+for the installed apps. A `Sampler` moves to a `gio::spawn_blocking` worker for each
+reading and comes back with a `Snapshot` of plain values. One reading runs at a time, and
+the window waits for the visible page's update interval, or for something that changes
+what the next reading covers, before asking for another.
 
 The list is a `GtkColumnView` over one `GtkTreeListModel`, sorted one level at a time by a
-`GtkTreeListRowSorter` and filtered for the search. Its two top rows head the apps and the
-other processes. Every `LocusProcess` holds the store of what is listed beneath it; the
-rows heading the groups and those of the apps are `LocusProcess`es too, an app's adding up
-its processes. A reading
-updates the objects of the processes it has seen before, so the rows showing them keep their
-place and selection, sets only properties that changed, and moves a process whose parent
-has changed. The sort list models do not watch the values they sort by, so the view's
-sorter is told after each reading.
+`GtkTreeListRowSorter` and filtered for the search. Its two top-level rows are the Apps and
+Processes groups. Each row is a `LocusProcess` holding the store of its children; group
+and app rows are `LocusProcess` objects too, and an app row adds up its processes. A
+reading updates the objects of processes it has seen before, so their rows keep their
+place and selection; it sets only the properties that changed and moves a process whose
+parent changed. Sort list models do not watch the values they sort by, so the view's
+sorter is notified after each reading.
 
 A process is signalled through a pidfd, after checking that the process holding the pid
 still has the start time it was listed with: a pid reused since the last reading gets
