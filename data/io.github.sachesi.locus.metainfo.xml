@@ -17,12 +17,16 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/sachesi/locus/main/data/screenshots/resources.png</image>
-      <caption>The processor, memory, network, disks and graphics cards of the machine</caption>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.1.0/data/screenshots/resources.png</image>
+      <caption>Watch the processor, memory, network and disks over time</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/sachesi/locus/main/data/screenshots/processes.png</image>
-      <caption>Running apps, and the other processes beneath what started them</caption>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.1.0/data/screenshots/gpus.png</image>
+      <caption>Follow each graphics card's usage, video memory and temperature</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.1.0/data/screenshots/processes.png</image>
+      <caption>Find the apps and processes that keep the machine busy</caption>
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">io.github.sachesi.locus.desktop</launchable>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-26 17:43+0300\n"
+"POT-Creation-Date: 2026-09-27 11:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -113,18 +113,22 @@ msgid ""
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:21
-msgid "The processor, memory, network, disks and graphics cards of the machine"
+msgid "Watch the processor, memory, network and disks over time"
 msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:25
-msgid "Running apps, and the other processes beneath what started them"
+msgid "Follow each graphics card's usage, video memory and temperature"
 msgstr ""
 
-#: data/io.github.sachesi.locus.metainfo.xml:32
+#: data/io.github.sachesi.locus.metainfo.xml:29
+msgid "Find the apps and processes that keep the machine busy"
+msgstr ""
+
+#: data/io.github.sachesi.locus.metainfo.xml:36
 msgid "sachesi"
 msgstr ""
 
-#: data/io.github.sachesi.locus.metainfo.xml:49
+#: data/io.github.sachesi.locus.metainfo.xml:53
 msgid ""
 "The first release: running apps and processes with their processor, memory, "
 "disk and graphics card use, which can be ended, killed, stopped and "
