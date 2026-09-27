@@ -320,7 +320,7 @@ pub fn environment_variable<'a>(environ: &'a [u8], name: &str) -> Option<&'a str
         .and_then(|value| std::str::from_utf8(value).ok())
 }
 
-/// The desktop file GLib started the process, or the one it descends from, from.
+/// The desktop file GLib launched the process, or an ancestor of it, from.
 pub fn launched_desktop_file(environ: &[u8]) -> Option<&str> {
     environment_variable(environ, "GIO_LAUNCHED_DESKTOP_FILE").filter(|path| !path.is_empty())
 }

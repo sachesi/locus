@@ -5,7 +5,6 @@ use gtk::glib;
 use gtk::prelude::*;
 use std::cell::RefCell;
 
-/// The widgets of one file system's row.
 struct FileSystemView {
     mount_point: String,
     free: gtk::Label,

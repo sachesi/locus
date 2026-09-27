@@ -604,7 +604,7 @@ impl AppIndex {
                         .map(|icon| Arc::from(icon.as_str())),
                 })
             });
-            // Not the executable, which is null for an entry that D-Bus alone starts.
+            // executable() panics on an entry that only D-Bus starts, which has none.
             let command = info.commandline();
             let program = command
                 .as_deref()

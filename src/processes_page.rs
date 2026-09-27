@@ -99,7 +99,6 @@ mod imp {
         /// hidden.
         pub samples: RefCell<Vec<ProcessSample>>,
         pub read: Cell<bool>,
-        /// Whether the machine has a graphics card to list the use of.
         pub has_gpus: Cell<bool>,
         pub generation: Cell<u64>,
         pub own_uid: Cell<u32>,

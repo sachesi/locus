@@ -7,16 +7,15 @@ use adw::subclass::prelude::*;
 use gettextrs::gettext;
 use gtk::glib;
 use std::cell::{Cell, RefCell};
+use std::sync::Arc;
 
-/// The widgets of one processor's graph.
 struct CoreView {
     graph: Graph,
     value: gtk::Label,
 }
 
-/// The widgets of one graphics card's card.
 struct GpuView {
-    slot: std::sync::Arc<str>,
+    slot: Arc<str>,
     graph: Graph,
     legend: adw::WrapBox,
     usage: gtk::Label,

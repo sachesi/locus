@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-09-27 11:01+0300\n"
-"PO-Revision-Date: 2026-09-27 11:03+0300\n"
+"POT-Creation-Date: 2026-09-27 12:32+0300\n"
+"PO-Revision-Date: 2026-09-27 12:36+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
@@ -214,12 +214,12 @@ msgstr "Каждые 5 секунд"
 msgid "Every 10 Seconds"
 msgstr "Каждые 10 секунд"
 
-#: src/processes_page.rs:221
+#: src/processes_page.rs:220
 #, no-c-format
 msgid "Try a different search"
 msgstr "Попробуйте изменить запрос"
 
-#: src/processes_page.rs:224
+#: src/processes_page.rs:223
 #, no-c-format
 msgid ""
 "Only your own processes are searched. Turn on “Show All Processes” in the "
@@ -228,28 +228,28 @@ msgstr ""
 "Поиск идёт только среди ваших процессов. Включите «Показывать все процессы» "
 "в главном меню, чтобы искать среди всех."
 
-#: src/processes_page.rs:334
+#: src/processes_page.rs:333
 #, no-c-format
 msgid "Apps"
 msgstr "Приложения"
 
-#: src/processes_page.rs:335 ui/preferences_dialog.ui:28
+#: src/processes_page.rs:334 ui/preferences_dialog.ui:28
 #: ui/shortcuts_dialog.ui:27 ui/shortcuts_dialog.ui:59 ui/window.ui:87
 #, no-c-format
 msgid "Processes"
 msgstr "Процессы"
 
-#: src/processes_page.rs:456
+#: src/processes_page.rs:455
 #, no-c-format
 msgid "Disk use of other users' processes is not shown"
 msgstr "Использование диска процессами других пользователей не показывается"
 
-#: src/processes_page.rs:482
+#: src/processes_page.rs:481
 #, no-c-format
 msgid "GPU use of other users' processes is not shown"
 msgstr "Использование ГП процессами других пользователей не показывается"
 
-#: src/processes_page.rs:744
+#: src/processes_page.rs:743
 #, no-c-format
 msgid "{count} Running App"
 msgid_plural "{count} Running Apps"
@@ -257,7 +257,7 @@ msgstr[0] "{count} запущенное приложение"
 msgstr[1] "{count} запущенных приложения"
 msgstr[2] "{count} запущенных приложений"
 
-#: src/processes_page.rs:749
+#: src/processes_page.rs:748
 #, no-c-format
 msgid "{count} Running Process"
 msgid_plural "{count} Running Processes"
@@ -265,38 +265,38 @@ msgstr[0] "{count} запущенный процесс"
 msgstr[1] "{count} запущенных процесса"
 msgstr[2] "{count} запущенных процессов"
 
-#: src/processes_page.rs:783 ui/processes_page.ui:210
+#: src/processes_page.rs:782 ui/processes_page.ui:210
 #, no-c-format
 msgid "CPU"
 msgstr "ЦП"
 
-#: src/processes_page.rs:788 ui/processes_page.ui:216 ui/resources_page.ui:107
+#: src/processes_page.rs:787 ui/processes_page.ui:216 ui/resources_page.ui:107
 #: ui/resources_page.ui:152
 #, no-c-format
 msgid "Memory"
 msgstr "Память"
 
-#: src/processes_page.rs:793 ui/processes_page.ui:222
+#: src/processes_page.rs:792 ui/processes_page.ui:222
 #, no-c-format
 msgid "Disk"
 msgstr "Диск"
 
-#: src/processes_page.rs:796 src/resources_page.rs:252 ui/processes_page.ui:229
+#: src/processes_page.rs:795 src/resources_page.rs:251 ui/processes_page.ui:229
 #, no-c-format
 msgid "GPU"
 msgstr "ГП"
 
-#: src/processes_page.rs:941
+#: src/processes_page.rs:940
 #, no-c-format
 msgid "Stopped"
 msgstr "Остановлен"
 
-#: src/processes_page.rs:1180
+#: src/processes_page.rs:1179
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr "Принудительно завершить «{name}»?"
 
-#: src/processes_page.rs:1183
+#: src/processes_page.rs:1182
 #, no-c-format
 msgid ""
 "Its {count} process ends at once, without a chance to save its work or clean "
@@ -315,7 +315,7 @@ msgstr[2] ""
 "прибраться за собой."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1190
+#: src/processes_page.rs:1189
 #, no-c-format
 msgid ""
 "Process {pid} ends at once, without a chance to save its work or clean up."
@@ -323,22 +323,22 @@ msgstr ""
 "Процесс {pid} завершится сразу, без возможности сохранить работу или "
 "прибраться за собой."
 
-#: src/processes_page.rs:1194
+#: src/processes_page.rs:1193
 #, no-c-format
 msgid "_Kill App"
 msgstr "Завершить приложение _принудительно"
 
-#: src/processes_page.rs:1196
+#: src/processes_page.rs:1195
 #, no-c-format
 msgid "_Kill Process"
 msgstr "Завершить _принудительно"
 
-#: src/processes_page.rs:1200
+#: src/processes_page.rs:1199
 #, no-c-format
 msgid "End “{name}”?"
 msgstr "Завершить «{name}»?"
 
-#: src/processes_page.rs:1203
+#: src/processes_page.rs:1202
 #, no-c-format
 msgid ""
 "Its {count} process is asked to quit. Work it has not saved may be lost."
@@ -356,93 +356,93 @@ msgstr[2] ""
 "может быть потеряна."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1209
+#: src/processes_page.rs:1208
 #, no-c-format
 msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 "Процессу {pid} будет предложено завершиться. Несохранённая работа может быть "
 "потеряна."
 
-#: src/processes_page.rs:1212
+#: src/processes_page.rs:1211
 #, no-c-format
 msgid "_End App"
 msgstr "_Завершить приложение"
 
-#: src/processes_page.rs:1214
+#: src/processes_page.rs:1213
 #, no-c-format
 msgid "_End Process"
 msgstr "_Завершить процесс"
 
-#: src/processes_page.rs:1226
+#: src/processes_page.rs:1225
 #, no-c-format
 msgid "_Cancel"
 msgstr "_Отмена"
 
-#: src/processes_page.rs:1286
+#: src/processes_page.rs:1285
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr "«{name}» уже завершился"
 
 #. Translators: {reason} is "it belongs to another user", or an error
 #. message of the system; so too in the three messages after this one.
-#: src/processes_page.rs:1292
+#: src/processes_page.rs:1291
 #, no-c-format
 msgid "Could not end “{name}”: {reason}"
 msgstr "Не удалось завершить «{name}»: {reason}"
 
-#: src/processes_page.rs:1294
+#: src/processes_page.rs:1293
 #, no-c-format
 msgid "Could not kill “{name}”: {reason}"
 msgstr "Не удалось принудительно завершить «{name}»: {reason}"
 
-#: src/processes_page.rs:1295
+#: src/processes_page.rs:1294
 #, no-c-format
 msgid "Could not stop “{name}”: {reason}"
 msgstr "Не удалось остановить «{name}»: {reason}"
 
-#: src/processes_page.rs:1296
+#: src/processes_page.rs:1295
 #, no-c-format
 msgid "Could not continue “{name}”: {reason}"
 msgstr "Не удалось продолжить «{name}»: {reason}"
 
-#: src/processes_page.rs:1299
+#: src/processes_page.rs:1298
 #, no-c-format
 msgid "it belongs to another user"
 msgstr "процесс принадлежит другому пользователю"
 
 #. Translators: one of several graphics cards; {number} counts from 1.
-#: src/resources_page.rs:251
+#: src/resources_page.rs:250
 #, no-c-format
 msgid "GPU {number}"
 msgstr "ГП {number}"
 
-#: src/resources_page.rs:275
+#: src/resources_page.rs:274
 #, no-c-format
 msgid "GPU usage and video memory in use over the last readings"
 msgstr "Нагрузка ГП и занятая видеопамять за последние замеры"
 
-#: src/resources_page.rs:278
+#: src/resources_page.rs:277
 #, no-c-format
 msgid "Usage"
 msgstr "Нагрузка"
 
-#: src/resources_page.rs:279
+#: src/resources_page.rs:278
 #, no-c-format
 msgid "Video Memory"
 msgstr "Видеопамять"
 
-#: src/resources_page.rs:280
+#: src/resources_page.rs:279
 #, no-c-format
 msgid "Temperature"
 msgstr "Температура"
 
-#: src/resources_page.rs:291
+#: src/resources_page.rs:290
 #, no-c-format
 msgid "The driver does not report usage"
 msgstr "Драйвер не сообщает о нагрузке"
 
 #. Translators: one core of the processor; {number} counts from 1.
-#: src/resources_page.rs:350
+#: src/resources_page.rs:349
 #, no-c-format
 msgid "CPU {number}"
 msgstr "ЦП {number}"
