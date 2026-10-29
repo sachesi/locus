@@ -10,6 +10,7 @@ use std::fmt::Write as _;
 use std::fs::{self, File};
 use std::io::{self, Read};
 use std::mem::MaybeUninit;
+use std::os::fd::AsRawFd;
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::sync::Arc;
@@ -747,14 +748,43 @@ impl AppIndex {
     }
 }
 
+/// Reads a file of /proc or /sys whole. Such a file gives all it has to a read with room
+/// for it, so one that gives less than there was room for has ended: the read that would
+/// return nothing is not made, nor the one asking for the file's size, which it does not
+/// know.
 fn read_text(path: impl AsRef<Path>, into: &mut String) -> io::Result<()> {
     into.clear();
-    // Read through `take`, since reading a `File` whole first asks for its size, which a
-    // file in /proc does not know: a system call wasted on each.
-    File::open(path)?
-        .take(u64::MAX)
-        .read_to_string(into)
-        .map(drop)
+    let file = File::open(path)?;
+    // SAFETY: the bytes are checked to be UTF-8 before this returns, and cleared if not.
+    let bytes = unsafe { into.as_mut_vec() };
+    let read = read_until_short(&file, bytes);
+    if read.is_ok() && std::str::from_utf8(bytes).is_ok() {
+        return Ok(());
+    }
+    bytes.clear();
+    read.and(Err(io::ErrorKind::InvalidData.into()))
+}
+
+fn read_until_short(file: &File, bytes: &mut Vec<u8>) -> io::Result<()> {
+    loop {
+        bytes.reserve(bytes.capacity().max(4096) - bytes.len());
+        let room = bytes.spare_capacity_mut();
+        // SAFETY: read writes at most `room.len()` bytes into `room`, which is that long.
+        let count = unsafe { libc::read(file.as_raw_fd(), room.as_mut_ptr().cast(), room.len()) };
+        let Ok(count) = usize::try_from(count) else {
+            let error = io::Error::last_os_error();
+            if error.kind() == io::ErrorKind::Interrupted {
+                continue;
+            }
+            return Err(error);
+        };
+        let short = count < room.len();
+        // SAFETY: read filled in `count` bytes past the length.
+        unsafe { bytes.set_len(bytes.len() + count) };
+        if short {
+            return Ok(());
+        }
+    }
 }
 
 fn proc_path<'a>(path: &'a mut String, pid: u32, file: &str) -> &'a str {
