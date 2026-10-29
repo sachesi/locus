@@ -128,21 +128,24 @@ glib::wrapper! {
 impl ResourcesPage {
     /// Adds the reading to the graphs, and writes it out beside them when the page is
     /// `shown`; a page off screen is written out by the reading taken when it comes back.
-    pub fn apply(&self, system: &System, shown: bool) {
+    /// A reading `unmeasured` has no rates, and leaves the graphs and the rates alone.
+    pub fn apply(&self, system: &System, shown: bool, unmeasured: bool) {
         let imp = self.imp();
         let memory = &system.memory;
         let memory_share = share(memory.used, memory.total);
-        imp.cpu_graph.push(&[system.cpu]);
-        if memory.swap_total > 0 {
-            imp.memory_graph
-                .push(&[memory_share, share(memory.swap_used, memory.swap_total)]);
-        } else {
-            imp.memory_graph.push(&[memory_share]);
+        if !unmeasured {
+            imp.cpu_graph.push(&[system.cpu]);
+            if memory.swap_total > 0 {
+                imp.memory_graph
+                    .push(&[memory_share, share(memory.swap_used, memory.swap_total)]);
+            } else {
+                imp.memory_graph.push(&[memory_share]);
+            }
+            imp.network_graph.push(&[system.received, system.sent]);
+            imp.disk_graph.push(&[system.read, system.written]);
         }
-        imp.network_graph.push(&[system.received, system.sent]);
-        imp.disk_graph.push(&[system.read, system.written]);
-        self.apply_cores(&system.cores, shown);
-        self.apply_gpus(&system.gpus, shown);
+        self.apply_cores(&system.cores, !unmeasured, shown && !unmeasured);
+        self.apply_gpus(&system.gpus, !unmeasured, shown);
         if !shown {
             return;
         }
@@ -153,7 +156,6 @@ impl ResourcesPage {
             imp.cpu_model.set_label(model);
             imp.cpu_model.set_visible(true);
         }
-        imp.cpu_value.set_label(&format::percent(system.cpu, 0));
         imp.memory_value
             .set_label(&format::percent(memory_share, 0));
         imp.memory_detail
@@ -163,13 +165,17 @@ impl ResourcesPage {
             imp.swap_detail
                 .set_label(&format::used_of(memory.swap_used, memory.swap_total));
         }
+        if unmeasured {
+            return;
+        }
+        imp.cpu_value.set_label(&format::percent(system.cpu, 0));
         imp.received.set_label(&format::rate(system.received));
         imp.sent.set_label(&format::rate(system.sent));
         imp.read.set_label(&format::rate(system.read));
         imp.written.set_label(&format::rate(system.written));
     }
 
-    fn apply_gpus(&self, gpus: &[Gpu], shown: bool) {
+    fn apply_gpus(&self, gpus: &[Gpu], graph: bool, shown: bool) {
         let imp = self.imp();
         let mut views = imp.gpu_views.borrow_mut();
         let same = views.len() == gpus.len()
@@ -201,6 +207,7 @@ impl ResourcesPage {
             }
             let usage = gpu.usage.unwrap_or(0.0);
             match memory_share {
+                _ if !graph => {}
                 Some(memory_share) => view.graph.push(&[usage, memory_share]),
                 None => view.graph.push(&[usage]),
             }
@@ -221,7 +228,7 @@ impl ResourcesPage {
         }
     }
 
-    fn apply_cores(&self, cores: &[f64], shown: bool) {
+    fn apply_cores(&self, cores: &[f64], graph: bool, shown: bool) {
         let imp = self.imp();
         let mut views = imp.core_views.borrow_mut();
         if views.len() != cores.len() {
@@ -236,7 +243,9 @@ impl ResourcesPage {
             imp.cores.set_visible(cores.len() > 1);
         }
         for (view, &usage) in views.iter().zip(cores) {
-            view.graph.push(&[usage]);
+            if graph {
+                view.graph.push(&[usage]);
+            }
             if shown {
                 view.value.set_label(&format::percent(usage, 0));
             }

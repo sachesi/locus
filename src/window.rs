@@ -216,7 +216,7 @@ impl LocusWindow {
                     win.apply(snapshot);
                 }
                 drop(win);
-                let wait = if snapshot.is_some_and(|s| s.processes_unmeasured) {
+                let wait = if snapshot.is_some_and(|s| s.unmeasured) {
                     sampler::BASELINE
                 } else {
                     interval
@@ -249,8 +249,11 @@ impl LocusWindow {
 
     fn apply(&self, snapshot: &Snapshot) {
         let imp = self.imp();
-        imp.resources_page
-            .apply(&snapshot.system, self.shows("resources"));
+        imp.resources_page.apply(
+            &snapshot.system,
+            self.shows("resources"),
+            snapshot.unmeasured,
+        );
         if let Some(filesystems) = &snapshot.system.filesystems {
             imp.filesystems_page.apply(filesystems);
         }
