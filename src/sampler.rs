@@ -22,6 +22,16 @@ const APPS_KEPT: Duration = Duration::from_secs(10);
 /// How long a first reading waits for its second, which measures the first rates.
 pub const BASELINE: Duration = Duration::from_millis(250);
 
+/// Every how many readings a process's open files are looked through again for clients of
+/// a graphics card. Looking costs a system call per file, most of what reading the
+/// processes would cost otherwise, so a client opened in between shows up to this many
+/// readings late; one that closes is noticed at once.
+const GPU_CLIENTS_RESCANNED: u64 = 5;
+
+/// Nanoseconds each kind of engine spent on a process's work, by card and engine, with how
+/// many engines of the kind there are.
+type Engines = HashMap<String, (u64, u64)>;
+
 #[derive(Debug, Clone)]
 pub struct ProcessSample {
     pub pid: u32,
@@ -101,9 +111,9 @@ struct Tracked {
     ticks: u64,
     io: Option<u64>,
     io_denied: bool,
-    /// Nanoseconds each kind of engine spent on the process's work, by card and engine,
-    /// with how many engines of the kind there are.
-    engines: HashMap<String, (u64, u64)>,
+    engines: Engines,
+    /// The files the process has open as clients of a graphics card, when last looked.
+    gpu_fds: Vec<u32>,
     fds_denied: bool,
     name: Arc<str>,
     command: Arc<str>,
@@ -404,7 +414,17 @@ impl Sampler {
             let gpu = if tracked.fds_denied {
                 None
             } else {
-                match gpu_engines(pid, &mut self.path, &mut self.text, &mut clients) {
+                // Staggered by pid, so each reading looks through a share of the processes.
+                let rescan = !known
+                    || (self.generation + u64::from(pid)).is_multiple_of(GPU_CLIENTS_RESCANNED);
+                match gpu_engines(
+                    pid,
+                    &mut tracked.gpu_fds,
+                    rescan,
+                    &mut self.path,
+                    &mut self.text,
+                    &mut clients,
+                ) {
                     Err(e) if e.kind() == io::ErrorKind::PermissionDenied => {
                         tracked.fds_denied = true;
                         None
@@ -476,6 +496,7 @@ fn track(
         io: None,
         io_denied: false,
         engines: HashMap::new(),
+        gpu_fds: Vec::new(),
         fds_denied: false,
         name: procfs::display_name(stat.comm, bytes).into(),
         command: procfs::command_line(bytes).into(),
@@ -490,13 +511,23 @@ fn track(
 /// The time each kind of engine of each card has spent on the work of the process, by card
 /// and engine. A client of a card that an earlier process shares, having started this one
 /// or been started by it, is left to that process, which then has all of its time.
+///
+/// Reads only the clients in `fds` unless told to `rescan`, or one of them is no longer a
+/// client; then it looks through every open file of the process and puts the clients
+/// found in `fds`.
 fn gpu_engines(
     pid: u32,
+    fds: &mut Vec<u32>,
+    rescan: bool,
     path: &mut String,
     text: &mut String,
     clients: &mut HashSet<(String, u64)>,
-) -> io::Result<HashMap<String, (u64, u64)>> {
-    let mut engines: HashMap<String, (u64, u64)> = HashMap::new();
+) -> io::Result<Engines> {
+    if !rescan && let Some(engines) = client_engines(pid, fds, path, text, clients) {
+        return Ok(engines);
+    }
+    fds.clear();
+    let mut engines = Engines::new();
     for entry in fs::read_dir(proc_path(path, pid, "fd"))?.flatten() {
         let Ok(target) = fs::read_link(entry.path()) else {
             continue;
@@ -504,26 +535,66 @@ fn gpu_engines(
         if !target.as_os_str().as_bytes().starts_with(b"/dev/dri/") {
             continue;
         }
-        let fd = entry.file_name();
-        path.clear();
-        let _ = write!(path, "/proc/{pid}/fdinfo/{}", fd.to_string_lossy());
-        if read_text(&*path, text).is_err() {
-            continue;
-        }
-        let Some(client) = procfs::parse_drm_fdinfo(text) else {
+        let Some(fd) = entry.file_name().to_str().and_then(|n| n.parse().ok()) else {
             continue;
         };
-        if !clients.insert((client.pdev.to_owned(), client.id)) {
-            continue;
-        }
-        for (engine, ns, capacity) in client.engines {
-            let total = engines
-                .entry(format!("{} {engine}", client.pdev))
-                .or_insert((0, capacity));
-            total.0 += ns;
+        if add_client(pid, fd, &mut engines, &mut Vec::new(), path, text, clients).is_some() {
+            fds.push(fd);
         }
     }
     Ok(engines)
+}
+
+/// The engines of the clients open as `fds`, or `None`, claiming none of them, when one is
+/// no longer a client.
+fn client_engines(
+    pid: u32,
+    fds: &[u32],
+    path: &mut String,
+    text: &mut String,
+    clients: &mut HashSet<(String, u64)>,
+) -> Option<Engines> {
+    let mut engines = Engines::new();
+    let mut claimed = Vec::new();
+    for &fd in fds {
+        if add_client(pid, fd, &mut engines, &mut claimed, path, text, clients).is_none() {
+            for client in &claimed {
+                clients.remove(client);
+            }
+            return None;
+        }
+    }
+    Some(engines)
+}
+
+/// Adds the time of the client open as `fd` to `engines`, unless an earlier process has
+/// claimed the client, and notes it in `claimed` if not. `None` if `fd` is not a client.
+fn add_client(
+    pid: u32,
+    fd: u32,
+    engines: &mut Engines,
+    claimed: &mut Vec<(String, u64)>,
+    path: &mut String,
+    text: &mut String,
+    clients: &mut HashSet<(String, u64)>,
+) -> Option<()> {
+    path.clear();
+    let _ = write!(path, "/proc/{pid}/fdinfo/{fd}");
+    read_text(&*path, text).ok()?;
+    let client = procfs::parse_drm_fdinfo(text)?;
+    let key = (client.pdev.to_owned(), client.id);
+    if clients.contains(&key) {
+        return Some(());
+    }
+    for (engine, ns, capacity) in client.engines {
+        let total = engines
+            .entry(format!("{} {engine}", client.pdev))
+            .or_insert((0, capacity));
+        total.0 += ns;
+    }
+    clients.insert(key.clone());
+    claimed.push(key);
+    Some(())
 }
 
 /// The app a process is part of: the one its unit is named after, else the one GLib
@@ -758,6 +829,51 @@ mod tests {
         // SAFETY: getuid cannot fail and touches no memory.
         assert_eq!(own.uid, unsafe { libc::getuid() });
         assert!(own.disk.is_some(), "a process may read its own io");
+    }
+
+    #[test]
+    fn a_gpu_client_closed_between_looks_is_noticed() {
+        use std::os::fd::AsRawFd;
+        let Some(node) = fs::read_dir("/dev/dri")
+            .into_iter()
+            .flatten()
+            .flatten()
+            .find(|entry| entry.file_name().to_string_lossy().starts_with("renderD"))
+        else {
+            return;
+        };
+        let pid = std::process::id();
+        let (mut path, mut text, mut fds) = (String::new(), String::new(), Vec::new());
+        let client = File::options()
+            .read(true)
+            .write(true)
+            .open(node.path())
+            .expect("open the render node");
+        let fd = u32::try_from(client.as_raw_fd()).expect("an open file's number");
+        gpu_engines(
+            pid,
+            &mut fds,
+            true,
+            &mut path,
+            &mut text,
+            &mut HashSet::new(),
+        )
+        .expect("look through the test's own files");
+        assert!(fds.contains(&fd));
+
+        drop(client);
+        // Likely given the same number, which is then no longer a client.
+        let _other = File::open("/dev/null").expect("open /dev/null");
+        gpu_engines(
+            pid,
+            &mut fds,
+            false,
+            &mut path,
+            &mut text,
+            &mut HashSet::new(),
+        )
+        .expect("look through the test's own files");
+        assert!(!fds.contains(&fd));
     }
 
     #[test]
