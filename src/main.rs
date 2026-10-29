@@ -1,3 +1,5 @@
+#[cfg(test)]
+mod bench;
 mod config;
 mod filesystems_page;
 mod format;

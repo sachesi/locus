@@ -65,6 +65,11 @@ check:
 test:
     cargo test
 
+# What a reading costs, with and without the processes, against 500 processes the
+# benchmark starts and stops.
+bench:
+    cargo test --release bench:: -- --ignored --nocapture
+
 # Regenerate po/locus.pot from the Rust sources, the Blueprint files, the desktop entry,
 # the metainfo and the schema.
 pot:
