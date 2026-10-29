@@ -104,6 +104,9 @@ mod imp {
         pub own_uid: Cell<u32>,
         pub confirming: Cell<bool>,
         pub focus_before_menu: RefCell<Option<glib::WeakRef<gtk::Widget>>>,
+        /// The list item each cell widget shows, by the widget's address, for the menu to
+        /// find the row it is opened on.
+        pub cells: RefCell<HashMap<usize, glib::WeakRef<gtk::ListItem>>>,
         /// When the pointer last moved over the list, while it is over it.
         pub pointer_moved: Cell<Option<Instant>>,
     }
@@ -154,6 +157,7 @@ mod imp {
 
             obj.set_up_model();
             obj.set_up_columns();
+            obj.set_up_context_menu();
             let buttons = [
                 &self.stop_button,
                 &self.continue_button,
@@ -1006,7 +1010,7 @@ impl ProcessesPage {
                         |_: Option<glib::Object>, children: u32| children == 0
                     ))
                     .bind(&expander, "hide-expander", Some(item));
-                page.add_context_menu(expander.upcast_ref(), item);
+                page.add_cell(expander.upcast_ref(), item);
                 item.set_child(Some(&expander));
             }
         ));
@@ -1022,6 +1026,7 @@ impl ProcessesPage {
                 expander.set_list_row(None);
             }
         });
+        self.forget_cells(&factory);
         factory
     }
 
@@ -1058,64 +1063,117 @@ impl ProcessesPage {
                 if let Some(tooltip) = &tooltip {
                     tooltip.bind(&cell, "tooltip-text", Some(item));
                 }
-                page.add_context_menu(cell.upcast_ref(), item);
+                page.add_cell(cell.upcast_ref(), item);
                 item.set_child(Some(&cell));
             }
         ));
+        self.forget_cells(&factory);
         factory
     }
 
     /// Right click, or a long press, on a cell selects its row and opens the process menu
     /// where it happened.
-    fn add_context_menu(&self, cell: &gtk::Widget, item: &gtk::ListItem) {
-        let open = glib::clone!(
-            #[weak(rename_to = page)]
-            self,
-            #[weak]
-            cell,
-            #[weak]
-            item,
-            move |x: f64, y: f64| page.open_context_menu(&cell, item.position(), x, y)
-        );
-        let click = gtk::GestureClick::builder()
-            .button(gdk::BUTTON_SECONDARY)
-            .build();
-        let on_click = open.clone();
-        click.connect_pressed(move |gesture, _, x, y| {
-            gesture.set_state(gtk::EventSequenceState::Claimed);
-            on_click(x, y);
-        });
-        cell.add_controller(click);
-        let press = gtk::GestureLongPress::builder().touch_only(true).build();
-        press.connect_pressed(move |gesture, x, y| {
-            gesture.set_state(gtk::EventSequenceState::Claimed);
-            open(x, y);
-        });
-        cell.add_controller(press);
+    fn add_cell(&self, cell: &gtk::Widget, item: &gtk::ListItem) {
+        self.imp()
+            .cells
+            .borrow_mut()
+            .insert(cell.as_ptr() as usize, item.downgrade());
     }
 
-    fn open_context_menu(&self, cell: &gtk::Widget, position: u32, x: f64, y: f64) {
+    fn forget_cells(&self, factory: &gtk::SignalListItemFactory) {
+        factory.connect_teardown(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            move |_, item| {
+                if let Some(cell) = item
+                    .downcast_ref::<gtk::ListItem>()
+                    .and_then(gtk::ListItem::child)
+                {
+                    page.imp()
+                        .cells
+                        .borrow_mut()
+                        .remove(&(cell.as_ptr() as usize));
+                }
+            }
+        ));
+    }
+
+    /// Opens the process menu on the row under a secondary click or a long press. One
+    /// pair of gestures on the view, rather than on each of its cells, which would be some
+    /// thousands of them for the rows the view keeps.
+    fn set_up_context_menu(&self) {
+        let view = &*self.imp().view;
+        let click = gtk::GestureClick::builder()
+            .button(gdk::BUTTON_SECONDARY)
+            .propagation_phase(gtk::PropagationPhase::Capture)
+            .build();
+        click.connect_pressed(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            move |gesture, _, x, y| {
+                if page.open_context_menu(x, y) {
+                    gesture.set_state(gtk::EventSequenceState::Claimed);
+                }
+            }
+        ));
+        view.add_controller(click);
+        let press = gtk::GestureLongPress::builder()
+            .touch_only(true)
+            .propagation_phase(gtk::PropagationPhase::Capture)
+            .build();
+        press.connect_pressed(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            move |gesture, x, y| {
+                if page.open_context_menu(x, y) {
+                    gesture.set_state(gtk::EventSequenceState::Claimed);
+                }
+            }
+        ));
+        view.add_controller(press);
+    }
+
+    /// Opens the process menu on the row at `x`, `y` in the view, and says whether there
+    /// was a row there.
+    fn open_context_menu(&self, x: f64, y: f64) -> bool {
         let imp = self.imp();
+        let mut widget = imp.view.pick(x, y, gtk::PickFlags::DEFAULT);
+        let item = loop {
+            let Some(current) = widget else {
+                return false;
+            };
+            let item = imp
+                .cells
+                .borrow()
+                .get(&(current.as_ptr() as usize))
+                .and_then(glib::WeakRef::upgrade);
+            if let Some(item) = item {
+                break item;
+            }
+            widget = current.parent();
+        };
+        let position = item.position();
         if position == gtk::INVALID_LIST_POSITION {
-            return;
+            return true;
         }
         if let Some(selection) = imp.selection.get() {
             selection.set_selected(position);
         }
         if self.selected().is_some_and(|process| process.is_group()) {
-            return;
+            return true;
         }
-        let Some(point) =
-            cell.compute_point(&*imp.context_bin, &graphene::Point::new(x as f32, y as f32))
-        else {
-            return;
-        };
-        self.popup_context_menu(&gdk::Rectangle::new(
-            point.x() as i32,
-            point.y() as i32,
-            1,
-            1,
-        ));
+        if let Some(point) = imp
+            .view
+            .compute_point(&*imp.context_bin, &graphene::Point::new(x as f32, y as f32))
+        {
+            self.popup_context_menu(&gdk::Rectangle::new(
+                point.x() as i32,
+                point.y() as i32,
+                1,
+                1,
+            ));
+        }
+        true
     }
 
     /// Opens the process menu beneath the row with the keyboard focus, which is the one
