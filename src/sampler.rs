@@ -23,10 +23,14 @@ const APPS_KEPT: Duration = Duration::from_secs(10);
 pub const BASELINE: Duration = Duration::from_millis(250);
 
 /// Every how many readings a process's open files are looked through again for clients of
-/// a graphics card. Looking costs a system call per file, most of what reading the
-/// processes would cost otherwise, so a client opened in between shows up to this many
-/// readings late; one that closes is noticed at once.
+/// a graphics card, if their number has changed. Looking costs a system call per file, most
+/// of what reading the processes would cost otherwise, so a client opened in between shows
+/// up to this many readings late; one that closes is noticed at once.
 const GPU_CLIENTS_RESCANNED: u64 = 5;
+
+/// After how many readings the open files are looked through again even though their number
+/// is the same, in case one was closed and a client opened in its place.
+const GPU_CLIENTS_KEPT: u64 = 30;
 
 /// Nanoseconds each kind of engine spent on a process's work, by card and engine, with how
 /// many engines of the kind there are.
@@ -114,6 +118,9 @@ struct Tracked {
     engines: Engines,
     /// The files the process has open as clients of a graphics card, when last looked.
     gpu_fds: Vec<u32>,
+    /// How many files the process had open when last looked, and the reading that looked.
+    fd_count: u64,
+    fds_looked: u64,
     fds_denied: bool,
     name: Arc<str>,
     command: Arc<str>,
@@ -415,8 +422,9 @@ impl Sampler {
                 None
             } else {
                 // Staggered by pid, so each reading looks through a share of the processes.
-                let rescan = !known
+                let turn = !known
                     || (self.generation + u64::from(pid)).is_multiple_of(GPU_CLIENTS_RESCANNED);
+                let rescan = turn && tracked.files_changed(pid, self.generation, &mut self.path);
                 match gpu_engines(
                     pid,
                     &mut tracked.gpu_fds,
@@ -471,6 +479,23 @@ impl Sampler {
     }
 }
 
+impl Tracked {
+    /// Whether the process may have opened or closed files since they were last looked
+    /// through, and if so, notes that they are being looked through now.
+    fn files_changed(&mut self, pid: u32, generation: u64, path: &mut String) -> bool {
+        // Kernels before 6.2 count no files here, and give 0.
+        let count = fs::metadata(proc_path(path, pid, "fd")).map_or(0, |fds| fds.len());
+        let changed = count == 0
+            || count != self.fd_count
+            || generation - self.fds_looked >= GPU_CLIENTS_KEPT;
+        if changed {
+            self.fd_count = count;
+            self.fds_looked = generation;
+        }
+        changed
+    }
+}
+
 /// What stays the same for the life of a process, read when it is first seen.
 fn track(
     pid: u32,
@@ -497,6 +522,8 @@ fn track(
         io_denied: false,
         engines: HashMap::new(),
         gpu_fds: Vec::new(),
+        fd_count: 0,
+        fds_looked: 0,
         fds_denied: false,
         name: procfs::display_name(stat.comm, bytes).into(),
         command: procfs::command_line(bytes).into(),
