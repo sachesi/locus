@@ -735,7 +735,12 @@ impl AppIndex {
 
 fn read_text(path: impl AsRef<Path>, into: &mut String) -> io::Result<()> {
     into.clear();
-    File::open(path)?.read_to_string(into).map(drop)
+    // Read through `take`, since reading a `File` whole first asks for its size, which a
+    // file in /proc does not know: a system call wasted on each.
+    File::open(path)?
+        .take(u64::MAX)
+        .read_to_string(into)
+        .map(drop)
 }
 
 fn proc_path<'a>(path: &'a mut String, pid: u32, file: &str) -> &'a str {
