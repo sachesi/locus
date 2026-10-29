@@ -20,7 +20,7 @@ use std::time::{Duration, Instant};
 /// not have makes it read again.
 const APPS_KEPT: Duration = Duration::from_secs(10);
 
-/// How long a first reading waits for its second, which measures the first rates.
+/// How long after a reading without rates the next is taken, to measure them.
 pub const BASELINE: Duration = Duration::from_millis(250);
 
 /// Every how many readings a process's open files are looked through again for clients of
@@ -113,9 +113,9 @@ pub struct Snapshot {
     pub system: System,
     /// Every process but kernel threads, when they were asked for.
     pub processes: Option<Vec<ProcessSample>>,
-    /// The processes were read for the first time, and their rates are left for a second
-    /// reading `BASELINE` later.
-    pub processes_unmeasured: bool,
+    /// The reading had nothing earlier to measure rates against, of the machine or of the
+    /// processes it lists, and leaves them to a second reading `BASELINE` later.
+    pub unmeasured: bool,
 }
 
 /// What is remembered of a process between readings.
@@ -210,17 +210,13 @@ impl Sampler {
         }
     }
 
-    /// Reads the machine, and what else `scope` asks for. Blocks for a moment when there
-    /// is no earlier reading of the machine to measure rates against; processes are listed
-    /// at once instead, since a list is of use before its rates.
+    /// Reads the machine, and what else `scope` asks for. A first reading, of the machine
+    /// or of its processes, has no rates, and is returned at once all the same, since what
+    /// else it knows is of use before them.
     pub fn sample(&mut self, scope: Scope) -> Snapshot {
-        if self.at.is_none() {
-            self.take(scope);
-            std::thread::sleep(BASELINE);
-        }
-        let unmeasured = scope.processes && self.processes_at.is_none();
+        let unmeasured = self.at.is_none() || (scope.processes && self.processes_at.is_none());
         let mut snapshot = self.take(scope);
-        snapshot.processes_unmeasured = unmeasured;
+        snapshot.unmeasured = unmeasured;
         snapshot
     }
 
@@ -242,7 +238,7 @@ impl Sampler {
         Snapshot {
             system,
             processes,
-            processes_unmeasured: false,
+            unmeasured: false,
         }
     }
 
