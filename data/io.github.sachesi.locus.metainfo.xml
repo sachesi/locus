@@ -48,6 +48,11 @@
     <control>touch</control>
   </supports>
   <releases>
+    <release version="0.1.1" date="2026-10-29">
+      <description>
+        <p>Locus does much less work to stay open. Reading the processes costs a fraction of what it did, file systems are read only while their page is shown, and a hidden window no longer updates what nobody can see. The window fills in at once on launch, with the processor, network and disk figures following a moment later. Processes showing the same processor use keep their places instead of swapping on every update, and the process list holds less memory. A process that starts using a graphics card can take a few updates to show it in the GPU column.</p>
+      </description>
+    </release>
     <release version="0.1.0" date="2026-09-27">
       <description>
         <p>The first release: running apps and processes with their processor, memory, disk and graphics card use, which can be ended, killed, stopped and continued; graphs of the processor, each of its cores, memory and swap, the network, the disks and the graphics cards; and the room left on each mounted disk.</p>
