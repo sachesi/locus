@@ -21,8 +21,8 @@ dialog or menu is open.
 Everything is read from `/proc` and `/sys` on a worker thread. Apps are recognised by the
 systemd unit the desktop starts them in, by the desktop file GLib launched them from, or,
 for apps D-Bus activates, by their program. Processes are read only while the Processes
-page is visible, since that is most of the cost of a reading; the graphs keep going in the
-background.
+page is visible, since that is most of the cost of a reading, and file systems only while
+File Systems is; the graphs keep going in the background, and while the window is hidden.
 
 Each page refreshes every 2 seconds by default, or every 1, 5 or 10 seconds as set for it
 in Preferences. Sizes are shown in binary units (KiB, MiB, GiB), or in decimal units (kB,

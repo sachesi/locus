@@ -1,7 +1,7 @@
 //! What a reading costs, with and without the processes, measured against a load the
 //! benchmark starts itself so that numbers from different machines compare: `just bench`.
 
-use crate::sampler::Sampler;
+use crate::sampler::{Sampler, Scope};
 use std::alloc::{GlobalAlloc, Layout};
 use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, Stdio};
@@ -113,7 +113,7 @@ fn peak_resident_kib() -> i64 {
     unsafe { usage.assume_init() }.ru_maxrss
 }
 
-fn measure(sampler: &mut Sampler, with_processes: bool) {
+fn measure(sampler: &mut Sampler, page: &str, scope: Scope) {
     let mut times = Vec::with_capacity(READINGS);
     let mut listed = 0;
     let (allocations, allocated) = (
@@ -122,19 +122,14 @@ fn measure(sampler: &mut Sampler, with_processes: bool) {
     );
     for _ in 0..READINGS {
         let start = thread_time();
-        let snapshot = sampler.sample(with_processes);
+        let snapshot = sampler.sample(scope);
         times.push(thread_time() - start);
         listed = snapshot.processes.map_or(0, |p| p.len());
     }
     times.sort_by(f64::total_cmp);
     let readings = READINGS as u64;
     println!(
-        "{:<20} {:>9.0} µs median {:>9.0} µs worst {:>8} allocations {:>8} KiB allocated {:>5} processes",
-        if with_processes {
-            "with processes"
-        } else {
-            "without processes"
-        },
+        "{page:<13} {:>9.0} µs median {:>9.0} µs worst {:>8} allocations {:>8} KiB allocated {:>5} processes",
         times[READINGS / 2],
         times[READINGS - 1],
         (ALLOCATIONS.load(Ordering::Relaxed) - allocations) / readings,
@@ -148,12 +143,21 @@ fn measure(sampler: &mut Sampler, with_processes: bool) {
 fn cost_of_a_reading() {
     let load = Load::start();
     let mut sampler = Sampler::new();
+    let processes = Scope {
+        processes: true,
+        filesystems: false,
+    };
+    let filesystems = Scope {
+        processes: false,
+        filesystems: true,
+    };
     // The first readings read the installed apps and look up every process's details.
-    sampler.sample(true);
-    sampler.sample(true);
-    println!("per reading, over {READINGS} readings:");
-    measure(&mut sampler, true);
-    measure(&mut sampler, false);
+    sampler.sample(processes);
+    sampler.sample(processes);
+    println!("per reading, over {READINGS} readings, by the page on screen:");
+    measure(&mut sampler, "Processes", processes);
+    measure(&mut sampler, "Resources", Scope::default());
+    measure(&mut sampler, "File Systems", filesystems);
     println!("peak resident {} MiB", peak_resident_kib() / 1024);
     drop(load);
 }
