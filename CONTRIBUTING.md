@@ -35,6 +35,8 @@ Before a change goes in:
     src/preferences_dialog.rs  the update interval of each page, and the units of sizes
     src/graph.rs               LocusGraph, a line graph drawn with GtkSnapshot
     src/format.rs              percentages, sizes and rates as the interface writes them
+    src/bench.rs               the processor time and allocations of a reading, for
+                               `just bench`
 
 Nothing in `sampler.rs`, `gpu.rs` or `procfs.rs` touches GTK; the sampler only asks GIO
 for the installed apps. A `Sampler` moves to a `gio::spawn_blocking` worker for each
@@ -60,6 +62,7 @@ nothing.
     just run            # debug build, schema from target/schemas, translations from target/locale
     just check          # fmt, clippy -D warnings, blueprint, validators, catalogues
     just test           # the unit tests
+    just bench          # what a reading costs, against a load of 500 processes
     cargo deny check    # advisories, licences and sources of the dependencies
 
 The tests of the parsers run on fixtures; one reads this machine's `/proc` and finds its own
