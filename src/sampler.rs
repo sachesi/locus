@@ -85,7 +85,8 @@ pub struct System {
     pub sent: f64,
     pub read: f64,
     pub written: f64,
-    pub filesystems: Vec<FileSystem>,
+    /// The mounted file systems, when they were asked for.
+    pub filesystems: Option<Vec<FileSystem>>,
     pub gpus: Vec<Gpu>,
 }
 
@@ -97,6 +98,13 @@ pub struct App {
     pub name: Arc<str>,
     /// Its icon, in the form `gio::Icon::for_string` takes.
     pub icon: Option<Arc<str>>,
+}
+
+/// What a reading covers besides the machine's totals, which it always reads.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Scope {
+    pub processes: bool,
+    pub filesystems: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -201,26 +209,29 @@ impl Sampler {
         }
     }
 
-    /// Reads the machine, and its processes when `with_processes` is set. Blocks for a
-    /// moment when there is no earlier reading of the machine to measure rates against;
-    /// processes are listed at once instead, since a list is of use before its rates.
-    pub fn sample(&mut self, with_processes: bool) -> Snapshot {
+    /// Reads the machine, and what else `scope` asks for. Blocks for a moment when there
+    /// is no earlier reading of the machine to measure rates against; processes are listed
+    /// at once instead, since a list is of use before its rates.
+    pub fn sample(&mut self, scope: Scope) -> Snapshot {
         if self.at.is_none() {
-            self.take(with_processes);
+            self.take(scope);
             std::thread::sleep(BASELINE);
         }
-        let unmeasured = with_processes && self.processes_at.is_none();
-        let mut snapshot = self.take(with_processes);
+        let unmeasured = scope.processes && self.processes_at.is_none();
+        let mut snapshot = self.take(scope);
         snapshot.processes_unmeasured = unmeasured;
         snapshot
     }
 
-    fn take(&mut self, with_processes: bool) -> Snapshot {
+    fn take(&mut self, scope: Scope) -> Snapshot {
         let now = Instant::now();
         let seconds = self.at.map(|at| now.duration_since(at).as_secs_f64());
         self.at = Some(now);
-        let system = self.read_system(seconds.filter(|s| *s > 0.0));
-        let processes = if with_processes {
+        let mut system = self.read_system(seconds.filter(|s| *s > 0.0));
+        if scope.filesystems {
+            system.filesystems = Some(self.read_filesystems());
+        }
+        let processes = if scope.processes {
             Some(self.read_processes(now))
         } else {
             // The counters kept would be stale by the time processes are asked for again.
@@ -293,25 +304,28 @@ impl Sampler {
             self.disks = counters;
         }
 
-        if read_text("/proc/self/mountinfo", &mut self.text).is_ok() {
-            system.filesystems = procfs::parse_mountinfo(&self.text)
-                .into_iter()
-                .filter_map(|mount| {
-                    let (size, used, available) = usage(&mount.mount_point)?;
-                    (size > 0).then_some(FileSystem {
-                        mount_point: mount.mount_point,
-                        source: mount.source,
-                        fs_type: mount.fs_type,
-                        size,
-                        used,
-                        available,
-                    })
-                })
-                .collect();
-        }
-
         system.gpus = self.gpus.iter().map(gpu::Card::read).collect();
         system
+    }
+
+    fn read_filesystems(&mut self) -> Vec<FileSystem> {
+        if read_text("/proc/self/mountinfo", &mut self.text).is_err() {
+            return Vec::new();
+        }
+        procfs::parse_mountinfo(&self.text)
+            .into_iter()
+            .filter_map(|mount| {
+                let (size, used, available) = usage(&mount.mount_point)?;
+                (size > 0).then_some(FileSystem {
+                    mount_point: mount.mount_point,
+                    source: mount.source,
+                    fs_type: mount.fs_type,
+                    size,
+                    used,
+                    available,
+                })
+            })
+            .collect()
     }
 
     fn read_processes(&mut self, now: Instant) -> Vec<ProcessSample> {
@@ -845,7 +859,10 @@ mod tests {
     #[test]
     fn reading_the_running_machine() {
         let mut sampler = Sampler::new();
-        let snapshot = sampler.sample(true);
+        let snapshot = sampler.sample(Scope {
+            processes: true,
+            filesystems: true,
+        });
         let system = &snapshot.system;
         assert!(!system.cores.is_empty());
         assert!((0.0..=100.0).contains(&system.cpu));
@@ -861,6 +878,7 @@ mod tests {
         // SAFETY: getuid cannot fail and touches no memory.
         assert_eq!(own.uid, unsafe { libc::getuid() });
         assert!(own.disk.is_some(), "a process may read its own io");
+        assert!(system.filesystems.is_some(), "file systems were asked for");
     }
 
     #[test]
@@ -909,9 +927,14 @@ mod tests {
     }
 
     #[test]
-    fn processes_left_out_when_not_asked_for() {
+    fn only_what_is_asked_for_is_read() {
         let mut sampler = Sampler::new();
-        assert!(sampler.sample(false).processes.is_none());
-        assert!(sampler.sample(true).processes.is_some());
+        let totals = sampler.sample(Scope::default());
+        assert!(totals.processes.is_none() && totals.system.filesystems.is_none());
+        let processes = Scope {
+            processes: true,
+            filesystems: false,
+        };
+        assert!(sampler.sample(processes).processes.is_some());
     }
 }

@@ -3,7 +3,7 @@ use crate::filesystems_page::FileSystemsPage;
 use crate::format;
 use crate::processes_page::ProcessesPage;
 use crate::resources_page::ResourcesPage;
-use crate::sampler::{self, Sampler, Snapshot};
+use crate::sampler::{self, Sampler, Scope, Snapshot};
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
@@ -175,8 +175,9 @@ impl LocusWindow {
     }
 
     /// Reads the machine on a worker, one reading at a time, for as long as the window
-    /// lives. Processes are read only while their list is on screen: reading every one of
-    /// them is most of what a reading costs.
+    /// lives. Processes and file systems are read only while their page is on screen:
+    /// reading every process is most of what a reading costs, and a file system may be
+    /// slow to answer.
     fn start_sampling(&self) {
         let (wake, woken) = async_channel::bounded(1);
         self.imp().wake.replace(Some(wake));
@@ -188,14 +189,17 @@ impl LocusWindow {
                 let Some(win) = window.upgrade() else {
                     break;
                 };
-                let with_processes = win.shows_processes();
+                let scope = Scope {
+                    processes: win.shows("processes"),
+                    filesystems: win.shows("filesystems"),
+                };
                 let interval = win.interval();
                 drop(win);
 
                 let taken = sampler.take();
                 let reading = gio::spawn_blocking(move || {
                     let mut sampler = taken.unwrap_or_default();
-                    let snapshot = sampler.sample(with_processes);
+                    let snapshot = sampler.sample(scope);
                     (sampler, snapshot)
                 })
                 .await;
@@ -229,9 +233,9 @@ impl LocusWindow {
         }
     }
 
-    fn shows_processes(&self) -> bool {
-        self.imp().stack.visible_child_name().as_deref() == Some("processes")
-            && !self.is_suspended()
+    /// Whether `page` is on screen, in a window that is.
+    fn shows(&self, page: &str) -> bool {
+        self.imp().stack.visible_child_name().as_deref() == Some(page) && !self.is_suspended()
     }
 
     /// The update interval of the page on screen.
@@ -245,8 +249,11 @@ impl LocusWindow {
 
     fn apply(&self, snapshot: &Snapshot) {
         let imp = self.imp();
-        imp.resources_page.apply(&snapshot.system);
-        imp.filesystems_page.apply(&snapshot.system.filesystems);
+        imp.resources_page
+            .apply(&snapshot.system, self.shows("resources"));
+        if let Some(filesystems) = &snapshot.system.filesystems {
+            imp.filesystems_page.apply(filesystems);
+        }
         if let Some(processes) = &snapshot.processes {
             imp.processes_page.apply(processes, &snapshot.system);
         }
