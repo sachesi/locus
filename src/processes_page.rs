@@ -530,9 +530,17 @@ impl ProcessesPage {
         imp.user_column
             .set_sorter(Some(&gtk::StringSorter::new(Some(property("user")))));
         // Numbers sort largest first on the first click, which is what a monitor is
-        // looked at for.
+        // looked at for. Processor use sorts by the value as shown, to a tenth of a
+        // percent: the list is sorted again on every reading, and an idle process whose
+        // use wavers below what the column shows would otherwise move, and have the view
+        // redraw every row between where it was and where it goes.
+        let shown_cpu = property("cpu").chain_closure::<f64>(glib::closure!(
+            |_: Option<glib::Object>, cpu: f64| (cpu * 10.0).round()
+        ));
+        let cpu_sorter = gtk::NumericSorter::new(Some(shown_cpu));
+        cpu_sorter.set_sort_order(gtk::SortType::Descending);
+        imp.cpu_column.set_sorter(Some(&cpu_sorter));
         for (column, name) in [
-            (&imp.cpu_column, "cpu"),
             (&imp.memory_column, "memory"),
             (&imp.disk_column, "disk"),
             (&imp.gpu_column, "gpu"),
