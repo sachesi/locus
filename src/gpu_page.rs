@@ -2,6 +2,7 @@ use crate::format;
 use crate::gpu::Gpu;
 use crate::graph::Graph;
 use crate::heat_cell;
+use crate::range_switch::RangeSwitch;
 use crate::sampler::ProcessSample;
 use crate::stat::Stat;
 use crate::top_list::TopList;
@@ -65,6 +66,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Graph::ensure_type();
+            RangeSwitch::ensure_type();
             Stat::ensure_type();
             TopList::ensure_type();
             klass.bind_template();

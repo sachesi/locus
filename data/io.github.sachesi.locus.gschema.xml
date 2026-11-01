@@ -31,6 +31,15 @@
       <summary>How the list of processes is arranged</summary>
       <description>Apps lists the running apps first, each with its processes, then the other processes as trees. Tree lists every process under what started it. All lists every process on its own.</description>
     </key>
+    <key name="graph-range" type="s">
+      <choices>
+        <choice value="1min"/>
+        <choice value="2min"/>
+        <choice value="5min"/>
+      </choices>
+      <default>"1min"</default>
+      <summary>How far back the graphs reach</summary>
+    </key>
     <key name="window-size" type="(ii)">
       <default>(960, 720)</default>
       <summary>Window size</summary>
