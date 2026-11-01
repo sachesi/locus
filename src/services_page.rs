@@ -73,7 +73,7 @@ mod imp {
         #[property(get, set)]
         compact: Cell<bool>,
         /// Set by the window's breakpoint; leaves room for little more than the names.
-        #[property(get, set)]
+        #[property(get, set = Self::set_narrow)]
         narrow: Cell<bool>,
         /// Whether the pane with more about what is selected is open.
         #[property(get, set = Self::set_details_shown)]
@@ -147,7 +147,12 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for ServicesPage {}
+    impl WidgetImpl for ServicesPage {
+        fn map(&self) {
+            self.parent_map();
+            self.show_columns();
+        }
+    }
     impl BinImpl for ServicesPage {}
 
     #[gtk::template_callbacks]
@@ -180,6 +185,22 @@ mod imp {
         #[template_callback]
         fn on_show_log(&self) {
             self.obj().show_full_log();
+        }
+
+        fn set_narrow(&self, narrow: bool) {
+            self.narrow.set(narrow);
+            self.show_columns();
+        }
+
+        /// Showing or hiding a column rebuilds its cell in every row, so a page off screen
+        /// leaves this until it is back.
+        fn show_columns(&self) {
+            if self.obj().is_mapped() {
+                let roomy = !self.narrow.get();
+                self.startup_column.set_visible(roomy);
+                self.cpu_column.set_visible(roomy);
+                self.memory_column.set_visible(roomy);
+            }
         }
 
         fn set_details_shown(&self, shown: bool) {
@@ -274,6 +295,7 @@ impl ServicesPage {
             .replace(Some(now))
             .map(|at| now.duration_since(at).as_secs_f64());
         let cpus = f64::from(glib::num_processors().max(1));
+        let first_fill;
         {
             let mut by_name = imp.by_name.borrow_mut();
             let mut added = Vec::new();
@@ -299,6 +321,7 @@ impl ServicesPage {
             }
             // All at once, or the view holds on to the row it first had at its top as those
             // that sort above it arrive, and opens partway down the list.
+            first_fill = added.len() == services.len();
             store.extend_from_slice(&added);
             by_name.retain(|_, service| {
                 let listed = service.imp().generation.get() == generation;
@@ -317,8 +340,13 @@ impl ServicesPage {
                 .replace("{count}", &running.to_string()),
         ));
         self.show_failures();
-        self.refilter();
-        if let Some(sorter) = imp.view.sorter() {
+        if imp.failed_only.get() {
+            self.refilter();
+        } else {
+            self.show_list();
+        }
+        // New rows are sorted as they arrive; only the ones already there can be out of place.
+        if !first_fill && let Some(sorter) = imp.view.sorter() {
             sorter.changed(gtk::SorterChange::Different);
         }
         self.update_selection();
@@ -354,10 +382,14 @@ impl ServicesPage {
     }
 
     fn refilter(&self) {
-        let imp = self.imp();
-        if let Some(filter) = imp.filter.get() {
+        if let Some(filter) = self.imp().filter.get() {
             filter.changed(gtk::FilterChange::Different);
         }
+        self.show_list();
+    }
+
+    fn show_list(&self) {
+        let imp = self.imp();
         let listed = imp
             .selection
             .get()

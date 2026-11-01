@@ -72,7 +72,7 @@ mod imp {
         pub empty_page: TemplateChild<adw::StatusPage>,
 
         /// Set by the window's breakpoints; hides the columns that fit only when wide.
-        #[property(get, set)]
+        #[property(get, set = Self::set_compact)]
         compact: Cell<bool>,
         /// Set by the window's breakpoint; leaves room for little more than the names.
         #[property(get, set = Self::set_narrow)]
@@ -217,7 +217,12 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for ProcessesPage {}
+    impl WidgetImpl for ProcessesPage {
+        fn map(&self) {
+            self.parent_map();
+            self.show_columns();
+        }
+    }
     impl BinImpl for ProcessesPage {}
 
     #[gtk::template_callbacks]
@@ -232,13 +237,6 @@ mod imp {
         #[template_callback(function)]
         fn title_buttons_shown(details_shown: bool, compact: bool) -> bool {
             !details_shown || compact
-        }
-
-        /// Whether there is room for the columns that fit only when the window is wide and
-        /// the pane closed.
-        #[template_callback(function)]
-        fn roomy(tight: bool, details_shown: bool) -> bool {
-            !tight && !details_shown
         }
 
         #[template_callback]
@@ -267,17 +265,30 @@ mod imp {
             self.empty_page.set_description(Some(&hint));
         }
 
+        fn set_compact(&self, compact: bool) {
+            self.compact.set(compact);
+            self.show_columns();
+        }
+
         fn set_narrow(&self, narrow: bool) {
             self.narrow.set(narrow);
             self.show_columns();
         }
 
-        /// Where there is room for one measure beside the names, shows the one chosen. There
-        /// is a GPU column only where there is a card.
+        /// Shows the columns there is room for: the fewer, the narrower the page. Showing or
+        /// hiding a column rebuilds its cell in every row, so a page off screen leaves this
+        /// until it is back.
         pub fn show_columns(&self) {
+            if !self.obj().is_mapped() {
+                return;
+            }
             let narrow = self.narrow.get();
             let metric = self.metric_group.active_name();
             let shown = |name: &str| !narrow || metric.as_deref() == Some(name);
+            let roomy = !self.compact.get() && !self.details_shown.get();
+            self.user_column.set_visible(roomy);
+            self.pid_column.set_visible(roomy);
+            self.disk_column.set_visible(!narrow);
             self.cpu_column.set_visible(shown("cpu"));
             self.memory_column.set_visible(shown("memory"));
             self.gpu_column
@@ -305,6 +316,7 @@ mod imp {
 
         fn set_details_shown(&self, shown: bool) {
             self.details_shown.set(shown);
+            self.show_columns();
             self.obj().update_details();
         }
 

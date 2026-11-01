@@ -188,7 +188,6 @@ template $LocusProcessesPage: Adw.Bin {
                 title: _("User");
                 fixed-width: 110;
                 resizable: true;
-                visible: bind $roomy(template.compact, template.details-shown) as <bool>;
               }
 
               ColumnViewColumn cpu_column {
@@ -204,7 +203,6 @@ template $LocusProcessesPage: Adw.Bin {
               ColumnViewColumn disk_column {
                 title: _("Disk");
                 fixed-width: 100;
-                visible: bind template.narrow inverted;
               }
 
               ColumnViewColumn gpu_column {
@@ -216,7 +214,6 @@ template $LocusProcessesPage: Adw.Bin {
               ColumnViewColumn pid_column {
                 title: _("ID");
                 fixed-width: 80;
-                visible: bind $roomy(template.compact, template.details-shown) as <bool>;
               }
             };
           };
