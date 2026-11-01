@@ -259,18 +259,30 @@ impl StartupPage {
     }
 
     fn set_enabled(&self, entry: &Entry, enabled: bool) {
-        if let Err(error) = autostart::set_enabled(entry, enabled) {
-            glib::g_warning!(
-                "locus",
-                "could not change autostart entry {}: {error}",
-                entry.id
-            );
-            self.toast(
-                &gettext("Could not change when “{name}” starts").replace("{name}", &entry.name),
-            );
-            // Only then: rows rebuilt under a working switch would take the keyboard focus away.
-            self.read_now();
-        }
+        let entry = entry.clone();
+        glib::spawn_future_local(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            async move {
+                let written = entry.clone();
+                let result =
+                    gio::spawn_blocking(move || autostart::set_enabled(&written, enabled)).await;
+                if let Ok(Err(error)) = result {
+                    glib::g_warning!(
+                        "locus",
+                        "could not change autostart entry {}: {error}",
+                        entry.id
+                    );
+                    page.toast(
+                        &gettext("Could not change when “{name}” starts")
+                            .replace("{name}", &entry.name),
+                    );
+                    // Only then: rows rebuilt under a working switch would take the keyboard
+                    // focus away.
+                    page.read_now();
+                }
+            }
+        ));
     }
 
     fn confirm_remove(&self, entry: &Entry) {
@@ -295,7 +307,9 @@ impl StartupPage {
                 if dialog.choose_future(Some(&page)).await != "remove" {
                     return;
                 }
-                if let Err(error) = autostart::remove(&entry) {
+                let removed = entry.clone();
+                let result = gio::spawn_blocking(move || autostart::remove(&removed)).await;
+                if let Ok(Err(error)) = result {
                     glib::g_warning!(
                         "locus",
                         "could not remove autostart entry {}: {error}",
@@ -310,62 +324,16 @@ impl StartupPage {
         ));
     }
 
-    /// Offers the installed apps to start with the session, searched by name.
+    /// Offers the installed apps to start with the session, searched by name. A row is made
+    /// only for those in view, as finding each one's icon is work on this thread.
     fn choose_app(&self) {
         let mut apps: Vec<gio::AppInfo> = gio::AppInfo::all()
             .into_iter()
             .filter(AppInfoExt::should_show)
             .collect();
         apps.sort_by_key(|app| app.display_name().to_lowercase());
-
-        let list = gtk::ListBox::builder()
-            .selection_mode(gtk::SelectionMode::None)
-            .css_classes(["boxed-list"])
-            .margin_top(6)
-            .margin_bottom(18)
-            .margin_start(12)
-            .margin_end(12)
-            .valign(gtk::Align::Start)
-            .build();
-        let dialog = adw::Dialog::builder()
-            .title(gettext("Add App"))
-            .content_width(420)
-            .content_height(560)
-            .build();
-        for app in apps {
-            let row = adw::ActionRow::builder()
-                .title(glib::markup_escape_text(&app.display_name()))
-                .activatable(true)
-                .build();
-            if let Some(icon) = app.icon() {
-                let image = gtk::Image::from_gicon(&icon);
-                image.set_pixel_size(32);
-                image.add_css_class("lowres-icon");
-                row.add_prefix(&image);
-            }
-            row.connect_activated(glib::clone!(
-                #[weak(rename_to = page)]
-                self,
-                #[weak]
-                dialog,
-                move |_| {
-                    if let Err(error) = autostart::add(app.id().as_deref().unwrap_or_default()) {
-                        glib::g_warning!(
-                            "locus",
-                            "could not add {} to autostart: {error}",
-                            app.display_name()
-                        );
-                        page.toast(
-                            &gettext("Could not add “{name}”")
-                                .replace("{name}", &app.display_name()),
-                        );
-                    }
-                    dialog.close();
-                    page.read_now();
-                }
-            ));
-            list.append(&row);
-        }
+        let store = gio::ListStore::new::<gio::AppInfo>();
+        store.extend_from_slice(&apps);
 
         let search = gtk::SearchEntry::builder()
             .placeholder_text(gettext("Search apps"))
@@ -373,21 +341,49 @@ impl StartupPage {
             .margin_end(12)
             .margin_bottom(6)
             .build();
-        list.set_filter_func(glib::clone!(
+        let filter = gtk::CustomFilter::new(glib::clone!(
             #[weak]
             search,
             #[upgrade_or]
             true,
-            move |row| {
+            move |item| {
                 let query = search.text().to_lowercase();
-                row.downcast_ref::<adw::ActionRow>()
-                    .is_none_or(|row| row.title().to_lowercase().contains(&query))
+                item.downcast_ref::<gio::AppInfo>()
+                    .is_none_or(|app| app.display_name().to_lowercase().contains(&query))
             }
         ));
         search.connect_search_changed(glib::clone!(
             #[weak]
-            list,
-            move |_| list.invalidate_filter()
+            filter,
+            move |_| filter.changed(gtk::FilterChange::Different)
+        ));
+        let listed = gtk::FilterListModel::new(Some(store), Some(filter));
+        let list = gtk::ListView::builder()
+            .model(&gtk::NoSelection::new(Some(listed)))
+            .factory(&app_factory())
+            .single_click_activate(true)
+            .css_classes(["navigation-sidebar"])
+            .build();
+        let dialog = adw::Dialog::builder()
+            .title(gettext("Add App"))
+            .content_width(420)
+            .content_height(560)
+            .build();
+        list.connect_activate(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            #[weak]
+            dialog,
+            move |list, position| {
+                let app = list
+                    .model()
+                    .and_then(|model| model.item(position))
+                    .and_downcast::<gio::AppInfo>();
+                if let Some(app) = app {
+                    dialog.close();
+                    page.add_app(&app);
+                }
+            }
         ));
 
         let scrolled = gtk::ScrolledWindow::builder()
@@ -404,6 +400,23 @@ impl StartupPage {
         dialog.present(Some(self));
     }
 
+    fn add_app(&self, app: &gio::AppInfo) {
+        let id = app.id().map(String::from).unwrap_or_default();
+        let name = app.display_name();
+        glib::spawn_future_local(glib::clone!(
+            #[weak(rename_to = page)]
+            self,
+            async move {
+                let result = gio::spawn_blocking(move || autostart::add(&id)).await;
+                if let Ok(Err(error)) = result {
+                    glib::g_warning!("locus", "could not add {name} to autostart: {error}");
+                    page.toast(&gettext("Could not add “{name}”").replace("{name}", &name));
+                }
+                page.read_now();
+            }
+        ));
+    }
+
     fn toast(&self, text: &str) {
         if let Some(overlay) = self
             .ancestor(adw::ToastOverlay::static_type())
@@ -412,4 +425,46 @@ impl StartupPage {
             overlay.add_toast(adw::Toast::new(text));
         }
     }
+}
+
+fn app_factory() -> gtk::SignalListItemFactory {
+    let factory = gtk::SignalListItemFactory::new();
+    factory.connect_setup(|_, item| {
+        let Some(item) = item.downcast_ref::<gtk::ListItem>() else {
+            return;
+        };
+        let icon = gtk::Image::builder()
+            .pixel_size(32)
+            .css_classes(["lowres-icon"])
+            .build();
+        let name = gtk::Label::builder()
+            .xalign(0.0)
+            .ellipsize(gtk::pango::EllipsizeMode::End)
+            .build();
+        let content = gtk::Box::new(gtk::Orientation::Horizontal, 12);
+        content.append(&icon);
+        content.append(&name);
+        item.set_child(Some(&content));
+    });
+    factory.connect_bind(|_, item| {
+        let Some(item) = item.downcast_ref::<gtk::ListItem>() else {
+            return;
+        };
+        let (Some(app), Some(content)) = (
+            item.item().and_downcast::<gio::AppInfo>(),
+            item.child().and_downcast::<gtk::Box>(),
+        ) else {
+            return;
+        };
+        if let Some(icon) = content.first_child().and_downcast::<gtk::Image>() {
+            icon.set_from_gicon(
+                &app.icon()
+                    .unwrap_or_else(|| gio::ThemedIcon::new("application-x-executable").upcast()),
+            );
+        }
+        if let Some(name) = content.last_child().and_downcast::<gtk::Label>() {
+            name.set_label(&app.display_name());
+        }
+    });
+    factory
 }
