@@ -1,0 +1,218 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusDiskPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle title {};
+    }
+
+    content: ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Adw.Clamp {
+        maximum-size: 1020;
+        tightening-threshold: 600;
+
+        child: Box {
+          orientation: vertical;
+          spacing: 18;
+          margin-top: 6;
+          margin-bottom: 18;
+          margin-start: 12;
+          margin-end: 12;
+
+          FlowBox {
+            selection-mode: none;
+            homogeneous: true;
+            min-children-per-line: 1;
+            max-children-per-line: 2;
+            column-spacing: 18;
+            row-spacing: 18;
+
+            FlowBoxChild {
+              focusable: false;
+
+              child: Box {
+                orientation: vertical;
+                spacing: 12;
+
+                styles [
+                  "card",
+                  "resource",
+                ]
+
+                Label {
+                  label: _("Active Time");
+                  xalign: 0;
+
+                  styles [
+                    "heading",
+                  ]
+                }
+
+                $LocusGraph active_graph {
+                  maximum: 100;
+                  height-request: 160;
+                  width-request: 240;
+
+                  accessibility {
+                    label: _("How busy the disk was over the last readings");
+                  }
+                }
+              };
+            }
+
+            FlowBoxChild {
+              focusable: false;
+
+              child: Box {
+                orientation: vertical;
+                spacing: 12;
+
+                styles [
+                  "card",
+                  "resource",
+                ]
+
+                Label {
+                  label: _("Transfer Rate");
+                  xalign: 0;
+
+                  styles [
+                    "heading",
+                  ]
+                }
+
+                $LocusGraph transfer_graph {
+                  height-request: 160;
+                  width-request: 240;
+
+                  accessibility {
+                    label: _("Disk reads and writes over the last readings");
+                  }
+                }
+
+                Adw.WrapBox {
+                  child-spacing: 24;
+                  line-spacing: 6;
+
+                  Box {
+                    spacing: 6;
+
+                    Box {
+                      valign: center;
+
+                      styles [
+                        "swatch",
+                        "first",
+                      ]
+                    }
+
+                    Label {
+                      label: _("Reading");
+
+                      styles [
+                        "dim-label",
+                      ]
+                    }
+                  }
+
+                  Box {
+                    spacing: 6;
+
+                    Box {
+                      valign: center;
+
+                      styles [
+                        "swatch",
+                        "second",
+                      ]
+                    }
+
+                    Label {
+                      label: _("Writing");
+
+                      styles [
+                        "dim-label",
+                      ]
+                    }
+                  }
+                }
+              };
+            }
+          }
+
+          FlowBox {
+            selection-mode: none;
+            homogeneous: true;
+            min-children-per-line: 2;
+            max-children-per-line: 5;
+            column-spacing: 12;
+            row-spacing: 12;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            $LocusStat active {
+              title: _("Active Time");
+            }
+
+            $LocusStat read {
+              title: _("Reading");
+            }
+
+            $LocusStat written {
+              title: _("Writing");
+            }
+
+            $LocusStat response {
+              title: _("Response Time");
+            }
+
+            $LocusStat temperature {
+              title: _("Temperature");
+            }
+          }
+
+          Box own_group {
+            orientation: vertical;
+            spacing: 6;
+            visible: false;
+
+            Label {
+              label: _("File Systems");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            $LocusFileSystemList own_filesystems {}
+          }
+
+          Box other_group {
+            orientation: vertical;
+            spacing: 6;
+            visible: false;
+
+            Label {
+              label: _("Other File Systems");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            $LocusFileSystemList other_filesystems {}
+          }
+        };
+      };
+    };
+  };
+}

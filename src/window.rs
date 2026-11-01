@@ -1,14 +1,27 @@
 use crate::config;
-use crate::filesystems_page::FileSystemsPage;
+use crate::cpu_page::CpuPage;
+use crate::disk_page::DiskPage;
 use crate::format;
+use crate::gpu::Gpu;
+use crate::gpu_page::GpuPage;
+use crate::memory_page::MemoryPage;
+use crate::network_page::NetworkPage;
 use crate::processes_page::ProcessesPage;
-use crate::resources_page::ResourcesPage;
-use crate::sampler::{self, Sampler, Scope, Snapshot};
+use crate::sampler::{self, Disk, Focus, Link, LinkKind, Sampler, Scope, Snapshot, System};
+use crate::sidebar_row::SidebarRow;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use gettextrs::gettext;
 use gtk::{gio, glib};
 use std::cell::{OnceCell, RefCell};
 use std::time::Duration;
+
+/// A device that comes and goes with the hardware: its row in the sidebar and its page.
+struct DeviceView<P> {
+    key: String,
+    row: SidebarRow,
+    page: P,
+}
 
 mod imp {
     use super::*;
@@ -19,13 +32,26 @@ mod imp {
         #[template_child]
         pub toasts: TemplateChild<adw::ToastOverlay>,
         #[template_child]
-        pub stack: TemplateChild<adw::ViewStack>,
+        pub split_view: TemplateChild<adw::NavigationSplitView>,
         #[template_child]
-        pub filesystems_page: TemplateChild<FileSystemsPage>,
+        pub sidebar: TemplateChild<gtk::ListBox>,
+        #[template_child]
+        pub content_page: TemplateChild<adw::NavigationPage>,
+        #[template_child]
+        pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
         pub processes_page: TemplateChild<ProcessesPage>,
         #[template_child]
-        pub resources_page: TemplateChild<ResourcesPage>,
+        pub cpu_page: TemplateChild<CpuPage>,
+        #[template_child]
+        pub memory_page: TemplateChild<MemoryPage>,
+
+        /// The rows of the pages that are always there, the first of which heads the devices.
+        pub cpu_row: OnceCell<SidebarRow>,
+        pub memory_row: OnceCell<SidebarRow>,
+        pub(super) disks: RefCell<Vec<DeviceView<DiskPage>>>,
+        pub(super) links: RefCell<Vec<DeviceView<NetworkPage>>>,
+        pub(super) gpus: RefCell<Vec<DeviceView<GpuPage>>>,
 
         pub settings: gio::Settings,
         /// Cuts the wait for the next reading short.
@@ -39,10 +65,18 @@ mod imp {
         fn default() -> Self {
             Self {
                 toasts: TemplateChild::default(),
+                split_view: TemplateChild::default(),
+                sidebar: TemplateChild::default(),
+                content_page: TemplateChild::default(),
                 stack: TemplateChild::default(),
-                filesystems_page: TemplateChild::default(),
                 processes_page: TemplateChild::default(),
-                resources_page: TemplateChild::default(),
+                cpu_page: TemplateChild::default(),
+                memory_page: TemplateChild::default(),
+                cpu_row: OnceCell::new(),
+                memory_row: OnceCell::new(),
+                disks: RefCell::default(),
+                links: RefCell::default(),
+                gpus: RefCell::default(),
                 settings: gio::Settings::new(config::APP_ID),
                 wake: RefCell::default(),
                 reveal: OnceCell::new(),
@@ -57,15 +91,15 @@ mod imp {
         type ParentType = adw::ApplicationWindow;
 
         fn class_init(klass: &mut Self::Class) {
-            FileSystemsPage::ensure_type();
+            CpuPage::ensure_type();
+            MemoryPage::ensure_type();
             ProcessesPage::ensure_type();
-            ResourcesPage::ensure_type();
             klass.bind_template();
             klass.bind_template_callbacks();
 
             klass.install_action("win.search", None, |win, _, _| {
                 let imp = win.imp();
-                imp.stack.set_visible_child_name("processes");
+                win.show_page("processes");
                 imp.processes_page.focus_search();
             });
             klass.install_action(
@@ -73,7 +107,7 @@ mod imp {
                 Some(glib::VariantTy::STRING),
                 |win, _, parameter| {
                     if let Some(page) = parameter.and_then(|p| p.get::<String>()) {
-                        win.imp().stack.set_visible_child_name(&page);
+                        win.show_page(&page);
                     }
                 },
             );
@@ -101,6 +135,8 @@ mod imp {
                 .build();
             obj.add_action(&self.settings.create_action("show-all-processes"));
             format::set_binary(self.settings.boolean("binary-units"));
+
+            obj.set_up_sidebar();
 
             // A reading is taken at once when what it has to cover changes.
             let wake = glib::clone!(
@@ -155,9 +191,11 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl LocusWindow {
-        #[template_callback(function)]
-        fn is_processes(page: Option<&str>) -> bool {
-            page == Some("processes")
+        #[template_callback]
+        fn on_row_activated(&self, row: &gtk::ListBoxRow) {
+            if let Some(row) = row.downcast_ref::<SidebarRow>() {
+                self.obj().show_page(&row.page());
+            }
         }
     }
 }
@@ -190,8 +228,9 @@ impl LocusWindow {
                     break;
                 };
                 let scope = Scope {
-                    processes: win.shows("processes"),
-                    filesystems: win.shows("filesystems"),
+                    processes: win.needs_processes(),
+                    filesystems: win.shows_kind("disk:"),
+                    focus: win.focus(),
                 };
                 let interval = win.interval();
                 drop(win);
@@ -233,32 +272,136 @@ impl LocusWindow {
         }
     }
 
+    fn set_up_sidebar(&self) {
+        let imp = self.imp();
+        imp.sidebar.append(&SidebarRow::for_page(
+            "processes",
+            &gettext("Processes"),
+            "view-list-symbolic",
+        ));
+        let cpu = SidebarRow::for_device("cpu", &gettext("CPU"), 100.0);
+        let memory = SidebarRow::for_device("memory", &gettext("Memory"), 100.0);
+        imp.sidebar.append(&cpu);
+        imp.sidebar.append(&memory);
+        // The heading of the devices goes above the first of them.
+        let first = cpu.clone();
+        imp.sidebar.set_header_func(move |row, _| {
+            if row == first.upcast_ref::<gtk::ListBoxRow>() {
+                let heading = gtk::Label::builder()
+                    .label(gettext("Performance"))
+                    .xalign(0.0)
+                    .margin_top(12)
+                    .margin_bottom(6)
+                    .margin_start(12)
+                    .css_classes(["caption-heading", "dim-label"])
+                    .build();
+                row.set_header(Some(&heading));
+            } else {
+                row.set_header(gtk::Widget::NONE);
+            }
+        });
+        let _ = imp.cpu_row.set(cpu);
+        let _ = imp.memory_row.set(memory);
+        self.select_row("processes");
+    }
+
+    /// Shows `page`, where it exists, and the row that stands for it.
+    fn show_page(&self, page: &str) {
+        let imp = self.imp();
+        if imp.stack.child_by_name(page).is_none() {
+            return;
+        }
+        imp.stack.set_visible_child_name(page);
+        self.select_row(page);
+        imp.split_view.set_show_content(true);
+    }
+
+    fn select_row(&self, page: &str) {
+        let imp = self.imp();
+        let mut index = 0;
+        while let Some(row) = imp.sidebar.row_at_index(index) {
+            if let Some(row) = row.downcast_ref::<SidebarRow>()
+                && row.page() == page
+            {
+                imp.sidebar.select_row(Some(row));
+                imp.content_page.set_title(&row.title());
+                return;
+            }
+            index += 1;
+        }
+    }
+
     /// Whether `page` is on screen, in a window that is.
     fn shows(&self, page: &str) -> bool {
         self.imp().stack.visible_child_name().as_deref() == Some(page) && !self.is_suspended()
     }
 
+    /// Whether a page whose name starts with `kind` is on screen, in a window that is.
+    fn shows_kind(&self, kind: &str) -> bool {
+        !self.is_suspended()
+            && self
+                .imp()
+                .stack
+                .visible_child_name()
+                .is_some_and(|page| page.starts_with(kind))
+    }
+
+    /// The Processes page lists the processes; the CPU and GPU pages name the ones using the
+    /// most, and a GPU page adds up what they do on each engine.
+    fn needs_processes(&self) -> bool {
+        self.shows("processes") || self.shows("cpu") || self.shows_kind("gpu:")
+    }
+
+    fn focus(&self) -> Option<Focus> {
+        if self.shows("cpu") {
+            Some(Focus::Cpu)
+        } else if self.shows("memory") {
+            Some(Focus::Memory)
+        } else if self.shows_kind("disk:") {
+            Some(Focus::Disk)
+        } else if self.shows_kind("network:") {
+            Some(Focus::Network)
+        } else if self.shows_kind("gpu:") {
+            Some(Focus::Gpu)
+        } else {
+            None
+        }
+    }
+
     /// The update interval of the page on screen.
     fn interval(&self) -> Duration {
         let imp = self.imp();
-        let page = imp.stack.visible_child_name();
-        let key = format!("{}-update-interval", page.as_deref().unwrap_or("resources"));
-        let seconds = imp.settings.uint(&key).clamp(1, 10);
+        let key = if imp.stack.visible_child_name().as_deref() == Some("processes") {
+            "processes-update-interval"
+        } else {
+            "resources-update-interval"
+        };
+        let seconds = imp.settings.uint(key).clamp(1, 10);
         Duration::from_secs(u64::from(seconds))
     }
 
     fn apply(&self, snapshot: &Snapshot) {
         let imp = self.imp();
-        imp.resources_page.apply(
-            &snapshot.system,
-            self.shows("resources"),
-            snapshot.unmeasured,
-        );
-        if let Some(filesystems) = &snapshot.system.filesystems {
-            imp.filesystems_page.apply(filesystems);
-        }
+        let system = &snapshot.system;
+        let unmeasured = snapshot.unmeasured;
+        self.sync_devices(system);
+        self.apply_sidebar(system, unmeasured);
+        imp.cpu_page.apply(system, self.shows("cpu"), unmeasured);
+        imp.memory_page
+            .apply(system, self.shows("memory"), unmeasured);
+        self.apply_devices(system, unmeasured);
         if let Some(processes) = &snapshot.processes {
-            imp.processes_page.apply(processes, &snapshot.system);
+            if self.shows("processes") {
+                imp.processes_page.apply(processes, system);
+            } else if self.shows("cpu") {
+                imp.cpu_page.show_top(processes);
+            } else {
+                for view in imp.gpus.borrow().iter() {
+                    if self.shows(&view.key) {
+                        view.page.show_top(processes);
+                    }
+                }
+            }
         }
         imp.reveal.get_or_init(|| {
             let stack = &*imp.stack;
@@ -267,5 +410,250 @@ impl LocusWindow {
             fade.play();
             fade
         });
+    }
+
+    /// Adds rows and pages for the devices that have appeared and removes those of the ones
+    /// gone. The rows go back in their order, the disks first, then the network and the cards.
+    fn sync_devices(&self, system: &System) {
+        let imp = self.imp();
+        let disk_keys: Vec<String> = system
+            .disks
+            .iter()
+            .map(|d| format!("disk:{}", d.name))
+            .collect();
+        let link_keys: Vec<String> = system
+            .links
+            .iter()
+            .map(|l| format!("network:{}", l.name))
+            .collect();
+        let gpu_keys: Vec<String> = system
+            .gpus
+            .iter()
+            .map(|g| format!("gpu:{}", g.slot))
+            .collect();
+        let same = |keys: &[String], known: Vec<String>| keys == known.as_slice();
+        if same(
+            &disk_keys,
+            imp.disks.borrow().iter().map(|v| v.key.clone()).collect(),
+        ) && same(
+            &link_keys,
+            imp.links.borrow().iter().map(|v| v.key.clone()).collect(),
+        ) && same(
+            &gpu_keys,
+            imp.gpus.borrow().iter().map(|v| v.key.clone()).collect(),
+        ) {
+            return;
+        }
+        let page_before = imp.stack.visible_child_name();
+        {
+            let mut disks = imp.disks.borrow_mut();
+            self.sync_views(&mut disks, &disk_keys, |index, key| {
+                let disk = &system.disks[index];
+                let title = disk_title(index, disk);
+                let page = DiskPage::default();
+                page.set_name(&title, disk);
+                self.add_device(key, &title, 100.0, page)
+            });
+            let mut links = imp.links.borrow_mut();
+            self.sync_views(&mut links, &link_keys, |index, key| {
+                let link = &system.links[index];
+                let title = link_title(link);
+                let page = NetworkPage::default();
+                page.set_name(&title, "");
+                self.add_device(key, &title, 0.0, page)
+            });
+            let mut gpus = imp.gpus.borrow_mut();
+            let several = system.gpus.len() > 1;
+            self.sync_views(&mut gpus, &gpu_keys, |index, key| {
+                let gpu = &system.gpus[index];
+                let title = gpu_title(index, several);
+                let page = GpuPage::default();
+                page.set_name(&title, gpu);
+                self.add_device(key, &title, 100.0, page)
+            });
+            for row in disks
+                .iter()
+                .map(|view| &view.row)
+                .chain(links.iter().map(|view| &view.row))
+                .chain(gpus.iter().map(|view| &view.row))
+            {
+                if row.parent().is_some() {
+                    imp.sidebar.remove(row);
+                }
+                imp.sidebar.append(row);
+            }
+        }
+        match page_before {
+            Some(page) if imp.stack.child_by_name(&page).is_some() => self.select_row(&page),
+            _ => self.show_page("processes"),
+        }
+    }
+
+    /// Keeps the views of `keys`, making those missing with `make` and dropping the others.
+    fn sync_views<P: IsA<gtk::Widget>>(
+        &self,
+        views: &mut Vec<DeviceView<P>>,
+        keys: &[String],
+        make: impl Fn(usize, &str) -> DeviceView<P>,
+    ) {
+        let imp = self.imp();
+        let mut known = std::mem::take(views);
+        for view in known.iter().filter(|view| !keys.contains(&view.key)) {
+            imp.stack.remove(&view.page);
+            imp.sidebar.remove(&view.row);
+        }
+        for (index, key) in keys.iter().enumerate() {
+            match known.iter().position(|view| view.key == *key) {
+                Some(at) => views.push(known.swap_remove(at)),
+                None => views.push(make(index, key)),
+            }
+        }
+    }
+
+    fn add_device<P: IsA<gtk::Widget>>(
+        &self,
+        key: &str,
+        title: &str,
+        maximum: f64,
+        page: P,
+    ) -> DeviceView<P> {
+        self.imp().stack.add_named(&page, Some(key));
+        DeviceView {
+            key: key.to_owned(),
+            row: SidebarRow::for_device(key, title, maximum),
+            page,
+        }
+    }
+
+    fn apply_sidebar(&self, system: &System, unmeasured: bool) {
+        let imp = self.imp();
+        let memory = &system.memory;
+        let memory_share = format::share(memory.used, memory.total);
+        let (Some(cpu), Some(memory_row)) = (imp.cpu_row.get(), imp.memory_row.get()) else {
+            return;
+        };
+        if !unmeasured {
+            cpu.push(&[system.cpu]);
+            memory_row.push(&[memory_share]);
+        }
+        if self.is_suspended() {
+            return;
+        }
+        if !unmeasured {
+            cpu.set_subtitle(&format::percent(system.cpu, 0));
+        }
+        memory_row.set_subtitle(&format::listed(
+            &format::percent(memory_share, 0),
+            &format::size(memory.used),
+        ));
+    }
+
+    fn apply_devices(&self, system: &System, unmeasured: bool) {
+        let imp = self.imp();
+        let visible = !self.is_suspended();
+        for (view, disk) in imp.disks.borrow().iter().zip(&system.disks) {
+            if !unmeasured {
+                view.row.push(&[disk.active]);
+                if visible {
+                    view.row.set_subtitle(&disk_subtitle(disk));
+                }
+            }
+            view.page.apply(disk, self.shows(&view.key), unmeasured);
+        }
+        if let Some(filesystems) = &system.filesystems {
+            for (index, (view, disk)) in imp.disks.borrow().iter().zip(&system.disks).enumerate() {
+                if self.shows(&view.key) {
+                    view.page
+                        .show_filesystems(&disk.name, index == 0, filesystems);
+                }
+            }
+        }
+        for (view, link) in imp.links.borrow().iter().zip(&system.links) {
+            if !unmeasured {
+                view.row.push(&[link.received, link.sent]);
+                if visible {
+                    view.row.set_subtitle(&link_subtitle(link));
+                }
+            }
+            if let Some(detail) = link.detail.as_ref().filter(|_| self.shows(&view.key)) {
+                view.page
+                    .set_name(&link_title(link), &link_connection(detail.speed));
+            }
+            view.page.apply(link, self.shows(&view.key), unmeasured);
+        }
+        for (view, gpu) in imp.gpus.borrow().iter().zip(&system.gpus) {
+            if !unmeasured {
+                view.row.push(&[gpu.usage.unwrap_or(0.0)]);
+            }
+            if visible {
+                view.row.set_subtitle(&gpu_subtitle(gpu));
+            }
+            view.page.apply(gpu, self.shows(&view.key), unmeasured);
+        }
+    }
+}
+
+fn disk_title(index: usize, disk: &Disk) -> String {
+    // Translators: one of the disks; {number} counts from 1, {name} is the kernel's name for it.
+    gettext("Disk {number} ({name})")
+        .replace("{number}", &(index + 1).to_string())
+        .replace("{name}", &disk.name)
+}
+
+fn disk_subtitle(disk: &Disk) -> String {
+    let kind = if disk.rotational {
+        gettext("HDD")
+    } else {
+        gettext("SSD")
+    };
+    format::listed(&kind, &format::percent(disk.active, 0))
+}
+
+fn link_title(link: &Link) -> String {
+    let title = match link.kind {
+        // Translators: a network interface; {name} is the kernel's name for it.
+        LinkKind::Ethernet => gettext("Ethernet ({name})"),
+        // Translators: a network interface; {name} is the kernel's name for it.
+        LinkKind::Wireless => gettext("Wi-Fi ({name})"),
+        // Translators: a network interface; {name} is the kernel's name for it.
+        LinkKind::Virtual => gettext("Network ({name})"),
+    };
+    title.replace("{name}", &link.name)
+}
+
+fn link_subtitle(link: &Link) -> String {
+    format!(
+        "↓ {}  ↑ {}",
+        format::rate(link.received),
+        format::rate(link.sent)
+    )
+}
+
+fn link_connection(speed: Option<u32>) -> String {
+    match speed.filter(|speed| *speed > 0) {
+        Some(_) => gettext("Connected"),
+        None => String::new(),
+    }
+}
+
+fn gpu_title(index: usize, several: bool) -> String {
+    if several {
+        // Translators: one of several graphics cards; {number} counts from 1.
+        gettext("GPU {number}").replace("{number}", &(index + 1).to_string())
+    } else {
+        gettext("GPU")
+    }
+}
+
+fn gpu_subtitle(gpu: &Gpu) -> String {
+    if gpu.asleep {
+        return gettext("Asleep");
+    }
+    let usage = gpu.usage.map(|usage| format::percent(usage, 0));
+    let temperature = gpu.temperature.map(format::temperature);
+    match (usage, temperature) {
+        (Some(usage), Some(temperature)) => format::listed(&usage, &temperature),
+        (Some(value), None) | (None, Some(value)) => value,
+        (None, None) => String::new(),
     }
 }

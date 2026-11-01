@@ -2,7 +2,7 @@
 //! here touches GTK, and a [`Sampler`] moves to the worker and back for each reading.
 
 use crate::gpu::{self, Gpu};
-use crate::procfs::{self, CpuTimes, Memory};
+use crate::procfs::{self, CpuTimes, DiskCounters, Memory};
 use gtk::gio::{self, prelude::*};
 use std::collections::{HashMap, HashSet};
 use std::ffi::{CStr, CString};
@@ -12,7 +12,7 @@ use std::io::{self, Read};
 use std::mem::MaybeUninit;
 use std::os::fd::AsRawFd;
 use std::os::unix::ffi::OsStrExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -66,6 +66,8 @@ pub struct FileSystem {
     pub mount_point: String,
     pub source: String,
     pub fs_type: String,
+    /// The disks it lies on, by name; none when its device leads to no disk.
+    pub disks: Vec<Arc<str>>,
     pub size: u64,
     pub used: u64,
     /// What an unprivileged user can still write, less than `size - used` where the file
@@ -86,9 +88,90 @@ pub struct System {
     pub sent: f64,
     pub read: f64,
     pub written: f64,
+    pub disks: Vec<Disk>,
+    pub links: Vec<Link>,
     /// The mounted file systems, when they were asked for.
     pub filesystems: Option<Vec<FileSystem>>,
     pub gpus: Vec<Gpu>,
+    /// What only the page of the processor shows, while it is shown.
+    pub cpu_detail: Option<CpuDetail>,
+    /// What only the page of the memory shows, while it is shown.
+    pub memory_detail: Option<MemoryDetail>,
+}
+
+/// A disk and what it did since the last reading.
+#[derive(Debug, Clone)]
+pub struct Disk {
+    pub name: Arc<str>,
+    pub model: Option<Arc<str>>,
+    /// Spinning platters, as opposed to flash.
+    pub rotational: bool,
+    pub size: u64,
+    /// Bytes per second.
+    pub read: f64,
+    pub written: f64,
+    /// Share of the time it had requests in progress, from 0 to 100.
+    pub active: f64,
+    /// How long a request took on average, in milliseconds, where any completed.
+    pub response: Option<f64>,
+    /// In degrees Celsius; read only while the page of the disks is shown.
+    pub temperature: Option<f64>,
+}
+
+/// A network interface and what it did since the last reading.
+#[derive(Debug, Clone)]
+pub struct Link {
+    pub name: Arc<str>,
+    pub kind: LinkKind,
+    /// Bytes per second.
+    pub received: f64,
+    pub sent: f64,
+    /// Bytes since the machine started.
+    pub total_received: u64,
+    pub total_sent: u64,
+    /// Read only while the page of the interfaces is shown.
+    pub detail: Option<LinkDetail>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LinkKind {
+    Ethernet,
+    Wireless,
+    /// Bridges, tunnels and container links, counted where there is no hardware.
+    Virtual,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct LinkDetail {
+    /// In megabits per second, where the driver says.
+    pub speed: Option<u32>,
+    pub ipv4: Vec<String>,
+    pub ipv6: Vec<String>,
+    pub hardware_address: Option<String>,
+    pub driver: Option<String>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct CpuDetail {
+    /// The average clock of the processors, in hertz.
+    pub speed: Option<f64>,
+    /// In degrees Celsius.
+    pub temperature: Option<f64>,
+    pub load: Option<f64>,
+    pub processes: u64,
+    pub threads: Option<u64>,
+    /// Share of the last ten seconds some task waited for a processor.
+    pub pressure: Option<f64>,
+    /// Seconds since the machine started.
+    pub uptime: Option<u64>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct MemoryDetail {
+    /// Bytes stored in compressed swap and what they take up, where there is such swap.
+    pub compressed_swap: Option<(u64, u64)>,
+    /// Share of the last ten seconds some task waited for memory.
+    pub pressure: Option<f64>,
 }
 
 /// An app a launcher shows, as its desktop file describes it.
@@ -106,6 +189,17 @@ pub struct App {
 pub struct Scope {
     pub processes: bool,
     pub filesystems: bool,
+    /// The kind of device whose page is shown, to read what only that page needs.
+    pub focus: Option<Focus>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Focus {
+    Cpu,
+    Memory,
+    Disk,
+    Network,
+    Gpu,
 }
 
 #[derive(Debug, Clone)]
@@ -157,10 +251,17 @@ pub struct Sampler {
     /// Bytes received and sent by each network interface counted, and read and written by
     /// each disk, at the last reading.
     links: HashMap<String, (u64, u64)>,
-    disks: HashMap<String, (u64, u64)>,
+    disks: HashMap<String, DiskCounters>,
     /// Whether an interface or a block device is hardware, by name.
     physical_links: HashMap<String, bool>,
     physical_disks: HashMap<String, bool>,
+    disk_facts: HashMap<String, DiskFacts>,
+    /// The disks each mounted device lies on, by the device's path.
+    disks_of_source: HashMap<String, Vec<Arc<str>>>,
+    /// The temperature sensor of the processor, once looked for.
+    cpu_sensor: Option<Option<PathBuf>>,
+    /// Share of its time each engine spent on the processes read, by card and engine.
+    engine_use: HashMap<String, f64>,
     processes_at: Option<Instant>,
     processes: HashMap<u32, Tracked>,
     generation: u64,
@@ -202,6 +303,10 @@ impl Sampler {
             disks: HashMap::new(),
             physical_links: HashMap::new(),
             physical_disks: HashMap::new(),
+            disk_facts: HashMap::new(),
+            disks_of_source: HashMap::new(),
+            cpu_sensor: None,
+            engine_use: HashMap::new(),
             processes_at: None,
             processes: HashMap::new(),
             generation: 0,
@@ -224,7 +329,7 @@ impl Sampler {
         let now = Instant::now();
         let seconds = self.at.map(|at| now.duration_since(at).as_secs_f64());
         self.at = Some(now);
-        let mut system = self.read_system(seconds.filter(|s| *s > 0.0));
+        let mut system = self.read_system(seconds.filter(|s| *s > 0.0), scope.focus);
         if scope.filesystems {
             system.filesystems = Some(self.read_filesystems());
         }
@@ -235,6 +340,9 @@ impl Sampler {
             self.processes_at = None;
             None
         };
+        if scope.focus == Some(Focus::Gpu) {
+            self.add_engines(&mut system.gpus);
+        }
         Snapshot {
             system,
             processes,
@@ -242,7 +350,22 @@ impl Sampler {
         }
     }
 
-    fn read_system(&mut self, seconds: Option<f64>) -> System {
+    /// Writes the use of each engine read from the processes into the cards it belongs to.
+    fn add_engines(&self, gpus: &mut [Gpu]) {
+        for gpu in gpus {
+            let prefix = format!("{} ", gpu.slot);
+            gpu.engines = self
+                .engine_use
+                .iter()
+                .filter_map(|(key, share)| {
+                    Some((key.strip_prefix(&prefix)?.to_owned(), share.min(100.0)))
+                })
+                .collect();
+            gpu.engines.sort_by(|a, b| a.0.cmp(&b.0));
+        }
+    }
+
+    fn read_system(&mut self, seconds: Option<f64>, focus: Option<Focus>) -> System {
         let mut system = System {
             cpu_model: self.cpu_model.clone(),
             ..System::default()
@@ -277,7 +400,7 @@ impl Sampler {
             // Bridges, tunnels and container links carry traffic the hardware carries too,
             // so they count only where there is no hardware, as in a container.
             let hardware = links.iter().any(|link| link.3);
-            let counters = links
+            let counters: HashMap<String, (u64, u64)> = links
                 .into_iter()
                 .filter(|link| link.3 == hardware)
                 .map(|(name, received, sent, _)| (name.to_owned(), (received, sent)))
@@ -285,24 +408,163 @@ impl Sampler {
             let (received, sent) = moved(&counters, &self.links);
             system.received = per_second(received);
             system.sent = per_second(sent);
+            let addresses = (focus == Some(Focus::Network)).then(interface_addresses);
+            system.links = counters
+                .iter()
+                .map(|(name, &(total_received, total_sent))| {
+                    let (received, sent) = self.links.get(name).map_or((0, 0), |before| {
+                        (
+                            total_received.saturating_sub(before.0),
+                            total_sent.saturating_sub(before.1),
+                        )
+                    });
+                    Link {
+                        name: Arc::from(name.as_str()),
+                        kind: link_kind(name, hardware),
+                        received: per_second(received),
+                        sent: per_second(sent),
+                        total_received,
+                        total_sent,
+                        detail: addresses
+                            .as_ref()
+                            .map(|addresses| link_detail(name, addresses.get(name.as_str()))),
+                    }
+                })
+                .collect();
+            system.links.sort_by(|a, b| a.name.cmp(&b.name));
             self.links = counters;
         }
 
         if read_text("/proc/diskstats", &mut self.text).is_ok() {
             // Partitions, device mapper and RAID devices repeat what their disks do.
-            let counters = procfs::parse_diskstats(&self.text)
+            let counters: HashMap<String, DiskCounters> = procfs::parse_diskstats(&self.text)
                 .into_iter()
-                .filter(|(name, _, _)| is_physical(&mut self.physical_disks, "/sys/block", name))
-                .map(|(name, read, written)| (name.to_owned(), (read * 512, written * 512)))
+                .filter(|(name, _)| is_physical(&mut self.physical_disks, "/sys/block", name))
+                .map(|(name, counters)| (name.to_owned(), counters))
                 .collect();
-            let (read, written) = moved(&counters, &self.disks);
-            system.read = per_second(read);
-            system.written = per_second(written);
+            let before = &self.disks;
+            let sectors: HashMap<String, (u64, u64)> = counters
+                .iter()
+                .map(|(name, c)| (name.clone(), (c.sectors_read, c.sectors_written)))
+                .collect();
+            let sectors_before: HashMap<String, (u64, u64)> = before
+                .iter()
+                .map(|(name, c)| (name.clone(), (c.sectors_read, c.sectors_written)))
+                .collect();
+            let (read, written) = moved(&sectors, &sectors_before);
+            system.read = per_second(read * 512);
+            system.written = per_second(written * 512);
+            system.disks = counters
+                .iter()
+                .map(|(name, now)| {
+                    let was = before.get(name).copied().unwrap_or(*now);
+                    let facts = self
+                        .disk_facts
+                        .entry(name.clone())
+                        .or_insert_with(|| DiskFacts::read(name));
+                    let requests = now.requests.saturating_sub(was.requests);
+                    let active_ms = now.active_ms.saturating_sub(was.active_ms);
+                    Disk {
+                        name: Arc::from(name.as_str()),
+                        model: facts.model.clone(),
+                        rotational: facts.rotational,
+                        size: facts.size,
+                        read: per_second(now.sectors_read.saturating_sub(was.sectors_read) * 512),
+                        written: per_second(
+                            now.sectors_written.saturating_sub(was.sectors_written) * 512,
+                        ),
+                        active: seconds.map_or(0.0, |s| (active_ms as f64 / (s * 10.0)).min(100.0)),
+                        response: (requests > 0).then(|| {
+                            now.request_ms.saturating_sub(was.request_ms) as f64 / requests as f64
+                        }),
+                        temperature: facts
+                            .sensor
+                            .as_ref()
+                            .filter(|_| focus == Some(Focus::Disk))
+                            .and_then(|sensor| millidegrees(sensor)),
+                    }
+                })
+                .collect();
+            system.disks.sort_by(|a, b| a.name.cmp(&b.name));
             self.disks = counters;
         }
 
-        system.gpus = self.gpus.iter().map(gpu::Card::read).collect();
+        match focus {
+            Some(Focus::Cpu) => system.cpu_detail = Some(self.read_cpu_detail()),
+            Some(Focus::Memory) => system.memory_detail = Some(self.read_memory_detail()),
+            _ => {}
+        }
+
+        let gpu_detail = focus == Some(Focus::Gpu);
+        system.gpus = self.gpus.iter().map(|card| card.read(gpu_detail)).collect();
         system
+    }
+
+    fn read_cpu_detail(&mut self) -> CpuDetail {
+        let mut detail = CpuDetail::default();
+        let sensor = self.cpu_sensor.get_or_insert_with(cpu_sensor);
+        detail.temperature = sensor.as_ref().and_then(|sensor| millidegrees(sensor));
+        let mut speeds = Vec::with_capacity(self.cpu.len());
+        for cpu in 0..self.cpu.len().saturating_sub(1) {
+            self.path.clear();
+            let _ = write!(
+                self.path,
+                "/sys/devices/system/cpu/cpu{cpu}/cpufreq/scaling_cur_freq"
+            );
+            if read_text(&self.path, &mut self.text).is_ok()
+                && let Ok(khz) = self.text.trim().parse::<f64>()
+            {
+                speeds.push(khz * 1e3);
+            }
+        }
+        if !speeds.is_empty() {
+            detail.speed = Some(speeds.iter().sum::<f64>() / speeds.len() as f64);
+        }
+        if read_text("/proc/loadavg", &mut self.text).is_ok()
+            && let Some((load, threads)) = procfs::parse_loadavg(&self.text)
+        {
+            detail.load = Some(load);
+            detail.threads = Some(threads);
+        }
+        if read_text("/proc/pressure/cpu", &mut self.text).is_ok() {
+            detail.pressure = procfs::parse_pressure(&self.text);
+        }
+        if read_text("/proc/uptime", &mut self.text).is_ok() {
+            detail.uptime = self
+                .text
+                .split_ascii_whitespace()
+                .next()
+                .and_then(|seconds| seconds.parse::<f64>().ok())
+                .map(|seconds| seconds as u64);
+        }
+        detail.processes = fs::read_dir("/proc").map_or(0, |entries| {
+            entries
+                .flatten()
+                .filter(|entry| entry.file_name().as_bytes()[0].is_ascii_digit())
+                .count() as u64
+        });
+        detail
+    }
+
+    fn read_memory_detail(&mut self) -> MemoryDetail {
+        let mut detail = MemoryDetail::default();
+        if read_text("/proc/pressure/memory", &mut self.text).is_ok() {
+            detail.pressure = procfs::parse_pressure(&self.text);
+        }
+        let Ok(devices) = fs::read_dir("/sys/block") else {
+            return detail;
+        };
+        for device in devices.flatten() {
+            if device.file_name().as_bytes().starts_with(b"zram")
+                && read_text(device.path().join("mm_stat"), &mut self.text).is_ok()
+                && let Some((stored, compressed)) = procfs::parse_zram_stat(&self.text)
+            {
+                let total = detail.compressed_swap.get_or_insert((0, 0));
+                total.0 += stored;
+                total.1 += compressed;
+            }
+        }
+        detail
     }
 
     fn read_filesystems(&mut self) -> Vec<FileSystem> {
@@ -313,7 +575,13 @@ impl Sampler {
             .into_iter()
             .filter_map(|mount| {
                 let (size, used, available) = usage(&mount.mount_point)?;
+                let disks = self
+                    .disks_of_source
+                    .entry(mount.source.clone())
+                    .or_insert_with(|| disks_of_source(&mount.source))
+                    .clone();
                 (size > 0).then_some(FileSystem {
+                    disks,
                     mount_point: mount.mount_point,
                     source: mount.source,
                     fs_type: mount.fs_type,
@@ -339,6 +607,7 @@ impl Sampler {
         };
         let mut samples = Vec::with_capacity(self.processes.len());
         let mut clients = HashSet::new();
+        self.engine_use.clear();
         for entry in entries.flatten() {
             let Some(pid) = entry.file_name().to_str().and_then(|n| n.parse().ok()) else {
                 continue;
@@ -450,17 +719,19 @@ impl Sampler {
                     }
                     Err(_) => Some(0.0),
                     Ok(engines) => {
-                        let busiest = match seconds {
-                            Some(s) if known => engines
-                                .iter()
-                                .map(|(key, &(ns, capacity))| {
-                                    let before = tracked.engines.get(key).map_or(ns, |b| b.0);
-                                    ns.saturating_sub(before) as f64 / (s * 1e7 * capacity as f64)
-                                })
-                                .fold(0.0, f64::max)
-                                .min(100.0),
-                            _ => 0.0,
-                        };
+                        let mut busiest: f64 = 0.0;
+                        if let Some(s) = seconds.filter(|_| known) {
+                            for (key, &(ns, capacity)) in &engines {
+                                let before = tracked.engines.get(key).map_or(ns, |b| b.0);
+                                let share =
+                                    ns.saturating_sub(before) as f64 / (s * 1e7 * capacity as f64);
+                                busiest = busiest.max(share);
+                                if share > 0.0 {
+                                    *self.engine_use.entry(key.clone()).or_insert(0.0) += share;
+                                }
+                            }
+                        }
+                        let busiest = busiest.min(100.0);
                         tracked.engines = engines;
                         Some(busiest)
                     }
@@ -810,6 +1081,196 @@ fn is_physical(known: &mut HashMap<String, bool>, class: &str, name: &str) -> bo
     physical
 }
 
+/// What stays the same about a disk.
+struct DiskFacts {
+    model: Option<Arc<str>>,
+    rotational: bool,
+    size: u64,
+    sensor: Option<PathBuf>,
+}
+
+impl DiskFacts {
+    fn read(name: &str) -> Self {
+        let block = Path::new("/sys/block").join(name);
+        let text = |path: PathBuf| {
+            fs::read_to_string(path)
+                .ok()
+                .map(|text| text.trim().to_owned())
+                .filter(|text| !text.is_empty())
+        };
+        // A sector is 512 bytes in this file whatever the device's own are.
+        let sectors = text(block.join("size")).and_then(|size| size.parse::<u64>().ok());
+        let hwmon = |under: &Path| {
+            fs::read_dir(under)
+                .ok()?
+                .flatten()
+                .find(|entry| entry.file_name().as_bytes().starts_with(b"hwmon"))
+                .map(|entry| entry.path().join("temp1_input"))
+        };
+        Self {
+            model: text(block.join("device/model")).map(Arc::from),
+            rotational: text(block.join("queue/rotational")).as_deref() == Some("1"),
+            size: sectors.unwrap_or(0) * 512,
+            sensor: hwmon(&block.join("device/hwmon")).or_else(|| hwmon(&block.join("device"))),
+        }
+    }
+}
+
+/// The disks a mounted device lies on: the disk of a partition, and what a device mapper or
+/// RAID device is made of, down to the disks. Empty for a device that leads to no disk.
+fn disks_of_source(source: &str) -> Vec<Arc<str>> {
+    let device = fs::canonicalize(source).unwrap_or_else(|_| PathBuf::from(source));
+    let Some(name) = device.file_name().and_then(|name| name.to_str()) else {
+        return Vec::new();
+    };
+    // In a container /dev may not have the device, though /sys still says what it is.
+    let mapped = source
+        .strip_prefix("/dev/mapper/")
+        .filter(|_| !device.exists())
+        .and_then(mapped_device);
+    let mut disks = Vec::new();
+    add_disks_under(mapped.as_deref().unwrap_or(name), 0, &mut disks);
+    disks
+}
+
+/// The kernel's name for the device mapper device called `name`.
+fn mapped_device(name: &str) -> Option<String> {
+    fs::read_dir("/sys/block")
+        .ok()?
+        .flatten()
+        .find_map(|entry| {
+            let mapped = fs::read_to_string(entry.path().join("dm/name")).ok()?;
+            (mapped.trim() == name).then(|| entry.file_name().into_string().ok())?
+        })
+}
+
+fn add_disks_under(name: &str, depth: usize, disks: &mut Vec<Arc<str>>) {
+    // Only a loop in what sysfs says could go this deep.
+    if depth > 8 {
+        return;
+    }
+    let block = Path::new("/sys/class/block").join(name);
+    if block.join("partition").exists() {
+        if let Some(parent) = fs::canonicalize(&block)
+            .ok()
+            .and_then(|path| Some(path.parent()?.file_name()?.to_str()?.to_owned()))
+        {
+            add_disks_under(&parent, depth + 1, disks);
+        }
+        return;
+    }
+    let slaves: Vec<String> = fs::read_dir(block.join("slaves"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .collect();
+    if !slaves.is_empty() {
+        for slave in &slaves {
+            add_disks_under(slave, depth + 1, disks);
+        }
+    } else if block.join("device").exists() && !disks.iter().any(|disk| &**disk == name) {
+        disks.push(Arc::from(name));
+    }
+}
+
+fn link_kind(name: &str, hardware: bool) -> LinkKind {
+    if !hardware {
+        LinkKind::Virtual
+    } else if Path::new("/sys/class/net")
+        .join(name)
+        .join("wireless")
+        .exists()
+    {
+        LinkKind::Wireless
+    } else {
+        LinkKind::Ethernet
+    }
+}
+
+fn link_detail(name: &str, addresses: Option<&(Vec<String>, Vec<String>)>) -> LinkDetail {
+    let class = Path::new("/sys/class/net").join(name);
+    let (ipv4, ipv6) = addresses.cloned().unwrap_or_default();
+    LinkDetail {
+        // A link that is down reports -1, or fails to read at all.
+        speed: fs::read_to_string(class.join("speed"))
+            .ok()
+            .and_then(|speed| speed.trim().parse().ok()),
+        ipv4,
+        ipv6,
+        hardware_address: fs::read_to_string(class.join("address"))
+            .ok()
+            .map(|address| address.trim().to_owned())
+            .filter(|address| !address.is_empty() && address != "00:00:00:00:00:00"),
+        driver: fs::read_link(class.join("device/driver"))
+            .ok()
+            .and_then(|driver| Some(driver.file_name()?.to_str()?.to_owned())),
+    }
+}
+
+/// The IPv4 and IPv6 addresses of each interface.
+fn interface_addresses() -> HashMap<String, (Vec<String>, Vec<String>)> {
+    let mut addresses: HashMap<String, (Vec<String>, Vec<String>)> = HashMap::new();
+    let mut list: *mut libc::ifaddrs = std::ptr::null_mut();
+    // SAFETY: getifaddrs points `list` at a list it allocates when it returns 0.
+    if unsafe { libc::getifaddrs(&mut list) } != 0 {
+        return addresses;
+    }
+    let mut entry = list;
+    while !entry.is_null() {
+        // SAFETY: `entry` is a node of the list, alive until freeifaddrs below, whose name is
+        // NUL-terminated and whose address, where not null, is as long as its family says.
+        unsafe {
+            let name = CStr::from_ptr((*entry).ifa_name).to_string_lossy();
+            let address = (*entry).ifa_addr;
+            if !address.is_null() {
+                let found = addresses.entry(name.into_owned()).or_default();
+                match i32::from((*address).sa_family) {
+                    libc::AF_INET => {
+                        let ip = (*address.cast::<libc::sockaddr_in>()).sin_addr.s_addr;
+                        found
+                            .0
+                            .push(std::net::Ipv4Addr::from(u32::from_be(ip)).to_string());
+                    }
+                    libc::AF_INET6 => {
+                        let ip = (*address.cast::<libc::sockaddr_in6>()).sin6_addr.s6_addr;
+                        found.1.push(std::net::Ipv6Addr::from(ip).to_string());
+                    }
+                    _ => {}
+                }
+            }
+            entry = (*entry).ifa_next;
+        }
+    }
+    // SAFETY: `list` came from getifaddrs and nothing refers to it any longer.
+    unsafe { libc::freeifaddrs(list) };
+    addresses
+}
+
+/// The sensor of the processor package, among those the kernel lists.
+fn cpu_sensor() -> Option<PathBuf> {
+    const NAMES: [&str; 5] = [
+        "k10temp",
+        "coretemp",
+        "zenpower",
+        "cpu_thermal",
+        "cpu-thermal",
+    ];
+    fs::read_dir("/sys/class/hwmon")
+        .ok()?
+        .flatten()
+        .find(|entry| {
+            fs::read_to_string(entry.path().join("name"))
+                .is_ok_and(|name| NAMES.contains(&name.trim()))
+        })
+        .map(|entry| entry.path().join("temp1_input"))
+}
+
+fn millidegrees(sensor: &Path) -> Option<f64> {
+    let text = fs::read_to_string(sensor).ok()?;
+    Some(text.trim().parse::<f64>().ok()? / 1000.0)
+}
+
 /// Size, used and available bytes of the file system mounted at `path`.
 fn usage(path: &str) -> Option<(u64, u64, u64)> {
     let path = CString::new(path).ok()?;
@@ -888,6 +1349,7 @@ mod tests {
         let snapshot = sampler.sample(Scope {
             processes: true,
             filesystems: true,
+            focus: None,
         });
         let system = &snapshot.system;
         assert!(!system.cores.is_empty());
@@ -953,13 +1415,30 @@ mod tests {
     }
 
     #[test]
+    fn details_are_read_for_the_page_shown() {
+        let mut sampler = Sampler::new();
+        let plain = sampler.sample(Scope::default());
+        assert!(plain.system.cpu_detail.is_none() && plain.system.memory_detail.is_none());
+        let cpu = sampler.sample(Scope {
+            focus: Some(Focus::Cpu),
+            ..Scope::default()
+        });
+        assert!(cpu.system.cpu_detail.expect("asked for").processes > 0);
+        let memory = sampler.sample(Scope {
+            focus: Some(Focus::Memory),
+            ..Scope::default()
+        });
+        assert!(memory.system.memory_detail.is_some());
+    }
+
+    #[test]
     fn only_what_is_asked_for_is_read() {
         let mut sampler = Sampler::new();
         let totals = sampler.sample(Scope::default());
         assert!(totals.processes.is_none() && totals.system.filesystems.is_none());
         let processes = Scope {
             processes: true,
-            filesystems: false,
+            ..Scope::default()
         };
         assert!(sampler.sample(processes).processes.is_some());
     }

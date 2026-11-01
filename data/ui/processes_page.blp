@@ -21,9 +21,22 @@ template $LocusProcessesPage: Adw.Bin {
     }
   }
 
-  child: Box {
-    orientation: vertical;
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [start]
+      ToggleButton {
+        icon-name: "system-search-symbolic";
+        tooltip-text: _("Search");
+        active: bind template.search-mode bidirectional;
+      }
 
+      title-widget: Adw.WindowTitle title {
+        title: _("Processes");
+      };
+    }
+
+    [top]
     SearchBar search_bar {
       search-mode-enabled: bind template.search-mode bidirectional;
       key-capture-widget: template;
@@ -39,7 +52,7 @@ template $LocusProcessesPage: Adw.Bin {
       };
     }
 
-    PopoverBin context_bin {
+    content: PopoverBin context_bin {
       vexpand: true;
 
       popover: PopoverMenu {
@@ -48,179 +61,124 @@ template $LocusProcessesPage: Adw.Bin {
         halign: start;
       };
 
-      child: Box {
-        orientation: vertical;
+      child: Stack stack {
+        vexpand: true;
 
-        Box header {
-          spacing: 12;
-          margin-top: 18;
-          margin-bottom: 12;
-          margin-start: 18;
-          margin-end: 18;
+        StackPage {
+          name: "loading";
 
-          Box {
-            orientation: vertical;
-            hexpand: true;
+          child: Adw.Spinner {
+            halign: center;
             valign: center;
+            width-request: 32;
+            height-request: 32;
 
-            Label apps_label {
-              xalign: 0;
-              wrap: true;
-
-              styles [
-                "title-2",
-              ]
+            accessibility {
+              label: _("Reading processes");
             }
-
-            Label processes_label {
-              xalign: 0;
-              wrap: true;
-
-              styles [
-                "dim-label",
-              ]
-            }
-          }
-
-          Box {
-            valign: center;
-            halign: start;
-
-            styles [
-              "linked",
-            ]
-
-            Button stop_button {
-              action-name: "process.stop";
-
-              child: Adw.ButtonContent {
-                icon-name: "media-playback-pause-symbolic";
-                label: _("_Stop");
-                use-underline: true;
-              };
-            }
-
-            Button continue_button {
-              action-name: "process.continue";
-              visible: false;
-
-              child: Adw.ButtonContent {
-                icon-name: "media-playback-start-symbolic";
-                label: _("_Continue");
-                use-underline: true;
-              };
-            }
-
-            Button end_button {
-              action-name: "process.end";
-
-              child: Adw.ButtonContent {
-                icon-name: "media-playback-stop-symbolic";
-                label: _("_End");
-                use-underline: true;
-              };
-            }
-
-            Button kill_button {
-              action-name: "process.kill";
-
-              child: Adw.ButtonContent {
-                icon-name: "process-stop-symbolic";
-                label: _("_Kill");
-                use-underline: true;
-              };
-            }
-          }
+          };
         }
 
-        Stack stack {
-          vexpand: true;
-          margin-bottom: 18;
-          margin-start: 18;
-          margin-end: 18;
+        StackPage {
+          name: "list";
 
-          StackPage {
-            name: "loading";
+          child: ScrolledWindow {
+            child: ColumnView view {
+              reorderable: false;
 
-            child: Adw.Spinner {
-              halign: center;
-              valign: center;
-              width-request: 32;
-              height-request: 32;
+              styles [
+                "processes",
+              ]
 
-              accessibility {
-                label: _("Reading processes");
+              ColumnViewColumn name_column {
+                title: _("Name");
+                expand: true;
+                resizable: true;
+              }
+
+              ColumnViewColumn user_column {
+                title: _("User");
+                fixed-width: 110;
+                resizable: true;
+                visible: bind template.compact inverted;
+              }
+
+              ColumnViewColumn cpu_column {
+                title: _("CPU");
+                fixed-width: 80;
+              }
+
+              ColumnViewColumn memory_column {
+                title: _("Memory");
+                fixed-width: 100;
+              }
+
+              ColumnViewColumn disk_column {
+                title: _("Disk");
+                fixed-width: 100;
+                visible: bind template.narrow inverted;
+              }
+
+              ColumnViewColumn gpu_column {
+                title: _("GPU");
+                fixed-width: 80;
+                visible: false;
+              }
+
+              ColumnViewColumn pid_column {
+                title: _("ID");
+                fixed-width: 80;
+                visible: bind template.narrow inverted;
               }
             };
-          }
+          };
+        }
 
-          StackPage {
-            name: "list";
+        StackPage {
+          name: "empty";
 
-            child: ScrolledWindow {
-              overflow: hidden;
-
-              styles [
-                "card",
-              ]
-
-              child: ColumnView view {
-                reorderable: false;
-
-                ColumnViewColumn name_column {
-                  title: _("Process Name");
-                  expand: true;
-                  resizable: true;
-                }
-
-                ColumnViewColumn user_column {
-                  title: _("User");
-                  fixed-width: 110;
-                  resizable: true;
-                  visible: bind template.narrow inverted;
-                }
-
-                ColumnViewColumn cpu_column {
-                  title: _("CPU");
-                  fixed-width: 80;
-                }
-
-                ColumnViewColumn memory_column {
-                  title: _("Memory");
-                  fixed-width: 100;
-                }
-
-                ColumnViewColumn disk_column {
-                  title: _("Disk");
-                  fixed-width: 100;
-                  visible: bind template.narrow inverted;
-                }
-
-                ColumnViewColumn gpu_column {
-                  title: _("GPU");
-                  fixed-width: 80;
-                  visible: false;
-                }
-
-                ColumnViewColumn pid_column {
-                  title: _("ID");
-                  fixed-width: 80;
-                  visible: bind template.narrow inverted;
-                }
-              };
-            };
-          }
-
-          StackPage {
-            name: "empty";
-
-            child: Adw.StatusPage empty_page {
-              icon-name: "system-search-symbolic";
-              title: _("No Matching Processes");
-            };
-          }
+          child: Adw.StatusPage empty_page {
+            icon-name: "system-search-symbolic";
+            title: _("No Matching Processes");
+          };
         }
       };
+    };
+
+    [bottom]
+    ActionBar {
+      [start]
+      Button stop_button {
+        label: _("_Stop");
+        use-underline: true;
+        action-name: "process.stop";
+      }
+
+      [start]
+      Button continue_button {
+        label: _("_Continue");
+        use-underline: true;
+        action-name: "process.continue";
+        visible: false;
+      }
+
+      [end]
+      Button kill_button {
+        label: _("_Kill");
+        use-underline: true;
+        action-name: "process.kill";
+
+        styles [
+          "destructive-action",
+        ]
+      }
+
+      [end]
+      Button end_button {
+        label: _("_End");
+        use-underline: true;
+        action-name: "process.end";
+      }
     }
   };
 }

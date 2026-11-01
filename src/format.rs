@@ -1,4 +1,4 @@
-use gettextrs::gettext;
+use gettextrs::{gettext, ngettext};
 use gtk::glib;
 use std::ffi::CStr;
 use std::sync::OnceLock;
@@ -16,9 +16,8 @@ pub fn is_binary() -> bool {
 }
 
 pub fn percent(value: f64, decimals: usize) -> String {
-    let number = format!("{value:.decimals$}").replace('.', decimal_point());
     // Translators: a share of something, such as "12.3%".
-    gettext("{value}%").replace("{value}", &number)
+    gettext("{value}%").replace("{value}", &number(value, decimals))
 }
 
 /// The decimal separator of the locale, which GLib writes sizes with too.
@@ -30,6 +29,23 @@ fn decimal_point() -> &'static str {
         let point = unsafe { CStr::from_ptr((*libc::localeconv()).decimal_point) };
         point.to_string_lossy().into_owned()
     })
+}
+
+/// Two short values side by side, such as "55%, 17.3 GiB".
+pub fn listed(first: &str, second: &str) -> String {
+    // Translators: two short values side by side, such as "55%, 17.3 GiB".
+    gettext("{first}, {second}")
+        .replace("{first}", first)
+        .replace("{second}", second)
+}
+
+/// `used` as a percentage of `total`.
+pub fn share(used: u64, total: u64) -> f64 {
+    if total == 0 {
+        0.0
+    } else {
+        used as f64 * 100.0 / total as f64
+    }
 }
 
 pub fn size(bytes: u64) -> String {
@@ -69,6 +85,55 @@ pub fn temperature(celsius: f64) -> String {
     gettext("{value} °C").replace("{value}", &format!("{celsius:.0}"))
 }
 
+/// A clock speed, in the unit that fits it.
+pub fn speed(hertz: f64) -> String {
+    let (value, text) = if hertz >= 1e9 {
+        // Translators: a clock speed, such as "3.84 GHz".
+        (hertz / 1e9, gettext("{value} GHz"))
+    } else {
+        // Translators: a clock speed, such as "800 MHz".
+        (hertz / 1e6, gettext("{value} MHz"))
+    };
+    let decimals = if hertz >= 1e9 { 2 } else { 0 };
+    text.replace("{value}", &number(value, decimals))
+}
+
+pub fn watts(watts: f64) -> String {
+    // Translators: power drawn, such as "118 W".
+    gettext("{value} W").replace("{value}", &number(watts, 0))
+}
+
+pub fn rpm(rpm: u64) -> String {
+    // Translators: how fast a fan turns, such as "1240 RPM".
+    gettext("{value} RPM").replace("{value}", &rpm.to_string())
+}
+
+pub fn milliseconds(ms: f64) -> String {
+    // Translators: a short time, such as "0.4 ms".
+    gettext("{value} ms").replace("{value}", &number(ms, 1))
+}
+
+/// How long something has been running, as hours, minutes and seconds, with days before them
+/// once there are any.
+pub fn uptime(seconds: u64) -> String {
+    let (minutes, secs) = (seconds / 60, seconds % 60);
+    let (hours, minutes) = (minutes / 60, minutes % 60);
+    let (days, hours) = (hours / 24, hours % 24);
+    if days == 0 {
+        format!("{hours}:{minutes:02}:{secs:02}")
+    } else {
+        let days = u32::try_from(days).unwrap_or(u32::MAX);
+        // Translators: time since the machine started, such as "2 days 3:14:07".
+        ngettext("{days} day {time}", "{days} days {time}", days)
+            .replace("{days}", &days.to_string())
+            .replace("{time}", &format!("{hours}:{minutes:02}:{secs:02}"))
+    }
+}
+
+pub fn number(value: f64, decimals: usize) -> String {
+    format!("{value:.decimals$}").replace('.', decimal_point())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,5 +155,9 @@ mod tests {
         assert_eq!(free_of(0, 1024), "0 bytes free of 1.0\u{a0}KiB");
         assert_eq!(size_in(1_500_000, false), "1.5\u{a0}MB");
         assert_eq!(temperature(44.6), "45 °C");
+        assert_eq!(speed(3_840_000_000.0), "3.84 GHz");
+        assert_eq!(speed(800_000_000.0), "800 MHz");
+        assert_eq!(uptime(11_647), "3:14:07");
+        assert_eq!(uptime(90_061), "1 day 1:01:01");
     }
 }

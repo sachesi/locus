@@ -33,22 +33,11 @@ mod imp {
         #[template_child]
         pub context_bin: TemplateChild<gtk::PopoverBin>,
         #[template_child]
-        pub header: TemplateChild<gtk::Box>,
-        #[template_child]
-        pub apps_label: TemplateChild<gtk::Label>,
-        #[template_child]
-        pub processes_label: TemplateChild<gtk::Label>,
+        pub title: TemplateChild<adw::WindowTitle>,
         #[template_child]
         pub stop_button: TemplateChild<gtk::Button>,
         #[template_child]
         pub continue_button: TemplateChild<gtk::Button>,
-        #[template_child]
-        pub end_button: TemplateChild<gtk::Button>,
-        #[template_child]
-        pub kill_button: TemplateChild<gtk::Button>,
-        /// The icon and label of each action button, kept while a narrow window shows the
-        /// icon alone.
-        pub button_contents: RefCell<Vec<(gtk::Button, adw::ButtonContent)>>,
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
@@ -70,7 +59,10 @@ mod imp {
         #[template_child]
         pub empty_page: TemplateChild<adw::StatusPage>,
 
-        /// Set by the window's breakpoint; hides the columns that fit only when wide.
+        /// Set by the window's breakpoints; hides the columns that fit only when wide.
+        #[property(get, set)]
+        compact: Cell<bool>,
+        /// Set by the window's breakpoint; leaves room for little more than the names.
         #[property(get, set = Self::set_narrow)]
         narrow: Cell<bool>,
         /// Whether the search bar is open; the query filters the list only while it is.
@@ -158,22 +150,6 @@ mod imp {
             obj.set_up_model();
             obj.set_up_columns();
             obj.set_up_context_menu();
-            let buttons = [
-                &self.stop_button,
-                &self.continue_button,
-                &self.end_button,
-                &self.kill_button,
-            ];
-            self.button_contents.replace(
-                buttons
-                    .into_iter()
-                    .filter_map(|button| {
-                        let content = button.child().and_downcast::<adw::ButtonContent>()?;
-                        Some(((**button).clone(), content))
-                    })
-                    .collect(),
-            );
-
             let motion = gtk::EventControllerMotion::new();
             motion.connect_motion(glib::clone!(
                 #[weak]
@@ -232,32 +208,7 @@ mod imp {
 
         fn set_narrow(&self, narrow: bool) {
             self.narrow.set(narrow);
-            self.header.set_orientation(if narrow {
-                gtk::Orientation::Vertical
-            } else {
-                gtk::Orientation::Horizontal
-            });
-            let margin = if narrow { 12 } else { 18 };
-            for widget in [
-                self.header.upcast_ref::<gtk::Widget>(),
-                self.stack.upcast_ref(),
-            ] {
-                widget.set_margin_start(margin);
-                widget.set_margin_end(margin);
-            }
-            self.stack.set_margin_bottom(margin);
             self.show_columns();
-            // The labels of the buttons do not fit beside one another in a narrow window,
-            // in every language.
-            for (button, content) in &*self.button_contents.borrow() {
-                if narrow {
-                    button.set_icon_name(&content.icon_name());
-                    button.set_tooltip_text(Some(&content.label().replace('_', "")));
-                } else {
-                    button.set_child(Some(content));
-                    button.set_tooltip_text(None);
-                }
-            }
         }
 
         /// Shows the GPU column where there is a card and room for it.
@@ -335,7 +286,7 @@ impl ProcessesPage {
         let imp = self.imp();
         let groups = [
             Process::group(&gettext("Apps")),
-            Process::group(&gettext("Processes")),
+            Process::group(&gettext("Background Processes")),
         ];
         let root = gio::ListStore::new::<Process>();
         root.extend_from_slice(&groups);
@@ -751,18 +702,16 @@ impl ProcessesPage {
         let apps = imp.apps.borrow().len();
         let processes = imp.by_pid.borrow().len();
         let count = |n: usize| u32::try_from(n).unwrap_or(u32::MAX);
-        imp.apps_label.set_label(
-            &ngettext("{count} Running App", "{count} Running Apps", count(apps))
-                .replace("{count}", &apps.to_string()),
-        );
-        imp.processes_label.set_label(
-            &ngettext(
-                "{count} Running Process",
-                "{count} Running Processes",
-                count(processes),
-            )
-            .replace("{count}", &processes.to_string()),
-        );
+        let apps_text = ngettext("{count} Running App", "{count} Running Apps", count(apps))
+            .replace("{count}", &apps.to_string());
+        let processes_text = ngettext(
+            "{count} Running Process",
+            "{count} Running Processes",
+            count(processes),
+        )
+        .replace("{count}", &processes.to_string());
+        imp.title
+            .set_subtitle(&format!("{apps_text}, {processes_text}"));
     }
 
     /// Heads the columns of the machine's use with how much of it there is in all.

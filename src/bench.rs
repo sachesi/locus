@@ -1,7 +1,7 @@
 //! What a reading costs, with and without the processes, measured against a load the
 //! benchmark starts itself so that numbers from different machines compare: `just bench`.
 
-use crate::sampler::{Sampler, Scope};
+use crate::sampler::{Focus, Sampler, Scope};
 use std::alloc::{GlobalAlloc, Layout};
 use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, Stdio};
@@ -145,19 +145,36 @@ fn cost_of_a_reading() {
     let mut sampler = Sampler::new();
     let processes = Scope {
         processes: true,
-        filesystems: false,
+        ..Scope::default()
     };
-    let filesystems = Scope {
-        processes: false,
+    let disk = Scope {
         filesystems: true,
+        focus: Some(Focus::Disk),
+        ..Scope::default()
+    };
+    let focused = |focus| Scope {
+        focus: Some(focus),
+        ..Scope::default()
     };
     // The first readings read the installed apps and look up every process's details.
     sampler.sample(processes);
     sampler.sample(processes);
     println!("per reading, over {READINGS} readings, by the page on screen:");
     measure(&mut sampler, "Processes", processes);
-    measure(&mut sampler, "Resources", Scope::default());
-    measure(&mut sampler, "File Systems", filesystems);
+    measure(&mut sampler, "Services", Scope::default());
+    measure(&mut sampler, "Memory", focused(Focus::Memory));
+    measure(&mut sampler, "Network", focused(Focus::Network));
+    measure(&mut sampler, "Disk", disk);
+    let cpu = Scope {
+        processes: true,
+        ..focused(Focus::Cpu)
+    };
+    let gpu = Scope {
+        processes: true,
+        ..focused(Focus::Gpu)
+    };
+    measure(&mut sampler, "CPU", cpu);
+    measure(&mut sampler, "GPU", gpu);
     println!("peak resident {} MiB", peak_resident_kib() / 1024);
     drop(load);
 }

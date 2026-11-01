@@ -1,0 +1,204 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusMemoryPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle title {
+        title: _("Memory");
+      };
+    }
+
+    content: ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Adw.Clamp {
+        maximum-size: 1020;
+        tightening-threshold: 600;
+
+        child: Box {
+          orientation: vertical;
+          spacing: 18;
+          margin-top: 6;
+          margin-bottom: 18;
+          margin-start: 12;
+          margin-end: 12;
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            Label {
+              label: _("Usage");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            $LocusGraph graph {
+              maximum: 100;
+              height-request: 180;
+
+              accessibility {
+                label: _("Memory and swap in use over the last readings");
+              }
+            }
+
+            Adw.WrapBox {
+              child-spacing: 24;
+              line-spacing: 6;
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "first",
+                  ]
+                }
+
+                Label {
+                  label: _("Memory");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label memory_detail {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+
+              Box swap_legend {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "second",
+                  ]
+                }
+
+                Label {
+                  label: _("Swap");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Label swap_detail {
+                  styles [
+                    "numeric",
+                  ]
+                }
+              }
+            }
+          }
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            Label {
+              label: _("Composition");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            $LocusSegmentBar composition {
+              height-request: 26;
+
+              accessibility {
+                label: _("How the memory is divided between what is in use, the cache, the buffers and what is free");
+              }
+            }
+
+            FlowBox {
+              selection-mode: none;
+              homogeneous: true;
+              min-children-per-line: 2;
+              max-children-per-line: 4;
+              column-spacing: 12;
+              row-spacing: 12;
+
+              $LocusStat in_use {
+                title: _("In Use");
+              }
+
+              $LocusStat cache {
+                title: _("Cache");
+              }
+
+              $LocusStat buffers {
+                title: _("Buffers");
+              }
+
+              $LocusStat free {
+                title: _("Free");
+              }
+            }
+          }
+
+          FlowBox {
+            selection-mode: none;
+            homogeneous: true;
+            min-children-per-line: 2;
+            max-children-per-line: 5;
+            column-spacing: 12;
+            row-spacing: 12;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            $LocusStat available {
+              title: _("Available");
+            }
+
+            $LocusStat committed {
+              title: _("Committed");
+            }
+
+            $LocusStat swap {
+              title: _("Swap");
+            }
+
+            $LocusStat compression {
+              title: _("Swap Compression");
+            }
+
+            $LocusStat pressure {
+              title: _("Pressure");
+            }
+          }
+        };
+      };
+    };
+  };
+}

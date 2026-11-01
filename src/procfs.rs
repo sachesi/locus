@@ -144,6 +144,12 @@ pub fn parse_cpu_times(text: &str) -> Vec<CpuTimes> {
 pub struct Memory {
     pub total: u64,
     pub used: u64,
+    pub free: u64,
+    pub buffers: u64,
+    /// What can be reclaimed besides the free memory and the buffers, page cache mostly.
+    pub cache: u64,
+    pub available: u64,
+    pub committed: u64,
     pub swap_total: u64,
     pub swap_used: u64,
 }
@@ -154,9 +160,16 @@ pub fn parse_meminfo(text: &str) -> Memory {
     let available = kib("MemAvailable:");
     let swap_total = kib("SwapTotal:");
     let swap_free = kib("SwapFree:");
+    let free = kib("MemFree:");
+    let buffers = kib("Buffers:");
     Memory {
         total,
         used: total.saturating_sub(available),
+        free,
+        buffers,
+        cache: available.saturating_sub(free).saturating_sub(buffers),
+        available,
+        committed: kib("Committed_AS:"),
         swap_total,
         swap_used: swap_total.saturating_sub(swap_free),
     }
@@ -176,18 +189,72 @@ pub fn parse_net_dev(text: &str) -> Vec<(&str, u64, u64)> {
         .collect()
 }
 
-/// Device name, sectors read and sectors written, from `/proc/diskstats`. Its sectors are
-/// 512 bytes whatever the device's own are.
-pub fn parse_diskstats(text: &str) -> Vec<(&str, u64, u64)> {
+/// A device's counters in `/proc/diskstats`.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct DiskCounters {
+    /// Sectors, which are 512 bytes here whatever the device's own are.
+    pub sectors_read: u64,
+    pub sectors_written: u64,
+    /// Reads and writes completed.
+    pub requests: u64,
+    /// Milliseconds requests spent waiting and being served, added up.
+    pub request_ms: u64,
+    /// Milliseconds the device had requests in progress.
+    pub active_ms: u64,
+}
+
+pub fn parse_diskstats(text: &str) -> Vec<(&str, DiskCounters)> {
     text.lines()
         .filter_map(|line| {
             let mut fields = line.split_ascii_whitespace().skip(2);
             let name = fields.next()?;
-            let read = fields.nth(2)?.parse().ok()?;
-            let written = fields.nth(3)?.parse().ok()?;
-            Some((name, read, written))
+            let mut number = |skip: usize| fields.nth(skip)?.parse::<u64>().ok();
+            let reads = number(0)?;
+            let sectors_read = number(1)?;
+            let read_ms = number(0)?;
+            let writes = number(0)?;
+            let sectors_written = number(1)?;
+            let write_ms = number(0)?;
+            let active_ms = number(1)?;
+            Some((
+                name,
+                DiskCounters {
+                    sectors_read,
+                    sectors_written,
+                    requests: reads + writes,
+                    request_ms: read_ms + write_ms,
+                    active_ms,
+                },
+            ))
         })
         .collect()
+}
+
+/// The share of the last ten seconds some task waited on a resource, from a file under
+/// `/proc/pressure`.
+pub fn parse_pressure(text: &str) -> Option<f64> {
+    let some = text.lines().find_map(|line| line.strip_prefix("some "))?;
+    let value = some
+        .split_ascii_whitespace()
+        .next()?
+        .strip_prefix("avg10=")?;
+    value.parse().ok()
+}
+
+/// The load average of the last minute and how many threads there are, from `/proc/loadavg`.
+pub fn parse_loadavg(text: &str) -> Option<(f64, u64)> {
+    let mut fields = text.split_ascii_whitespace();
+    let load = fields.next()?.parse().ok()?;
+    let (_, threads) = fields.nth(2)?.split_once('/')?;
+    Some((load, threads.parse().ok()?))
+}
+
+/// Bytes stored in a compressed swap device and what they take up, from its `mm_stat`.
+pub fn parse_zram_stat(text: &str) -> Option<(u64, u64)> {
+    let mut fields = text.split_ascii_whitespace();
+    let stored = fields.next()?.parse().ok()?;
+    let compressed = fields.next()?.parse().ok()?;
+    Some((stored, compressed))
 }
 
 /// A mounted file system from `/proc/self/mountinfo`.
@@ -582,6 +649,8 @@ mod tests {
         assert_eq!(memory.total, 16_000_000 * 1024);
         assert_eq!(memory.used, 10_000_000 * 1024);
         assert_eq!(memory.swap_used, 1_000_000 * 1024);
+        assert_eq!(memory.free, 1_000_000 * 1024);
+        assert_eq!(memory.cache, 5_000_000 * 1024);
     }
 
     #[test]
@@ -598,7 +667,34 @@ mod tests {
     #[test]
     fn diskstats_sectors() {
         let text = " 259       0 nvme0n1 100 0 2048 10 50 0 4096 20 0 30 30 0 0 0 0 0 0\n";
-        assert_eq!(parse_diskstats(text), vec![("nvme0n1", 2048, 4096)]);
+        assert_eq!(
+            parse_diskstats(text),
+            vec![(
+                "nvme0n1",
+                DiskCounters {
+                    sectors_read: 2048,
+                    sectors_written: 4096,
+                    requests: 150,
+                    request_ms: 30,
+                    active_ms: 30,
+                }
+            )]
+        );
+    }
+
+    #[test]
+    fn pressure_load_and_compressed_swap() {
+        let pressure = "some avg10=2.40 avg60=1.00 avg300=0.50 total=123\n\
+                        full avg10=0.00 avg60=0.00 avg300=0.00 total=0\n";
+        assert_eq!(parse_pressure(pressure), Some(2.4));
+        assert_eq!(
+            parse_loadavg("4.21 3.87 3.02 2/1804 12345\n"),
+            Some((4.21, 1804))
+        );
+        assert_eq!(
+            parse_zram_stat("1540747264 512596811 551411712 0 2589933568 3298\n"),
+            Some((1_540_747_264, 512_596_811))
+        );
     }
 
     #[test]

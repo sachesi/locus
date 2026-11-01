@@ -16,8 +16,6 @@ mod imp {
         #[template_child]
         pub resources_interval: TemplateChild<adw::ComboRow>,
         #[template_child]
-        pub filesystems_interval: TemplateChild<adw::ComboRow>,
-        #[template_child]
         pub processes_interval: TemplateChild<adw::ComboRow>,
         #[template_child]
         pub binary_units: TemplateChild<adw::SwitchRow>,
@@ -29,7 +27,6 @@ mod imp {
         fn default() -> Self {
             Self {
                 resources_interval: TemplateChild::default(),
-                filesystems_interval: TemplateChild::default(),
                 processes_interval: TemplateChild::default(),
                 binary_units: TemplateChild::default(),
                 settings: gio::Settings::new(config::APP_ID),
@@ -64,7 +61,6 @@ mod imp {
             let labels: Vec<&str> = labels.iter().map(String::as_str).collect();
             for (row, key) in [
                 (&*self.resources_interval, "resources-update-interval"),
-                (&*self.filesystems_interval, "filesystems-update-interval"),
                 (&*self.processes_interval, "processes-update-interval"),
             ] {
                 row.set_model(Some(&gtk::StringList::new(&labels)));

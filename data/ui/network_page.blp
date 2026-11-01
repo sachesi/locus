@@ -1,0 +1,198 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusNetworkPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle title {};
+    }
+
+    content: ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Adw.Clamp {
+        maximum-size: 1020;
+        tightening-threshold: 600;
+
+        child: Box {
+          orientation: vertical;
+          spacing: 18;
+          margin-top: 6;
+          margin-bottom: 18;
+          margin-start: 12;
+          margin-end: 12;
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            Label {
+              label: _("Throughput");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            $LocusGraph graph {
+              height-request: 240;
+
+              accessibility {
+                label: _("Network traffic over the last readings");
+              }
+            }
+
+            Adw.WrapBox {
+              child-spacing: 24;
+              line-spacing: 6;
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "first",
+                  ]
+                }
+
+                Label {
+                  label: _("Receiving");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+              }
+
+              Box {
+                spacing: 6;
+
+                Box {
+                  valign: center;
+
+                  styles [
+                    "swatch",
+                    "second",
+                  ]
+                }
+
+                Label {
+                  label: _("Sending");
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+              }
+            }
+          }
+
+          FlowBox {
+            selection-mode: none;
+            homogeneous: true;
+            min-children-per-line: 2;
+            max-children-per-line: 4;
+            column-spacing: 12;
+            row-spacing: 12;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            $LocusStat received {
+              title: _("Receiving");
+            }
+
+            $LocusStat sent {
+              title: _("Sending");
+            }
+
+            $LocusStat total_received {
+              title: _("Received Since Boot");
+            }
+
+            $LocusStat total_sent {
+              title: _("Sent Since Boot");
+            }
+          }
+
+          Box {
+            orientation: vertical;
+            spacing: 6;
+
+            Label {
+              label: _("Connection");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            ListBox {
+              selection-mode: none;
+
+              styles [
+                "boxed-list",
+              ]
+
+              Adw.ActionRow speed {
+                title: _("Speed");
+
+                styles [
+                  "property",
+                ]
+              }
+
+              Adw.ActionRow ipv4 {
+                title: _("IPv4 Address");
+                subtitle-selectable: true;
+
+                styles [
+                  "property",
+                ]
+              }
+
+              Adw.ActionRow ipv6 {
+                title: _("IPv6 Address");
+                subtitle-selectable: true;
+
+                styles [
+                  "property",
+                ]
+              }
+
+              Adw.ActionRow hardware_address {
+                title: _("Hardware Address");
+                subtitle-selectable: true;
+
+                styles [
+                  "property",
+                ]
+              }
+
+              Adw.ActionRow driver {
+                title: _("Driver");
+
+                styles [
+                  "property",
+                ]
+              }
+            }
+          }
+        };
+      };
+    };
+  };
+}
