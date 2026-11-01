@@ -23,6 +23,21 @@ graph {
 .swatch.first {
   background-color: var(--accent-bg-color);
 }
+.device-blue .swatch.first {
+  background-color: #3584e4;
+}
+.device-purple .swatch.first {
+  background-color: #9141ac;
+}
+.device-green .swatch.first {
+  background-color: #2ec27e;
+}
+.device-orange .swatch.first {
+  background-color: #e66100;
+}
+.device-red .swatch.first {
+  background-color: #e01b24;
+}
 .swatch.second {
   background-color: color-mix(in srgb, currentColor 60%, transparent);
 }

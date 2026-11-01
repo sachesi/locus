@@ -195,6 +195,7 @@ fn engine_title(name: &str) -> String {
 fn engine_view(name: &str) -> (EngineView, gtk::Widget) {
     let graph = Graph::default();
     graph.set_maximum(100.0);
+    graph.set_tint("red");
     graph.set_height_request(96);
     let title = engine_title(name);
     graph.update_property(&[gtk::accessible::Property::Label(&title)]);
