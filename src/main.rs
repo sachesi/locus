@@ -17,6 +17,7 @@ mod process;
 mod process_details;
 mod processes_page;
 mod procfs;
+mod range_switch;
 mod sampler;
 mod segment_bar;
 mod sidebar_row;

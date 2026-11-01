@@ -1,5 +1,6 @@
 use crate::format;
 use crate::graph::Graph;
+use crate::range_switch::RangeSwitch;
 use crate::sampler::System;
 use crate::segment_bar::{SegmentBar, Tone};
 use crate::stat::Stat;
@@ -54,6 +55,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Graph::ensure_type();
+            RangeSwitch::ensure_type();
             SegmentBar::ensure_type();
             Stat::ensure_type();
             klass.bind_template();

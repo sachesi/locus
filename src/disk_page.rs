@@ -1,6 +1,7 @@
 use crate::file_system_list::FileSystemList;
 use crate::format;
 use crate::graph::Graph;
+use crate::range_switch::RangeSwitch;
 use crate::sampler::{Disk, FileSystem};
 use crate::stat::Stat;
 use adw::prelude::*;
@@ -48,6 +49,7 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             FileSystemList::ensure_type();
             Graph::ensure_type();
+            RangeSwitch::ensure_type();
             Stat::ensure_type();
             klass.bind_template();
         }

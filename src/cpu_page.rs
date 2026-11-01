@@ -1,6 +1,7 @@
 use crate::format;
 use crate::graph::Graph;
 use crate::heat_cell::{self, HeatCell};
+use crate::range_switch::RangeSwitch;
 use crate::sampler::{ProcessSample, System};
 use crate::stat::Stat;
 use crate::top_list::TopList;
@@ -57,6 +58,7 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             Graph::ensure_type();
+            RangeSwitch::ensure_type();
             HeatCell::ensure_type();
             Stat::ensure_type();
             TopList::ensure_type();
