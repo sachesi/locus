@@ -1,4 +1,5 @@
 mod autostart;
+mod back_button;
 #[cfg(test)]
 mod bench;
 mod config;
@@ -80,6 +81,7 @@ fn setup_actions(app: &adw::Application) {
     app.set_accels_for_action("app.quit", &["<Control>q"]);
     app.set_accels_for_action("window.close", &["<Control>w"]);
     app.set_accels_for_action("win.search", &["<Control>f"]);
+    app.set_accels_for_action("win.show-sidebar", &["<Alt>Left"]);
     app.set_accels_for_action("win.page::processes", &["<Alt>1"]);
     app.set_accels_for_action("win.page::services", &["<Alt>2"]);
     app.set_accels_for_action("win.page::startup", &["<Alt>3"]);

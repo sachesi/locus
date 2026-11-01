@@ -20,7 +20,10 @@ template $LocusWindow: Adw.ApplicationWindow {
     condition ("max-width: 720sp")
 
     setters {
+      template.collapsed: true;
       split_view.collapsed: true;
+      split_view.sidebar-width-fraction: 1;
+      split_view.max-sidebar-width: 100000;
       processes_page.compact: true;
       services_page.compact: true;
     }
@@ -30,7 +33,10 @@ template $LocusWindow: Adw.ApplicationWindow {
     condition ("max-width: 550sp")
 
     setters {
+      template.collapsed: true;
       split_view.collapsed: true;
+      split_view.sidebar-width-fraction: 1;
+      split_view.max-sidebar-width: 100000;
       processes_page.compact: true;
       services_page.compact: true;
       template.narrow: true;
@@ -40,84 +46,82 @@ template $LocusWindow: Adw.ApplicationWindow {
   }
 
   content: Adw.ToastOverlay toasts {
-    child: Adw.NavigationSplitView split_view {
+    child: Adw.OverlaySplitView split_view {
       min-sidebar-width: 250;
       max-sidebar-width: 290;
-      show-content: true;
+      notify::show-sidebar => $on_show_sidebar_changed() swapped;
 
-      sidebar: Adw.NavigationPage {
-        title: "Locus";
-        tag: "sidebar";
+      sidebar: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          title-widget: Adw.WindowTitle {
+            title: "Locus";
+          };
 
-        child: Adw.ToolbarView {
-          [top]
-          Adw.HeaderBar {
-            title-widget: Adw.WindowTitle {
-              title: "Locus";
-            };
-
-            [end]
-            MenuButton {
-              icon-name: "open-menu-symbolic";
-              tooltip-text: _("Main Menu");
-              primary: true;
-              menu-model: primary_menu;
-            }
+          // A header bar leaves the window's buttons out of a split view's sidebar, even where
+          // it covers the whole window.
+          [end]
+          WindowControls {
+            side: end;
+            visible: bind template.collapsed;
           }
 
-          content: ScrolledWindow {
-            hscrollbar-policy: never;
+          [end]
+          MenuButton {
+            icon-name: "open-menu-symbolic";
+            tooltip-text: _("Main Menu");
+            primary: true;
+            menu-model: primary_menu;
+          }
+        }
 
-            child: ListBox sidebar {
-              row-activated => $on_row_activated() swapped;
+        content: ScrolledWindow {
+          hscrollbar-policy: never;
 
-              styles [
-                "navigation-sidebar",
-              ]
-            };
+          child: ListBox sidebar {
+            row-activated => $on_row_activated() swapped;
+
+            styles [
+              "navigation-sidebar",
+            ]
           };
         };
       };
 
-      content: Adw.NavigationPage content_page {
-        title: _("Processes");
-        tag: "content";
+      content: Stack stack {
+        hhomogeneous: false;
+        vhomogeneous: false;
+        opacity: 0;
 
-        child: Stack stack {
-          hhomogeneous: false;
-          vhomogeneous: false;
-          opacity: 0;
+        StackPage {
+          name: "processes";
 
-          StackPage {
-            name: "processes";
+          child: $LocusProcessesPage processes_page {};
+        }
 
-            child: $LocusProcessesPage processes_page {};
-          }
+        StackPage {
+          name: "services";
 
-          StackPage {
-            name: "services";
+          child: $LocusServicesPage services_page {};
+        }
 
-            child: $LocusServicesPage services_page {};
-          }
+        StackPage {
+          name: "startup";
 
-          StackPage {
-            name: "startup";
+          child: $LocusStartupPage startup_page {};
+        }
 
-            child: $LocusStartupPage startup_page {};
-          }
+        StackPage {
+          name: "cpu";
 
-          StackPage {
-            name: "cpu";
+          child: $LocusCpuPage cpu_page {};
+        }
 
-            child: $LocusCpuPage cpu_page {};
-          }
+        StackPage {
+          name: "memory";
 
-          StackPage {
-            name: "memory";
-
-            child: $LocusMemoryPage memory_page {};
-          }
-        };
+          child: $LocusMemoryPage memory_page {};
+        }
       };
     };
   };

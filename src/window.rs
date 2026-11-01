@@ -1,3 +1,4 @@
+use crate::back_button::BackButton;
 use crate::config;
 use crate::cpu_page::CpuPage;
 use crate::disk_page::DiskPage;
@@ -36,11 +37,9 @@ mod imp {
         #[template_child]
         pub toasts: TemplateChild<adw::ToastOverlay>,
         #[template_child]
-        pub split_view: TemplateChild<adw::NavigationSplitView>,
+        pub split_view: TemplateChild<adw::OverlaySplitView>,
         #[template_child]
         pub sidebar: TemplateChild<gtk::ListBox>,
-        #[template_child]
-        pub content_page: TemplateChild<adw::NavigationPage>,
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
@@ -64,6 +63,9 @@ mod imp {
         /// Set by the window's breakpoint.
         #[property(get, set)]
         narrow: Cell<bool>,
+        /// Set by the window's breakpoints: the sidebar goes over the page, not beside it.
+        #[property(get, set)]
+        collapsed: Cell<bool>,
         pub settings: gio::Settings,
         /// Cuts the wait for the next reading short.
         pub wake: RefCell<Option<async_channel::Sender<()>>>,
@@ -78,7 +80,6 @@ mod imp {
                 toasts: TemplateChild::default(),
                 split_view: TemplateChild::default(),
                 sidebar: TemplateChild::default(),
-                content_page: TemplateChild::default(),
                 stack: TemplateChild::default(),
                 processes_page: TemplateChild::default(),
                 services_page: TemplateChild::default(),
@@ -91,6 +92,7 @@ mod imp {
                 links: RefCell::default(),
                 gpus: RefCell::default(),
                 narrow: Cell::new(false),
+                collapsed: Cell::new(false),
                 settings: gio::Settings::new(config::APP_ID),
                 wake: RefCell::default(),
                 reveal: OnceCell::new(),
@@ -107,12 +109,16 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             CpuPage::ensure_type();
             MemoryPage::ensure_type();
+            BackButton::ensure_type();
             ProcessesPage::ensure_type();
             ServicesPage::ensure_type();
             StartupPage::ensure_type();
             klass.bind_template();
             klass.bind_template_callbacks();
 
+            klass.install_action("win.show-sidebar", None, |win, _, _| {
+                win.imp().split_view.set_show_sidebar(true);
+            });
             klass.install_action("win.search", None, |win, _, _| {
                 let imp = win.imp();
                 win.show_page("processes");
@@ -216,6 +222,12 @@ mod imp {
             if let Some(row) = row.downcast_ref::<SidebarRow>() {
                 self.obj().show_page(&row.page());
             }
+        }
+
+        /// A page the sidebar comes off of has readings to catch up on.
+        #[template_callback]
+        fn on_show_sidebar_changed(&self) {
+            self.obj().wake();
         }
     }
 }
@@ -345,7 +357,9 @@ impl LocusWindow {
         }
         imp.stack.set_visible_child_name(page);
         self.select_row(page);
-        imp.split_view.set_show_content(true);
+        if imp.split_view.is_collapsed() {
+            imp.split_view.set_show_sidebar(false);
+        }
     }
 
     fn select_row(&self, page: &str) {
@@ -356,7 +370,6 @@ impl LocusWindow {
                 && row.page() == page
             {
                 imp.sidebar.select_row(Some(row));
-                imp.content_page.set_title(&row.title());
                 return;
             }
             index += 1;
@@ -365,12 +378,18 @@ impl LocusWindow {
 
     /// Whether `page` is on screen, in a window that is.
     fn shows(&self, page: &str) -> bool {
-        self.imp().stack.visible_child_name().as_deref() == Some(page) && !self.is_suspended()
+        self.imp().stack.visible_child_name().as_deref() == Some(page) && self.shows_a_page()
+    }
+
+    /// Whether the page is in sight, with the window not hidden and the sidebar not over it.
+    fn shows_a_page(&self) -> bool {
+        let split_view = &self.imp().split_view;
+        !(self.is_suspended() || split_view.is_collapsed() && split_view.shows_sidebar())
     }
 
     /// Whether a page whose name starts with `kind` is on screen, in a window that is.
     fn shows_kind(&self, kind: &str) -> bool {
-        !self.is_suspended()
+        self.shows_a_page()
             && self
                 .imp()
                 .stack

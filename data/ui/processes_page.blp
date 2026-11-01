@@ -34,6 +34,9 @@ template $LocusProcessesPage: Adw.Bin {
     content: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
+      [start]
+      $LocusBackButton {}
+
       show-end-title-buttons: bind $title_buttons_shown(template.details-shown, template.compact) as <bool>;
 
       [end]

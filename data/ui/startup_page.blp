@@ -5,6 +5,9 @@ template $LocusStartupPage: Adw.Bin {
   child: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
+      [start]
+      $LocusBackButton {}
+
       title-widget: Adw.WindowTitle {
         title: _("Startup");
       };
