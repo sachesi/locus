@@ -191,6 +191,14 @@ impl Graph {
         self.queue_draw();
     }
 
+    /// Forgets the readings, for a graph that is to show something else.
+    pub fn clear(&self) {
+        for history in &mut *self.imp().series.borrow_mut() {
+            history.clear();
+        }
+        self.queue_draw();
+    }
+
     /// How the top of a graph scaled to its data is labelled.
     pub fn set_scale_label(&self, label: impl Fn(f64) -> String + 'static) {
         self.imp().scale_label.replace(Some(Box::new(label)));

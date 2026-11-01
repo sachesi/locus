@@ -454,6 +454,83 @@ pub fn parse_drm_fdinfo(text: &str) -> Option<DrmClient<'_>> {
     })
 }
 
+/// How a process or thread is scheduled, from its `stat` file.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Scheduling {
+    pub nice: i32,
+    pub threads: u64,
+    /// The kernel's number for the scheduling policy.
+    pub policy: u32,
+    /// User plus system time, in clock ticks.
+    pub ticks: u64,
+}
+
+pub fn parse_scheduling(text: &str) -> Option<Scheduling> {
+    let close = text.rfind(')')?;
+    let fields: Vec<&str> = text.get(close + 1..)?.split_ascii_whitespace().collect();
+    let number = |index: usize| fields.get(index)?.parse::<u64>().ok();
+    Some(Scheduling {
+        nice: fields.get(16)?.parse().ok()?,
+        threads: number(17)?,
+        policy: fields.get(38)?.parse().ok()?,
+        ticks: number(11)? + number(12)?,
+    })
+}
+
+/// A socket from a table under `/proc/net`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Socket {
+    pub inode: u64,
+    pub local: std::net::SocketAddr,
+    pub remote: std::net::SocketAddr,
+    /// The kernel's number for its state; 10 is listening, on TCP.
+    pub state: u8,
+}
+
+/// The sockets of a table, which `/proc/net/tcp`, `tcp6`, `udp` and `udp6` all write alike.
+pub fn parse_sockets(text: &str) -> Vec<Socket> {
+    text.lines()
+        .skip(1)
+        .filter_map(|line| {
+            let fields: Vec<&str> = line.split_ascii_whitespace().collect();
+            Some(Socket {
+                local: parse_socket_address(fields.get(1)?)?,
+                remote: parse_socket_address(fields.get(2)?)?,
+                state: u8::from_str_radix(fields.get(3)?, 16).ok()?,
+                inode: fields.get(9)?.parse().ok()?,
+            })
+        })
+        .collect()
+}
+
+/// An address in hexadecimal, in 32-bit words in the machine's order, then the port.
+fn parse_socket_address(text: &str) -> Option<std::net::SocketAddr> {
+    let (address, port) = text.split_once(':')?;
+    let port = u16::from_str_radix(port, 16).ok()?;
+    let word = |at: usize| {
+        let word = u32::from_str_radix(address.get(at..at + 8)?, 16).ok()?;
+        Some(word.to_ne_bytes())
+    };
+    let ip = match address.len() {
+        8 => std::net::IpAddr::from(word(0)?),
+        32 => {
+            let mut bytes = [0; 16];
+            for (index, chunk) in bytes.as_chunks_mut::<4>().0.iter_mut().enumerate() {
+                *chunk = word(index * 8)?;
+            }
+            std::net::IpAddr::from(bytes)
+        }
+        _ => return None,
+    };
+    Some(std::net::SocketAddr::new(ip, port))
+}
+
+/// The access mode a file is open with, from its `fdinfo`: 0 to read, 1 to write, 2 both.
+pub fn parse_fd_mode(text: &str) -> Option<u32> {
+    let flags = text.lines().find_map(|line| line.strip_prefix("flags:"))?;
+    Some(u32::from_str_radix(flags.trim(), 8).ok()? & 3)
+}
+
 /// The number after `key` on its own line of a `key: value` file.
 fn field(text: &str, key: &str) -> Option<u64> {
     let rest = text.lines().find_map(|l| l.strip_prefix(key))?;
@@ -712,6 +789,43 @@ mod tests {
         assert_eq!(points, ["/", "/boot/efi", "/run/media/me/My Disk"]);
         assert_eq!(mounts[0].fs_type, "btrfs");
         assert_eq!(mounts[0].source, "/dev/nvme0n1p3");
+    }
+
+    #[test]
+    fn scheduling_of_a_process() {
+        let text = "4242 (Web (x)) S 1 4242 4242 0 -1 4194560 100 0 0 0 250 50 0 0 20 5 30 0 \
+                    987654 123 456 18446744073709551615 1 1 0 0 0 0 0 0 0 0 0 0 17 3 0 3 0 0 0";
+        assert_eq!(
+            parse_scheduling(text),
+            Some(Scheduling {
+                nice: 5,
+                threads: 30,
+                policy: 3,
+                ticks: 300,
+            })
+        );
+    }
+
+    #[test]
+    fn sockets_in_either_family() {
+        let text = "  sl  local_address rem_address   st tx:rx rt:t re uid timeout inode\n\
+                    \x20  0: 0100007F:1F90 00000000:0000 0A 0:0 0:0 0 1000 0 12345 1\n";
+        let sockets = parse_sockets(text);
+        assert_eq!(sockets[0].inode, 12345);
+        assert_eq!(sockets[0].state, 10);
+        if cfg!(target_endian = "little") {
+            assert_eq!(sockets[0].local.to_string(), "127.0.0.1:8080");
+        }
+        let six = parse_socket_address("00000000000000000000000001000000:0050").unwrap();
+        if cfg!(target_endian = "little") {
+            assert_eq!(six.to_string(), "[::1]:80");
+        }
+    }
+
+    #[test]
+    fn access_mode_of_a_file() {
+        assert_eq!(parse_fd_mode("pos:\t0\nflags:\t0100002\n"), Some(2));
+        assert_eq!(parse_fd_mode("pos:\t0\nflags:\t0100000\n"), Some(0));
     }
 
     #[test]

@@ -1,0 +1,291 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusDetailsPane: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-start-title-buttons: false;
+
+      title-widget: Adw.WindowTitle title {
+        title: _("Details");
+      };
+    }
+
+    content: Stack stack {
+      StackPage {
+        name: "nothing";
+
+        child: Adw.StatusPage {
+          title: _("Nothing Selected");
+          description: _("Select an app or process to see more about it");
+
+          styles [
+            "compact",
+          ]
+        };
+      }
+
+      StackPage {
+        name: "process";
+
+        child: ScrolledWindow {
+          hscrollbar-policy: never;
+
+          child: Box {
+            orientation: vertical;
+            spacing: 12;
+            margin-top: 6;
+            margin-bottom: 18;
+            margin-start: 12;
+            margin-end: 12;
+
+            Adw.ToggleGroup tab {
+              active-name: "overview";
+              homogeneous: true;
+
+              Adw.Toggle {
+                name: "overview";
+                label: _("Overview");
+              }
+
+              Adw.Toggle {
+                name: "threads";
+                label: _("Threads");
+              }
+
+              Adw.Toggle {
+                name: "files";
+                label: _("Files");
+              }
+
+              Adw.Toggle {
+                name: "network";
+                label: _("Network");
+              }
+            }
+
+            Stack tabs {
+              visible-child-name: bind tab.active-name;
+              vhomogeneous: false;
+
+              StackPage {
+                name: "overview";
+
+                child: Box {
+                  orientation: vertical;
+                  spacing: 12;
+
+                  Box {
+                    spacing: 12;
+                    homogeneous: true;
+
+                    Box {
+                      orientation: vertical;
+                      spacing: 6;
+
+                      styles [
+                        "card",
+                        "resource-small",
+                      ]
+
+                      Label {
+                        label: _("CPU");
+                        xalign: 0;
+
+                        styles [
+                          "caption",
+                          "dim-label",
+                        ]
+                      }
+
+                      Label cpu_value {
+                        xalign: 0;
+
+                        styles [
+                          "title-3",
+                          "numeric",
+                        ]
+                      }
+
+                      $LocusGraph cpu_graph {
+                        maximum: 100;
+                        plain: true;
+                        height-request: 40;
+
+                        accessibility {
+                          label: _("Processor use of what is selected over the last readings");
+                        }
+                      }
+                    }
+
+                    Box {
+                      orientation: vertical;
+                      spacing: 6;
+
+                      styles [
+                        "card",
+                        "resource-small",
+                      ]
+
+                      Label {
+                        label: _("Memory");
+                        xalign: 0;
+
+                        styles [
+                          "caption",
+                          "dim-label",
+                        ]
+                      }
+
+                      Label memory_value {
+                        xalign: 0;
+
+                        styles [
+                          "title-3",
+                          "numeric",
+                        ]
+                      }
+
+                      $LocusGraph memory_graph {
+                        plain: true;
+                        height-request: 40;
+
+                        accessibility {
+                          label: _("Memory use of what is selected over the last readings");
+                        }
+                      }
+                    }
+                  }
+
+                  ListBox {
+                    selection-mode: none;
+
+                    styles [
+                      "boxed-list",
+                    ]
+
+                    Adw.ActionRow command {
+                      title: _("Command Line");
+                      subtitle-selectable: true;
+
+                      styles [
+                        "property",
+                      ]
+                    }
+
+                    Adw.ActionRow running_for {
+                      title: _("Running For");
+
+                      styles [
+                        "property",
+                      ]
+                    }
+
+                    Adw.ActionRow user {
+                      title: _("User");
+
+                      styles [
+                        "property",
+                      ]
+                    }
+
+                    Adw.ActionRow unit {
+                      title: _("Systemd Unit");
+                      subtitle-selectable: true;
+
+                      styles [
+                        "property",
+                      ]
+                    }
+
+                    Adw.ActionRow threads_count {
+                      title: _("Threads");
+
+                      styles [
+                        "property",
+                      ]
+                    }
+                  }
+
+                  Label {
+                    label: _("Scheduling");
+                    xalign: 0;
+                    margin-top: 6;
+
+                    styles [
+                      "heading",
+                    ]
+                  }
+
+                  ListBox scheduling {
+                    selection-mode: none;
+
+                    styles [
+                      "boxed-list",
+                    ]
+
+                    Adw.ComboRow priority {
+                      title: _("Priority");
+                      model: StringList {
+                        strings [
+                          _("Low"),
+                          _("Normal"),
+                          _("High"),
+                        ]
+                      };
+                    }
+
+                    Adw.SwitchRow background {
+                      title: _("Run in Background");
+                      subtitle: _("Gives other work priority. Undoing it may need administrator rights.");
+                    }
+                  }
+                };
+              }
+
+              StackPage {
+                name: "threads";
+
+                child: ListBox threads {
+                  selection-mode: none;
+                  valign: start;
+
+                  styles [
+                    "boxed-list",
+                  ]
+                };
+              }
+
+              StackPage {
+                name: "files";
+
+                child: ListBox files {
+                  selection-mode: none;
+                  valign: start;
+
+                  styles [
+                    "boxed-list",
+                  ]
+                };
+              }
+
+              StackPage {
+                name: "network";
+
+                child: ListBox sockets {
+                  selection-mode: none;
+                  valign: start;
+
+                  styles [
+                    "boxed-list",
+                  ]
+                };
+              }
+            }
+          };
+        };
+      }
+    };
+  };
+}
