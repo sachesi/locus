@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.1\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-11-01 19:55+0200\n"
+"POT-Creation-Date: 2026-11-01 20:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,7 +28,7 @@ msgid "System Monitor"
 msgstr ""
 
 #: data/io.github.sachesi.locus.desktop:4
-#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:97
+#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:99
 #, no-c-format
 msgid "Watch resources and end processes"
 msgstr ""
@@ -180,13 +180,18 @@ msgid ""
 "disk."
 msgstr ""
 
+#: src/back_button.rs:24 ui/shortcuts_dialog.ui:15
+#, no-c-format
+msgid "Back"
+msgstr ""
+
 #. Translators: one core of the processor; {number} counts from 1.
-#: src/cpu_page.rs:157
+#: src/cpu_page.rs:158
 #, no-c-format
 msgid "CPU {number}"
 msgstr ""
 
-#: src/details_pane.rs:137 src/services_page.rs:523 ui/details_pane.ui:17
+#: src/details_pane.rs:137 src/services_page.rs:555 ui/details_pane.ui:17
 #: ui/services_page.ui:29
 #, no-c-format
 msgid "Details"
@@ -248,7 +253,7 @@ msgstr ""
 msgid "Listening"
 msgstr ""
 
-#: src/details_pane.rs:413 src/window.rs:672
+#: src/details_pane.rs:413 src/window.rs:692
 #, no-c-format
 msgid "Connected"
 msgstr ""
@@ -373,22 +378,22 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
-#: src/graph.rs:306
+#: src/graph.rs:335
 #, no-c-format
 msgid "Last 2 Minutes"
 msgstr ""
 
-#: src/graph.rs:307
+#: src/graph.rs:336
 #, no-c-format
 msgid "Last 5 Minutes"
 msgstr ""
 
-#: src/graph.rs:308
+#: src/graph.rs:337
 #, no-c-format
 msgid "Last 60 Seconds"
 msgstr ""
 
-#: src/main.rs:98
+#: src/main.rs:100
 #, no-c-format
 msgid "translator-credits"
 msgstr ""
@@ -431,47 +436,47 @@ msgstr ""
 msgid "Every 10 Seconds"
 msgstr ""
 
-#: src/processes_page.rs:261
+#: src/processes_page.rs:259
 #, no-c-format
 msgid "Try a different search"
 msgstr ""
 
-#: src/processes_page.rs:264
+#: src/processes_page.rs:262
 #, no-c-format
 msgid ""
 "Only your own processes are searched. Turn on “Show All Processes” in the "
 "main menu to search every one."
 msgstr ""
 
-#: src/processes_page.rs:319 src/processes_page.rs:394
+#: src/processes_page.rs:331 src/processes_page.rs:406
 #, no-c-format
 msgid "Background Processes"
 msgstr ""
 
-#: src/processes_page.rs:321 src/window.rs:299 ui/cpu_page.ui:164
-#: ui/preferences_dialog.ui:18 ui/processes_page.ui:99
-#: ui/shortcuts_dialog.ui:15 ui/shortcuts_dialog.ui:71 ui/window.ui:88
+#: src/processes_page.rs:333 src/window.rs:311 ui/cpu_page.ui:171
+#: ui/preferences_dialog.ui:18 ui/processes_page.ui:102
+#: ui/shortcuts_dialog.ui:21 ui/shortcuts_dialog.ui:77
 #, no-c-format
 msgid "Processes"
 msgstr ""
 
-#: src/processes_page.rs:393 ui/processes_page.ui:80 ui/processes_page.ui:136
-#: ui/startup_page.ui:44
+#: src/processes_page.rs:405 ui/processes_page.ui:83 ui/processes_page.ui:139
+#: ui/startup_page.ui:47
 #, no-c-format
 msgid "Apps"
 msgstr ""
 
-#: src/processes_page.rs:533
+#: src/processes_page.rs:545
 #, no-c-format
 msgid "Disk use of other users' processes is not shown"
 msgstr ""
 
-#: src/processes_page.rs:566
+#: src/processes_page.rs:578
 #, no-c-format
 msgid "GPU use of other users' processes is not shown"
 msgstr ""
 
-#: src/processes_page.rs:818
+#: src/processes_page.rs:830
 #, no-c-format
 msgid "{count} Process"
 msgid_plural "{count} Processes"
@@ -479,62 +484,62 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: {pid} is the ID of a process, a number.
-#: src/processes_page.rs:822
+#: src/processes_page.rs:834
 #, no-c-format
 msgid "Process {pid}"
 msgstr ""
 
-#: src/processes_page.rs:910
+#: src/processes_page.rs:922
 #, no-c-format
 msgid "{count} Running App"
 msgid_plural "{count} Running Apps"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/processes_page.rs:913
+#: src/processes_page.rs:925
 #, no-c-format
 msgid "{count} Running Process"
 msgid_plural "{count} Running Processes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/processes_page.rs:949 src/window.rs:314 ui/cpu_page.ui:19
-#: ui/details_pane.ui:107 ui/processes_page.ui:159 ui/processes_page.ui:240
-#: ui/services_page.ui:292 ui/shortcuts_dialog.ui:33
+#: src/processes_page.rs:961 src/window.rs:326 ui/cpu_page.ui:25
+#: ui/details_pane.ui:107 ui/processes_page.ui:162 ui/processes_page.ui:237
+#: ui/services_page.ui:294 ui/shortcuts_dialog.ui:39
 #, no-c-format
 msgid "CPU"
 msgstr ""
 
-#: src/processes_page.rs:954 src/window.rs:315 ui/details_pane.ui:146
-#: ui/memory_page.ui:19 ui/memory_page.ui:92 ui/processes_page.ui:165
-#: ui/processes_page.ui:246 ui/resources_page.ui:107 ui/resources_page.ui:152
-#: ui/services_page.ui:299 ui/shortcuts_dialog.ui:39
+#: src/processes_page.rs:966 src/window.rs:327 ui/details_pane.ui:146
+#: ui/memory_page.ui:25 ui/memory_page.ui:99 ui/processes_page.ui:168
+#: ui/processes_page.ui:243 ui/resources_page.ui:107 ui/resources_page.ui:152
+#: ui/services_page.ui:300 ui/shortcuts_dialog.ui:45
 #, no-c-format
 msgid "Memory"
 msgstr ""
 
-#: src/processes_page.rs:959 ui/processes_page.ui:252
+#: src/processes_page.rs:971 ui/processes_page.ui:249
 #, no-c-format
 msgid "Disk"
 msgstr ""
 
-#: src/processes_page.rs:962 src/window.rs:682 ui/processes_page.ui:171
-#: ui/processes_page.ui:259
+#: src/processes_page.rs:974 src/window.rs:702 ui/processes_page.ui:174
+#: ui/processes_page.ui:255
 #, no-c-format
 msgid "GPU"
 msgstr ""
 
-#: src/processes_page.rs:1146 src/service.rs:96
+#: src/processes_page.rs:1158 src/service.rs:96
 #, no-c-format
 msgid "Stopped"
 msgstr ""
 
-#: src/processes_page.rs:1442
+#: src/processes_page.rs:1454
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr ""
 
-#: src/processes_page.rs:1445
+#: src/processes_page.rs:1457
 #, no-c-format
 msgid ""
 "Its {count} process ends at once, without a chance to save its work or clean "
@@ -546,28 +551,28 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1452
+#: src/processes_page.rs:1464
 #, no-c-format
 msgid ""
 "Process {pid} ends at once, without a chance to save its work or clean up."
 msgstr ""
 
-#: src/processes_page.rs:1456
+#: src/processes_page.rs:1468
 #, no-c-format
 msgid "_Kill App"
 msgstr ""
 
-#: src/processes_page.rs:1458
+#: src/processes_page.rs:1470
 #, no-c-format
 msgid "_Kill Process"
 msgstr ""
 
-#: src/processes_page.rs:1462
+#: src/processes_page.rs:1474
 #, no-c-format
 msgid "End “{name}”?"
 msgstr ""
 
-#: src/processes_page.rs:1465
+#: src/processes_page.rs:1477
 #, no-c-format
 msgid ""
 "Its {count} process is asked to quit. Work it has not saved may be lost."
@@ -578,54 +583,54 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1471
+#: src/processes_page.rs:1483
 #, no-c-format
 msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 
-#: src/processes_page.rs:1474
+#: src/processes_page.rs:1486
 #, no-c-format
 msgid "_End App"
 msgstr ""
 
-#: src/processes_page.rs:1476
+#: src/processes_page.rs:1488
 #, no-c-format
 msgid "_End Process"
 msgstr ""
 
-#: src/processes_page.rs:1488 src/services_page.rs:654 src/startup_page.rs:284
+#: src/processes_page.rs:1500 src/services_page.rs:686 src/startup_page.rs:296
 #, no-c-format
 msgid "_Cancel"
 msgstr ""
 
-#: src/processes_page.rs:1548
+#: src/processes_page.rs:1560
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr ""
 
 #. Translators: {reason} is "it belongs to another user", or an error
 #. message of the system; so too in the three messages after this one.
-#: src/processes_page.rs:1554
+#: src/processes_page.rs:1566
 #, no-c-format
 msgid "Could not end “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:1556
+#: src/processes_page.rs:1568
 #, no-c-format
 msgid "Could not kill “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:1557 src/services_page.rs:702
+#: src/processes_page.rs:1569 src/services_page.rs:734
 #, no-c-format
 msgid "Could not stop “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:1558
+#: src/processes_page.rs:1570
 #, no-c-format
 msgid "Could not continue “{name}”: {reason}"
 msgstr ""
 
-#: src/processes_page.rs:1561
+#: src/processes_page.rs:1573
 #, no-c-format
 msgid "it belongs to another user"
 msgstr ""
@@ -695,83 +700,83 @@ msgstr ""
 msgid "Masked"
 msgstr ""
 
-#: src/services_page.rs:314
+#: src/services_page.rs:337
 #, no-c-format
 msgid "{count} Service"
 msgid_plural "{count} Services"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/services_page.rs:316
+#: src/services_page.rs:339
 #, no-c-format
 msgid "{count} Running"
 msgid_plural "{count} Running"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/services_page.rs:343
+#: src/services_page.rs:371
 #, no-c-format
 msgid "{count} service has failed"
 msgid_plural "{count} services have failed"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/services_page.rs:350
+#: src/services_page.rs:378
 #, no-c-format
 msgid "Show All"
 msgstr ""
 
-#: src/services_page.rs:352 ui/services_page.ui:237
+#: src/services_page.rs:380 ui/services_page.ui:240
 #, no-c-format
 msgid "Show"
 msgstr ""
 
-#: src/services_page.rs:581
+#: src/services_page.rs:613
 #, no-c-format
 msgid "No entries that can be read"
 msgstr ""
 
-#: src/services_page.rs:647
+#: src/services_page.rs:679
 #, no-c-format
 msgid "Stop “{name}”?"
 msgstr ""
 
-#: src/services_page.rs:647
+#: src/services_page.rs:679
 #, no-c-format
 msgid "_Stop Service"
 msgstr ""
 
-#: src/services_page.rs:648
+#: src/services_page.rs:680
 #, no-c-format
 msgid "Restart “{name}”?"
 msgstr ""
 
-#: src/services_page.rs:648
+#: src/services_page.rs:680
 #, no-c-format
 msgid "_Restart Service"
 msgstr ""
 
-#: src/services_page.rs:652
+#: src/services_page.rs:684
 #, no-c-format
 msgid "What relies on this service may stop working."
 msgstr ""
 
-#: src/services_page.rs:701
+#: src/services_page.rs:733
 #, no-c-format
 msgid "Could not start “{name}”: {reason}"
 msgstr ""
 
-#: src/services_page.rs:703
+#: src/services_page.rs:735
 #, no-c-format
 msgid "Could not restart “{name}”: {reason}"
 msgstr ""
 
-#: src/services_page.rs:705
+#: src/services_page.rs:737
 #, no-c-format
 msgid "Could not change when “{name}” starts: {reason}"
 msgstr ""
 
-#: src/services_page.rs:733
+#: src/services_page.rs:765
 #, no-c-format
 msgid "permission was not given"
 msgstr ""
@@ -781,8 +786,8 @@ msgstr ""
 msgid "Your Autostart Folder"
 msgstr ""
 
-#: src/startup_page.rs:207 ui/services_page.ui:168 ui/services_page.ui:205
-#: ui/startup_page.ui:160
+#: src/startup_page.rs:207 ui/services_page.ui:171 ui/services_page.ui:208
+#: ui/startup_page.ui:163
 #, no-c-format
 msgid "System"
 msgstr ""
@@ -802,45 +807,45 @@ msgstr ""
 msgid "Start “{name}” at Login"
 msgstr ""
 
-#: src/startup_page.rs:269
+#: src/startup_page.rs:277
 #, no-c-format
 msgid "Could not change when “{name}” starts"
 msgstr ""
 
-#: src/startup_page.rs:278
+#: src/startup_page.rs:290
 #, no-c-format
 msgid "Remove “{name}” From Startup?"
 msgstr ""
 
-#: src/startup_page.rs:280
+#: src/startup_page.rs:292
 #, no-c-format
 msgid ""
 "It will no longer start with your session. The app itself stays installed."
 msgstr ""
 
-#: src/startup_page.rs:285
+#: src/startup_page.rs:297
 #, no-c-format
 msgid "_Remove"
 msgstr ""
 
-#: src/startup_page.rs:305
+#: src/startup_page.rs:319
 #, no-c-format
 msgid "Could not remove “{name}”"
 msgstr ""
 
-#: src/startup_page.rs:331
+#: src/startup_page.rs:339
+#, no-c-format
+msgid "Search apps"
+msgstr ""
+
+#: src/startup_page.rs:368
 #, no-c-format
 msgid "Add App"
 msgstr ""
 
-#: src/startup_page.rs:359
+#: src/startup_page.rs:413
 #, no-c-format
 msgid "Could not add “{name}”"
-msgstr ""
-
-#: src/startup_page.rs:371
-#, no-c-format
-msgid "Search apps"
 msgstr ""
 
 #: src/top_list.rs:37
@@ -848,112 +853,112 @@ msgstr ""
 msgid "What uses the most"
 msgstr ""
 
-#: src/window.rs:305 ui/services_page.ui:181 ui/shortcuts_dialog.ui:21
+#: src/window.rs:317 ui/services_page.ui:184 ui/shortcuts_dialog.ui:27
 #, no-c-format
 msgid "Services"
 msgstr ""
 
-#: src/window.rs:311 ui/shortcuts_dialog.ui:27 ui/startup_page.ui:16
+#: src/window.rs:323 ui/shortcuts_dialog.ui:33 ui/startup_page.ui:19
 #, no-c-format
 msgid "Startup"
 msgstr ""
 
-#: src/window.rs:323
+#: src/window.rs:335
 #, no-c-format
 msgid "Performance"
 msgstr ""
 
 #. Translators: one of the disks; {number} counts from 1, {name} is the kernels name for it.
-#: src/window.rs:636
+#: src/window.rs:661
 #, no-c-format
 msgid "Disk {number} ({name})"
 msgstr ""
 
-#: src/window.rs:643
+#: src/window.rs:668
 #, no-c-format
 msgid "HDD"
 msgstr ""
 
-#: src/window.rs:645
+#: src/window.rs:670
 #, no-c-format
 msgid "SSD"
 msgstr ""
 
 #. Translators: a network interface; {name} is the kernels name for it.
-#: src/window.rs:653
+#: src/window.rs:681
 #, no-c-format
 msgid "Ethernet ({name})"
 msgstr ""
 
 #. Translators: a network interface; {name} is the kernels name for it.
-#: src/window.rs:655
+#: src/window.rs:683
 #, no-c-format
 msgid "Wi-Fi ({name})"
 msgstr ""
 
 #. Translators: a network interface; {name} is the kernels name for it.
-#: src/window.rs:657
+#: src/window.rs:685
 #, no-c-format
 msgid "Network ({name})"
 msgstr ""
 
 #. Translators: one of several graphics cards; {number} counts from 1.
-#: src/window.rs:680
+#: src/window.rs:700
 #, no-c-format
 msgid "GPU {number}"
 msgstr ""
 
-#: src/window.rs:688
+#: src/window.rs:708
 #, no-c-format
 msgid "Asleep"
 msgstr ""
 
-#: ui/cpu_page.ui:61 ui/cpu_page.ui:144 ui/gpu_page.ui:57 ui/gpu_page.ui:179
-#: ui/memory_page.ui:58
+#: ui/cpu_page.ui:67 ui/cpu_page.ui:151 ui/gpu_page.ui:63 ui/gpu_page.ui:187
+#: ui/memory_page.ui:64
 msgid "Usage"
 msgstr ""
 
-#: ui/cpu_page.ui:75
+#: ui/cpu_page.ui:81
 msgid "Overall"
 msgstr ""
 
-#: ui/cpu_page.ui:81
+#: ui/cpu_page.ui:87
 msgid "Per Core"
 msgstr ""
 
-#: ui/cpu_page.ui:99 ui/resources_page.ui:74
+#: ui/cpu_page.ui:106 ui/resources_page.ui:74
 msgid "Processor usage over the last readings"
 msgstr ""
 
-#: ui/cpu_page.ui:149 ui/network_page.ui:178
+#: ui/cpu_page.ui:156 ui/network_page.ui:185
 msgid "Speed"
 msgstr ""
 
-#: ui/cpu_page.ui:154 ui/disk_page.ui:207 ui/gpu_page.ui:189
+#: ui/cpu_page.ui:161 ui/disk_page.ui:215 ui/gpu_page.ui:197
 msgid "Temperature"
 msgstr ""
 
-#: ui/cpu_page.ui:159
+#: ui/cpu_page.ui:166
 msgid "Load Average"
 msgstr ""
 
-#: ui/cpu_page.ui:169 ui/details_pane.ui:64 ui/details_pane.ui:218
+#: ui/cpu_page.ui:176 ui/details_pane.ui:64 ui/details_pane.ui:218
 msgid "Threads"
 msgstr ""
 
-#: ui/cpu_page.ui:174 ui/memory_page.ui:231
+#: ui/cpu_page.ui:181 ui/memory_page.ui:238
 msgid "Pressure"
 msgstr ""
 
-#: ui/cpu_page.ui:179
+#: ui/cpu_page.ui:186
 msgid "Uptime"
 msgstr ""
 
-#: ui/cpu_page.ui:193
+#: ui/cpu_page.ui:200
 msgid "Using the Most CPU"
 msgstr ""
 
-#: ui/cpu_page.ui:203 ui/gpu_page.ui:228
+#: ui/cpu_page.ui:210 ui/gpu_page.ui:236
 msgid "Open Processes"
 msgstr ""
 
@@ -993,8 +998,8 @@ msgstr ""
 msgid "Running For"
 msgstr ""
 
-#: ui/details_pane.ui:201 ui/processes_page.ui:227 ui/services_page.ui:174
-#: ui/services_page.ui:211
+#: ui/details_pane.ui:201 ui/processes_page.ui:230 ui/services_page.ui:177
+#: ui/services_page.ui:214
 msgid "User"
 msgstr ""
 
@@ -1030,165 +1035,165 @@ msgstr ""
 msgid "Gives other work priority. Undoing it may need administrator rights."
 msgstr ""
 
-#: ui/disk_page.ui:67 ui/disk_page.ui:187
+#: ui/disk_page.ui:73 ui/disk_page.ui:195
 msgid "Active Time"
 msgstr ""
 
-#: ui/disk_page.ui:80
+#: ui/disk_page.ui:87
 msgid "How busy the disk was over the last readings"
 msgstr ""
 
-#: ui/disk_page.ui:101
+#: ui/disk_page.ui:108
 msgid "Transfer Rate"
 msgstr ""
 
-#: ui/disk_page.ui:113 ui/resources_page.ui:312
+#: ui/disk_page.ui:121 ui/resources_page.ui:312
 msgid "Disk reads and writes over the last readings"
 msgstr ""
 
-#: ui/disk_page.ui:135 ui/disk_page.ui:192 ui/resources_page.ui:334
+#: ui/disk_page.ui:143 ui/disk_page.ui:200 ui/resources_page.ui:334
 msgid "Reading"
 msgstr ""
 
-#: ui/disk_page.ui:157 ui/disk_page.ui:197 ui/resources_page.ui:363
+#: ui/disk_page.ui:165 ui/disk_page.ui:205 ui/resources_page.ui:363
 msgid "Writing"
 msgstr ""
 
-#: ui/disk_page.ui:202
+#: ui/disk_page.ui:210
 msgid "Response Time"
 msgstr ""
 
-#: ui/disk_page.ui:219
+#: ui/disk_page.ui:227
 msgid "File Systems"
 msgstr ""
 
-#: ui/disk_page.ui:238
+#: ui/disk_page.ui:246
 msgid "Other File Systems"
 msgstr ""
 
-#: ui/gpu_page.ui:69
+#: ui/gpu_page.ui:76
 msgid "GPU usage over the last readings"
 msgstr ""
 
-#: ui/gpu_page.ui:89
+#: ui/gpu_page.ui:96
 msgid "Engines"
 msgstr ""
 
-#: ui/gpu_page.ui:98
+#: ui/gpu_page.ui:105
 msgid "Only the work of processes Locus may read is counted"
 msgstr ""
 
-#: ui/gpu_page.ui:132 ui/gpu_page.ui:184
+#: ui/gpu_page.ui:139 ui/gpu_page.ui:192
 msgid "Video Memory"
 msgstr ""
 
-#: ui/gpu_page.ui:144
+#: ui/gpu_page.ui:152
 msgid "Video memory in use over the last readings"
 msgstr ""
 
-#: ui/gpu_page.ui:194
+#: ui/gpu_page.ui:202
 msgid "Power"
 msgstr ""
 
-#: ui/gpu_page.ui:199
+#: ui/gpu_page.ui:207
 msgid "Core Clock"
 msgstr ""
 
-#: ui/gpu_page.ui:204
+#: ui/gpu_page.ui:212
 msgid "Fan"
 msgstr ""
 
-#: ui/gpu_page.ui:218
+#: ui/gpu_page.ui:226
 msgid "Using the Most GPU"
 msgstr ""
 
-#: ui/memory_page.ui:70 ui/resources_page.ui:130
+#: ui/memory_page.ui:77 ui/resources_page.ui:130
 msgid "Memory and swap in use over the last readings"
 msgstr ""
 
-#: ui/memory_page.ui:121 ui/memory_page.ui:221 ui/resources_page.ui:181
+#: ui/memory_page.ui:128 ui/memory_page.ui:228 ui/resources_page.ui:181
 msgid "Swap"
 msgstr ""
 
-#: ui/memory_page.ui:150
+#: ui/memory_page.ui:157
 msgid "Composition"
 msgstr ""
 
-#: ui/memory_page.ui:161
+#: ui/memory_page.ui:168
 msgid ""
 "How the memory is divided between what is in use, the cache, the buffers and "
 "what is free"
 msgstr ""
 
-#: ui/memory_page.ui:175
+#: ui/memory_page.ui:182
 msgid "In Use"
 msgstr ""
 
-#: ui/memory_page.ui:180
+#: ui/memory_page.ui:187
 msgid "Cache"
 msgstr ""
 
-#: ui/memory_page.ui:185
+#: ui/memory_page.ui:192
 msgid "Buffers"
 msgstr ""
 
-#: ui/memory_page.ui:190
+#: ui/memory_page.ui:197
 msgid "Free"
 msgstr ""
 
-#: ui/memory_page.ui:211
+#: ui/memory_page.ui:218
 msgid "Available"
 msgstr ""
 
-#: ui/memory_page.ui:216
+#: ui/memory_page.ui:223
 msgid "Committed"
 msgstr ""
 
-#: ui/memory_page.ui:226
+#: ui/memory_page.ui:233
 msgid "Swap Compression"
 msgstr ""
 
-#: ui/network_page.ui:56
+#: ui/network_page.ui:62
 msgid "Throughput"
 msgstr ""
 
-#: ui/network_page.ui:67 ui/resources_page.ui:221
+#: ui/network_page.ui:74 ui/resources_page.ui:221
 msgid "Network traffic over the last readings"
 msgstr ""
 
-#: ui/network_page.ui:89 ui/network_page.ui:137 ui/resources_page.ui:243
+#: ui/network_page.ui:96 ui/network_page.ui:144 ui/resources_page.ui:243
 msgid "Receiving"
 msgstr ""
 
-#: ui/network_page.ui:111 ui/network_page.ui:142 ui/resources_page.ui:272
+#: ui/network_page.ui:118 ui/network_page.ui:149 ui/resources_page.ui:272
 msgid "Sending"
 msgstr ""
 
-#: ui/network_page.ui:147
+#: ui/network_page.ui:154
 msgid "Received Since Boot"
 msgstr ""
 
-#: ui/network_page.ui:152
+#: ui/network_page.ui:159
 msgid "Sent Since Boot"
 msgstr ""
 
-#: ui/network_page.ui:163
+#: ui/network_page.ui:170
 msgid "Connection"
 msgstr ""
 
-#: ui/network_page.ui:186
+#: ui/network_page.ui:193
 msgid "IPv4 Address"
 msgstr ""
 
-#: ui/network_page.ui:195
+#: ui/network_page.ui:202
 msgid "IPv6 Address"
 msgstr ""
 
-#: ui/network_page.ui:204
+#: ui/network_page.ui:211
 msgid "Hardware Address"
 msgstr ""
 
-#: ui/network_page.ui:213
+#: ui/network_page.ui:220
 msgid "Driver"
 msgstr ""
 
@@ -1218,59 +1223,59 @@ msgid ""
 "and GB"
 msgstr ""
 
-#: ui/processes_page.ui:61 ui/services_page.ui:187
+#: ui/processes_page.ui:64 ui/services_page.ui:190
 msgid "Show Details"
 msgstr ""
 
-#: ui/processes_page.ui:68 ui/services_page.ui:157 ui/shortcuts_dialog.ui:74
+#: ui/processes_page.ui:71 ui/services_page.ui:160 ui/shortcuts_dialog.ui:80
 msgid "Search"
 msgstr ""
 
-#: ui/processes_page.ui:76
+#: ui/processes_page.ui:79
 msgid "Arrange Processes"
 msgstr ""
 
-#: ui/processes_page.ui:86 ui/processes_page.ui:142
+#: ui/processes_page.ui:89 ui/processes_page.ui:145
 msgid "Tree"
 msgstr ""
 
-#: ui/processes_page.ui:92 ui/processes_page.ui:148
+#: ui/processes_page.ui:95 ui/processes_page.ui:151
 msgid "All"
 msgstr ""
 
-#: ui/processes_page.ui:113
+#: ui/processes_page.ui:116
 msgid "Search processes"
 msgstr ""
 
-#: ui/processes_page.ui:201
+#: ui/processes_page.ui:204
 msgid "Reading processes"
 msgstr ""
 
-#: ui/processes_page.ui:220 ui/services_page.ui:272
+#: ui/processes_page.ui:223 ui/services_page.ui:275
 msgid "Name"
 msgstr ""
 
-#: ui/processes_page.ui:266
+#: ui/processes_page.ui:262
 msgid "ID"
 msgstr ""
 
-#: ui/processes_page.ui:288
+#: ui/processes_page.ui:278
 msgid "No Matching Processes"
 msgstr ""
 
-#: ui/processes_page.ui:301 ui/processes_page.ui:341
+#: ui/processes_page.ui:291 ui/processes_page.ui:331
 msgid "_Stop"
 msgstr ""
 
-#: ui/processes_page.ui:308 ui/processes_page.ui:346
+#: ui/processes_page.ui:298 ui/processes_page.ui:336
 msgid "_Continue"
 msgstr ""
 
-#: ui/processes_page.ui:316 ui/processes_page.ui:357
+#: ui/processes_page.ui:306 ui/processes_page.ui:347
 msgid "_Kill"
 msgstr ""
 
-#: ui/processes_page.ui:326 ui/processes_page.ui:353
+#: ui/processes_page.ui:316 ui/processes_page.ui:343
 msgid "_End"
 msgstr ""
 
@@ -1310,19 +1315,19 @@ msgstr ""
 msgid "Show Full Log"
 msgstr ""
 
-#: ui/services_page.ui:226
+#: ui/services_page.ui:229
 msgid "Search services"
 msgstr ""
 
-#: ui/services_page.ui:253
+#: ui/services_page.ui:256
 msgid "Reading services"
 msgstr ""
 
-#: ui/services_page.ui:279
+#: ui/services_page.ui:282
 msgid "Status"
 msgstr ""
 
-#: ui/services_page.ui:285
+#: ui/services_page.ui:288
 msgid "At Startup"
 msgstr ""
 
@@ -1354,90 +1359,90 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: ui/shortcuts_dialog.ui:45
+#: ui/shortcuts_dialog.ui:51
 msgid "Preferences"
 msgstr ""
 
-#: ui/shortcuts_dialog.ui:51
+#: ui/shortcuts_dialog.ui:57
 msgid "Keyboard Shortcuts"
 msgstr ""
 
-#: ui/shortcuts_dialog.ui:57
+#: ui/shortcuts_dialog.ui:63
 msgid "Close Window"
 msgstr ""
 
-#: ui/shortcuts_dialog.ui:63
+#: ui/shortcuts_dialog.ui:69
 msgid "Quit"
 msgstr ""
 
-#: ui/shortcuts_dialog.ui:80
+#: ui/shortcuts_dialog.ui:86
 msgid "End Process"
 msgstr ""
 
-#: ui/shortcuts_dialog.ui:86
+#: ui/shortcuts_dialog.ui:92
 msgid "Kill Process"
 msgstr ""
 
-#: ui/shortcuts_dialog.ui:92
+#: ui/shortcuts_dialog.ui:98
 msgid "Process Menu"
 msgstr ""
 
-#: ui/startup_page.ui:54
+#: ui/startup_page.ui:57
 msgid "_Add App"
 msgstr ""
 
-#: ui/startup_page.ui:69
+#: ui/startup_page.ui:72
 msgid "No apps start with this session"
 msgstr ""
 
-#: ui/startup_page.ui:91
+#: ui/startup_page.ui:94
 msgid "Last Boot"
 msgstr ""
 
-#: ui/startup_page.ui:131
+#: ui/startup_page.ui:134
 msgid "How long each part of the last boot took"
 msgstr ""
 
-#: ui/startup_page.ui:145
+#: ui/startup_page.ui:148
 msgid "Firmware"
 msgstr ""
 
-#: ui/startup_page.ui:150
+#: ui/startup_page.ui:153
 msgid "Loader"
 msgstr ""
 
-#: ui/startup_page.ui:155
+#: ui/startup_page.ui:158
 msgid "Kernel"
 msgstr ""
 
-#: ui/startup_page.ui:165
+#: ui/startup_page.ui:168
 msgid "Session"
 msgstr ""
 
-#: ui/startup_page.ui:183
+#: ui/startup_page.ui:186
 msgid "Slowest Services"
 msgstr ""
 
-#: ui/startup_page.ui:193
+#: ui/startup_page.ui:196
 msgid "Open Services"
 msgstr ""
 
-#: ui/window.ui:62
+#: ui/window.ui:64
 msgid "Main Menu"
 msgstr ""
 
-#: ui/window.ui:147
+#: ui/window.ui:141
 msgid "Show _All Processes"
 msgstr ""
 
-#: ui/window.ui:153
+#: ui/window.ui:147
 msgid "_Preferences"
 msgstr ""
 
-#: ui/window.ui:157
+#: ui/window.ui:151
 msgid "_Keyboard Shortcuts"
 msgstr ""
 
-#: ui/window.ui:161
+#: ui/window.ui:155
 msgid "_About Locus"
 msgstr ""
