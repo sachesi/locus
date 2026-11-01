@@ -24,6 +24,7 @@ template $LocusProcessesPage: Adw.Bin {
   child: Adw.OverlaySplitView details_split {
     sidebar-position: end;
     collapsed: bind template.compact;
+    pin-sidebar: true;
     show-sidebar: bind template.details-shown;
     min-sidebar-width: 370;
     max-sidebar-width: 400;
