@@ -33,6 +33,8 @@ mod imp {
         #[template_child]
         pub scope_group: TemplateChild<adw::ToggleGroup>,
         #[template_child]
+        pub narrow_scope_group: TemplateChild<adw::ToggleGroup>,
+        #[template_child]
         pub search_bar: TemplateChild<gtk::SearchBar>,
         #[template_child]
         pub search_entry: TemplateChild<gtk::SearchEntry>,
@@ -126,6 +128,11 @@ mod imp {
             self.search_bar.connect_entry(&*self.search_entry);
             obj.set_up_model();
             obj.set_up_columns();
+            self.scope_group
+                .bind_property("active-name", &*self.narrow_scope_group, "active-name")
+                .bidirectional()
+                .sync_create()
+                .build();
             self.scope_group.connect_active_name_notify(glib::clone!(
                 #[weak]
                 obj,
@@ -145,6 +152,12 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl ServicesPage {
+        /// Wide enough for the pane's tabs, and on the smallest window, for the window itself.
+        #[template_callback(function)]
+        fn pane_width(narrow: bool) -> f32 {
+            if narrow { 300.0 } else { 370.0 }
+        }
+
         /// The pane has the window's buttons while it is beside the list, at its end.
         #[template_callback(function)]
         fn title_buttons_shown(details_shown: bool, compact: bool) -> bool {
