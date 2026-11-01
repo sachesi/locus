@@ -26,7 +26,7 @@ template $LocusProcessesPage: Adw.Bin {
     collapsed: bind template.compact;
     pin-sidebar: true;
     show-sidebar: bind template.details-shown;
-    min-sidebar-width: 370;
+    min-sidebar-width: bind $pane_width(template.narrow) as <float>;
     max-sidebar-width: 400;
 
     sidebar: $LocusDetailsPane details_pane {};
@@ -53,6 +53,7 @@ template $LocusProcessesPage: Adw.Bin {
       [start]
       Adw.ToggleGroup arrangement_group {
         active-name: "apps";
+        visible: bind template.narrow inverted;
         tooltip-text: _("Arrange Processes");
 
         Adw.Toggle {
@@ -90,6 +91,53 @@ template $LocusProcessesPage: Adw.Bin {
           search-changed => $on_search_changed() swapped;
         };
       };
+    }
+
+    [top]
+    Adw.WrapBox {
+      visible: bind template.narrow;
+      child-spacing: 6;
+      line-spacing: 6;
+      margin-top: 6;
+      margin-bottom: 6;
+      margin-start: 6;
+      margin-end: 6;
+
+      Adw.ToggleGroup narrow_arrangement_group {
+        Adw.Toggle {
+          name: "apps";
+          label: _("Apps");
+        }
+
+        Adw.Toggle {
+          name: "tree";
+          label: _("Tree");
+        }
+
+        Adw.Toggle {
+          name: "all";
+          label: _("All");
+        }
+      }
+
+      Adw.ToggleGroup metric_group {
+        active-name: "cpu";
+
+        Adw.Toggle {
+          name: "cpu";
+          label: _("CPU");
+        }
+
+        Adw.Toggle {
+          name: "memory";
+          label: _("Memory");
+        }
+
+        Adw.Toggle gpu_toggle {
+          name: "gpu";
+          label: _("GPU");
+        }
+      }
     }
 
     content: PopoverBin context_bin {

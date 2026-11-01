@@ -7,7 +7,7 @@ template $LocusServicesPage: Adw.Bin {
     collapsed: bind template.compact;
     pin-sidebar: true;
     show-sidebar: bind template.details-shown;
-    min-sidebar-width: 370;
+    min-sidebar-width: bind $pane_width(template.narrow) as <float>;
     max-sidebar-width: 400;
 
     sidebar: Adw.ToolbarView {
@@ -136,6 +136,7 @@ template $LocusServicesPage: Adw.Bin {
         [start]
         Adw.ToggleGroup scope_group {
           active-name: "system";
+          visible: bind template.narrow inverted;
 
           Adw.Toggle {
             name: "system";
@@ -157,6 +158,27 @@ template $LocusServicesPage: Adw.Bin {
           icon-name: "sidebar-show-right-symbolic";
           tooltip-text: _("Show Details");
           active: bind template.details-shown bidirectional;
+        }
+      }
+
+      [top]
+      Box {
+        visible: bind template.narrow;
+        margin-top: 6;
+        margin-bottom: 6;
+        margin-start: 6;
+        margin-end: 6;
+
+        Adw.ToggleGroup narrow_scope_group {
+          Adw.Toggle {
+            name: "system";
+            label: _("System");
+          }
+
+          Adw.Toggle {
+            name: "user";
+            label: _("User");
+          }
         }
       }
 

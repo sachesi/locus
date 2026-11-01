@@ -41,6 +41,12 @@ mod imp {
         #[template_child]
         pub arrangement_group: TemplateChild<adw::ToggleGroup>,
         #[template_child]
+        pub narrow_arrangement_group: TemplateChild<adw::ToggleGroup>,
+        #[template_child]
+        pub metric_group: TemplateChild<adw::ToggleGroup>,
+        #[template_child]
+        pub gpu_toggle: TemplateChild<adw::Toggle>,
+        #[template_child]
         pub stop_button: TemplateChild<gtk::Button>,
         #[template_child]
         pub continue_button: TemplateChild<gtk::Button>,
@@ -164,6 +170,20 @@ mod imp {
             // it takes the keys typed over the list and closes on Escape.
             self.search_bar.connect_entry(&*self.search_entry);
 
+            self.metric_group.connect_active_name_notify(glib::clone!(
+                #[weak(rename_to = page)]
+                self,
+                move |_| page.on_metric_changed()
+            ));
+            self.arrangement_group
+                .bind_property(
+                    "active-name",
+                    &*self.narrow_arrangement_group,
+                    "active-name",
+                )
+                .bidirectional()
+                .sync_create()
+                .build();
             self.arrangement.replace("apps".to_owned());
             obj.bind_property("arrangement", &*self.arrangement_group, "active-name")
                 .bidirectional()
@@ -202,6 +222,12 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl ProcessesPage {
+        /// Wide enough for the pane's tabs, and on the smallest window, for the window itself.
+        #[template_callback(function)]
+        fn pane_width(narrow: bool) -> f32 {
+            if narrow { 300.0 } else { 370.0 }
+        }
+
         /// The pane has the window's buttons while it is beside the list, at its end.
         #[template_callback(function)]
         fn title_buttons_shown(details_shown: bool, compact: bool) -> bool {
@@ -246,10 +272,30 @@ mod imp {
             self.show_columns();
         }
 
-        /// Shows the GPU column where there is a card and room for it.
+        /// Where there is room for one measure beside the names, shows the one chosen. There
+        /// is a GPU column only where there is a card.
         pub fn show_columns(&self) {
+            let narrow = self.narrow.get();
+            let metric = self.metric_group.active_name();
+            let shown = |name: &str| !narrow || metric.as_deref() == Some(name);
+            self.cpu_column.set_visible(shown("cpu"));
+            self.memory_column.set_visible(shown("memory"));
             self.gpu_column
-                .set_visible(self.has_gpus.get() && !self.narrow.get());
+                .set_visible(self.has_gpus.get() && shown("gpu"));
+            self.gpu_toggle.set_enabled(self.has_gpus.get());
+        }
+
+        fn on_metric_changed(&self) {
+            self.show_columns();
+            let column = match self.metric_group.active_name().as_deref() {
+                Some("memory") => &self.memory_column,
+                Some("gpu") => &self.gpu_column,
+                _ => &self.cpu_column,
+            };
+            if self.narrow.get() {
+                self.view
+                    .sort_by_column(Some(&**column), gtk::SortType::Descending);
+            }
         }
 
         fn set_search_mode(&self, search_mode: bool) {
