@@ -3,12 +3,19 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gettextrs::gettext;
 use gtk::{gio, glib};
+use std::cell::Cell;
 
 mod imp {
     use super::*;
 
-    #[derive(Default)]
-    pub struct RangeSwitch {}
+    #[derive(Default, glib::Properties)]
+    #[properties(wrapper_type = super::RangeSwitch)]
+    pub struct RangeSwitch {
+        /// Whether this is the one in a bar of its own, for a window too narrow for the other
+        /// to fit in the header.
+        #[property(get, set, construct_only)]
+        in_bar: Cell<bool>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for RangeSwitch {
@@ -17,6 +24,7 @@ mod imp {
         type ParentType = adw::Bin;
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for RangeSwitch {
         fn constructed(&self) {
             self.parent_constructed();
@@ -39,7 +47,23 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for RangeSwitch {}
+    impl WidgetImpl for RangeSwitch {
+        fn root(&self) {
+            self.parent_root();
+            let obj = self.obj();
+            if let Some(window) = obj.root() {
+                let binding = window
+                    .bind_property("narrow", &*obj, "visible")
+                    .sync_create();
+                if self.in_bar.get() {
+                    binding.build();
+                } else {
+                    binding.invert_boolean().build();
+                }
+            }
+        }
+    }
+
     impl BinImpl for RangeSwitch {}
 }
 
