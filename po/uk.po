@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-10-29 23:44+0200\n"
+"POT-Creation-Date: 2026-11-01 19:55+0200\n"
 "PO-Revision-Date: 2026-09-27 12:36+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Ukrainian\n"
@@ -27,7 +27,7 @@ msgid "System Monitor"
 msgstr "Системний монітор"
 
 #: data/io.github.sachesi.locus.desktop:4
-#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:78
+#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:97
 #, no-c-format
 msgid "Watch resources and end processes"
 msgstr "Стежте за ресурсами й завершуйте процеси"
@@ -37,22 +37,18 @@ msgid "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usag
 msgstr "process;task;manager;kill;cpu;processor;memory;ram;swap;network;disk;usage;процес;завдання;диспетчер;завершити;процесор;пам’ять;підкачка;мережа;диск;навантаження;"
 
 #: data/io.github.sachesi.locus.gschema.xml:7
-msgid "Seconds between readings while Resources is shown"
-msgstr "Секунди між вимірами, поки відкрито «Ресурси»"
+msgid "Seconds between readings while any page but Processes is shown"
+msgstr "Секунди між вимірами, поки відкрито будь-яку сторінку, крім «Процесів»"
 
 #: data/io.github.sachesi.locus.gschema.xml:12
-msgid "Seconds between readings while File Systems is shown"
-msgstr "Секунди між вимірами, поки відкрито «Файлові системи»"
-
-#: data/io.github.sachesi.locus.gschema.xml:17
 msgid "Seconds between readings while Processes is shown"
 msgstr "Секунди між вимірами, поки відкрито «Процеси»"
 
-#: data/io.github.sachesi.locus.gschema.xml:21
+#: data/io.github.sachesi.locus.gschema.xml:16
 msgid "Sizes in binary units"
 msgstr "Розміри у двійкових одиницях"
 
-#: data/io.github.sachesi.locus.gschema.xml:22
+#: data/io.github.sachesi.locus.gschema.xml:17
 msgid ""
 "When on, sizes are counted in 1024s and written as KiB, MiB and GiB; when "
 "off, in 1000s, as kB, MB and GB."
@@ -60,90 +56,137 @@ msgstr ""
 "Якщо увімкнено, розміри рахуються по 1024 і записуються в КіБ, МіБ і ГіБ; "
 "якщо вимкнено — по 1000, у кБ, МБ і ГБ."
 
-#: data/io.github.sachesi.locus.gschema.xml:26
+#: data/io.github.sachesi.locus.gschema.xml:21
 msgid "List the processes of every user"
 msgstr "Показувати процеси всіх користувачів"
 
-#: data/io.github.sachesi.locus.gschema.xml:27
+#: data/io.github.sachesi.locus.gschema.xml:22
 msgid "When off, only the processes of the user running Locus are listed."
 msgstr ""
 "Якщо вимкнено, показуються лише процеси користувача, який запустив Locus."
 
 #: data/io.github.sachesi.locus.gschema.xml:31
+msgid "How the list of processes is arranged"
+msgstr "Як упорядковано список процесів"
+
+#: data/io.github.sachesi.locus.gschema.xml:32
+msgid ""
+"Apps lists the running apps first, each with its processes, then the other "
+"processes as trees. Tree lists every process under what started it. All "
+"lists every process on its own."
+msgstr ""
+"«Програми» показує спочатку запущені програми з їхніми процесами, потім інші "
+"процеси деревами. «Дерево» показує кожен процес під тим, що його запустило. "
+"«Усі» показує кожен процес окремо."
+
+#: data/io.github.sachesi.locus.gschema.xml:41
+msgid "How far back the graphs reach"
+msgstr "Як далеко в минуле сягають графіки"
+
+#: data/io.github.sachesi.locus.gschema.xml:45
 msgid "Window size"
 msgstr "Розмір вікна"
 
-#: data/io.github.sachesi.locus.gschema.xml:35
+#: data/io.github.sachesi.locus.gschema.xml:49
 msgid "Window maximized"
 msgstr "Вікно розгорнуто"
 
 #: data/io.github.sachesi.locus.metainfo.xml:9
 msgid ""
 "Locus is a system monitor for Wayland desktops, built with GTK 4 and "
-"libadwaita. It graphs the whole machine, and lists the running apps and "
-"processes with what each takes of the processor, the memory and the disks."
+"libadwaita. It lists the running apps and processes with what each takes of "
+"the processor, the memory, the disks and the graphics card, and graphs the "
+"whole machine."
 msgstr ""
 "Locus — системний монітор для робочих столів Wayland, створений на GTK 4 і "
-"libadwaita. Він будує графіки для всієї машини й показує запущені програми "
-"та процеси й те, скільки кожен бере від процесора, пам’яті та дисків."
+"libadwaita. Він показує запущені програми й процеси й те, скільки кожен бере "
+"від процесора, пам’яті, дисків і відеокарти, і будує графіки для всієї "
+"машини."
 
 #: data/io.github.sachesi.locus.metainfo.xml:11
 msgid ""
-"Processor usage as a whole and for each core, memory and swap, network and "
-"disk traffic, and the usage, video memory and temperature of each graphics "
-"card its driver reports"
+"Running apps with their processes, and every other process, tinted by what "
+"each uses, sorted by any column and searchable by name, command line or ID"
 msgstr ""
-"Завантаження процесора загалом і за ядрами, пам’ять і підкачка, мережевий і "
-"дисковий обмін, а також навантаження, відеопам’ять і температура кожної "
-"відеокарти, про які повідомляє її драйвер"
+"Запущені програми з їхніми процесами та всі інші процеси, підсвічені за "
+"споживанням, із сортуванням за будь-яким стовпцем і пошуком за назвою, "
+"командним рядком або ID"
 
 #: data/io.github.sachesi.locus.metainfo.xml:12
-msgid "Room left on each mounted disk"
-msgstr "Вільне місце на кожному підключеному диску"
+msgid ""
+"End, kill, stop and continue a process, or end an app with all its processes"
+msgstr ""
+"Завершення, примусове завершення, зупинка й продовження процесу або "
+"завершення програми з усіма її процесами"
 
 #: data/io.github.sachesi.locus.metainfo.xml:13
 msgid ""
-"Running apps with their processes, and every other process beneath the one "
-"that started it, sorted by processor, memory, disk or graphics card use and "
-"searchable by name, command line or ID"
+"A pane with the threads, open files, network connections and priority of "
+"what is selected"
 msgstr ""
-"Запущені програми з їхніми процесами та всі інші процеси під тими, що їх "
-"запустили, упорядковані за навантаженням на процесор, пам’ять, диск чи "
-"відеокарту, з пошуком за назвою, командним рядком або ID"
+"Панель із потоками, відкритими файлами, мережевими з’єднаннями та "
+"пріоритетом вибраного"
 
 #: data/io.github.sachesi.locus.metainfo.xml:14
 msgid ""
-"End, kill, stop and continue a process, or end an app with all its "
-"processes, from its menu or the buttons above the list"
+"Services of the machine and the user, which can be started, stopped and "
+"restarted, with their logs"
 msgstr ""
-"Завершення, примусове завершення, зупинка й продовження процесу або "
-"завершення програми з усіма її процесами з меню чи кнопками над списком"
+"Служби машини й користувача, які можна запускати, зупиняти й перезапускати, "
+"з їхніми журналами"
+
+#: data/io.github.sachesi.locus.metainfo.xml:15
+msgid ""
+"Apps that start with the session, how long the last boot took and the "
+"services that took longest"
+msgstr ""
+"Програми, що запускаються разом із сеансом, тривалість останнього "
+"завантаження та найдовші служби"
 
 #: data/io.github.sachesi.locus.metainfo.xml:16
 msgid ""
-"Everything is read from /proc and /sys, and processes are read only while "
-"their list is on screen."
+"A page and a small graph for the processor, memory, each disk, each network "
+"connection and each graphics card, reaching back up to 5 minutes"
 msgstr ""
-"Усе читається з /proc і /sys, а процеси — лише поки їхній список на екрані."
+"Сторінка й невеликий графік для процесора, пам’яті, кожного диска, кожного "
+"мережевого з’єднання та кожної відеокарти, глибиною до 5 хвилин"
 
-#: data/io.github.sachesi.locus.metainfo.xml:21
-msgid "Watch the processor, memory, network and disks over time"
-msgstr "Стежте за процесором, пам’яттю, мережею та дисками в часі"
+#: data/io.github.sachesi.locus.metainfo.xml:18
+msgid ""
+"Everything but services is read from /proc and /sys, and processes are read "
+"only while something on screen shows them."
+msgstr ""
+"Усе, крім служб, читається з /proc і /sys, а процеси — лише поки щось на "
+"екрані їх показує."
 
-#: data/io.github.sachesi.locus.metainfo.xml:25
+#: data/io.github.sachesi.locus.metainfo.xml:23
+msgid "Find the apps and processes that keep the machine busy"
+msgstr "Знайдіть програми й процеси, які навантажують машину"
+
+#: data/io.github.sachesi.locus.metainfo.xml:27
+msgid "Watch the processor over the last minutes, and see what is using it"
+msgstr "Стежте за процесором в останні хвилини й дивіться, що його навантажує"
+
+#: data/io.github.sachesi.locus.metainfo.xml:31
 msgid "Follow each graphics card's usage, video memory and temperature"
 msgstr ""
 "Стежте за навантаженням, відеопам’яттю й температурою кожної відеокарти"
 
-#: data/io.github.sachesi.locus.metainfo.xml:29
-msgid "Find the apps and processes that keep the machine busy"
-msgstr "Знайдіть програми й процеси, які навантажують машину"
+#: data/io.github.sachesi.locus.metainfo.xml:35
+msgid "Start, stop and read the logs of services"
+msgstr "Запускайте й зупиняйте служби, читайте їхні журнали"
 
-#: data/io.github.sachesi.locus.metainfo.xml:36
+#: data/io.github.sachesi.locus.metainfo.xml:39
+msgid "Choose what starts with the session and see how long the last boot took"
+msgstr ""
+"Вибирайте, що запускається разом із сеансом, і дивіться, скільки тривало "
+"останнє завантаження"
+
+#: data/io.github.sachesi.locus.metainfo.xml:46
 msgid "sachesi"
 msgstr ""
 
-#: data/io.github.sachesi.locus.metainfo.xml:53
+#: data/io.github.sachesi.locus.metainfo.xml:63
 msgid ""
 "Locus does much less work to stay open. Reading the processes costs a "
 "fraction of what it did, file systems are read only while their page is "
@@ -164,7 +207,7 @@ msgstr ""
 "використовувати відеокарту, може з'явитися в стовпці ГП лише через кілька "
 "оновлень."
 
-#: data/io.github.sachesi.locus.metainfo.xml:58
+#: data/io.github.sachesi.locus.metainfo.xml:68
 msgid ""
 "The first release: running apps and processes with their processor, memory, "
 "disk and graphics card use, which can be ended, killed, stopped and "
@@ -178,67 +221,264 @@ msgstr ""
 "пам’яті та підкачки, мережі, дисків і відеокарт; вільне місце на кожному "
 "підключеному диску."
 
+#. Translators: one core of the processor; {number} counts from 1.
+#: src/cpu_page.rs:157
+#, no-c-format
+msgid "CPU {number}"
+msgstr "ЦП {number}"
+
+#: src/details_pane.rs:137 src/services_page.rs:523 ui/details_pane.ui:17
+#: ui/services_page.ui:29
+#, no-c-format
+msgid "Details"
+msgstr "Подробиці"
+
+#: src/details_pane.rs:253
+#, no-c-format
+msgid "Could not change the priority: {reason}"
+msgstr "Не вдалося змінити пріоритет: {reason}"
+
+#: src/details_pane.rs:263
+#, no-c-format
+msgid "Could not run it in the background: {reason}"
+msgstr "Не вдалося перевести у фон: {reason}"
+
+#: src/details_pane.rs:265
+#, no-c-format
+msgid "Could not bring it back from the background: {reason}"
+msgstr "Не вдалося повернути з фону: {reason}"
+
+#: src/details_pane.rs:293
+#, no-c-format
+msgid "administrator rights are needed"
+msgstr "потрібні права адміністратора"
+
+#: src/details_pane.rs:320
+#, no-c-format
+msgid "Only its owner may look at this"
+msgstr "Переглядати це може лише власник"
+
+#: src/details_pane.rs:321
+#, no-c-format
+msgid "None"
+msgstr "Немає"
+
+#. Translators: a thread of a process; {id} is its number.
+#: src/details_pane.rs:385
+#, no-c-format
+msgid "Thread {id}"
+msgstr "Потік {id}"
+
+#: src/details_pane.rs:401
+#, no-c-format
+msgid "Read"
+msgstr "Читання"
+
+#: src/details_pane.rs:402
+#, no-c-format
+msgid "Write"
+msgstr "Запис"
+
+#: src/details_pane.rs:403
+#, no-c-format
+msgid "Read and Write"
+msgstr "Читання й запис"
+
+#: src/details_pane.rs:412
+#, no-c-format
+msgid "Listening"
+msgstr "Очікує з’єднань"
+
+#: src/details_pane.rs:413 src/window.rs:672
+#, no-c-format
+msgid "Connected"
+msgstr "Під’єднано"
+
+#: src/details_pane.rs:414 src/details_pane.rs:415
+#, no-c-format
+msgid "Open"
+msgstr "Відкрито"
+
 #. Translators: a share of something, such as "12.3%".
-#: src/format.rs:21
+#: src/format.rs:20
 #, no-c-format
 msgid "{value}%"
 msgstr "{value} %"
 
+#. Translators: two short values side by side, such as "55%, 17.3 GiB".
+#: src/format.rs:37
+#, no-c-format
+msgid "{first}, {second}"
+msgstr "{first}, {second}"
+
 #. Translators: a transfer rate, such as "1.5 MB/s".
-#: src/format.rs:50
+#: src/format.rs:66
 #, no-c-format
 msgid "{size}/s"
 msgstr "{size}/с"
 
 #. Translators: memory in use out of what there is, such as "5.2 GB of 16.0 GB".
-#: src/format.rs:55
+#: src/format.rs:71
 #, no-c-format
 msgid "{used} of {total}"
 msgstr "{used} з {total}"
 
 #. Translators: room left on a disk, such as "120 GB free of 500 GB".
-#: src/format.rs:62
+#: src/format.rs:78
 #, no-c-format
 msgid "{available} free of {total}"
 msgstr "вільно {available} з {total}"
 
 #. Translators: a temperature in degrees Celsius, such as "45 °C".
-#: src/format.rs:69
+#: src/format.rs:85
 #, no-c-format
 msgid "{value} °C"
 msgstr "{value} °C"
 
-#: src/main.rs:79
+#. Translators: a clock speed, such as "3.84 GHz".
+#: src/format.rs:92
+#, no-c-format
+msgid "{value} GHz"
+msgstr "{value} ГГц"
+
+#. Translators: a clock speed, such as "800 MHz".
+#: src/format.rs:95
+#, no-c-format
+msgid "{value} MHz"
+msgstr "{value} МГц"
+
+#. Translators: power drawn, such as "118 W".
+#: src/format.rs:103
+#, no-c-format
+msgid "{value} W"
+msgstr "{value} Вт"
+
+#. Translators: how fast a fan turns, such as "1240 RPM".
+#: src/format.rs:108
+#, no-c-format
+msgid "{value} RPM"
+msgstr "{value} об/хв"
+
+#. Translators: a short time, such as "0.4 ms".
+#: src/format.rs:113
+#, no-c-format
+msgid "{value} ms"
+msgstr "{value} мс"
+
+#. Translators: a time in seconds, such as "1.4 s".
+#: src/format.rs:118
+#, no-c-format
+msgid "{value} s"
+msgstr "{value} с"
+
+#. Translators: time since the machine started, such as "2 days 3:14:07".
+#: src/format.rs:132
+#, no-c-format
+msgid "{days} day {time}"
+msgid_plural "{days} days {time}"
+msgstr[0] "{days} день {time}"
+msgstr[1] "{days} дні {time}"
+msgstr[2] "{days} днів {time}"
+
+#: src/gpu_page.rs:124
+#, no-c-format
+msgid "The card is asleep, and is left so: reading it would wake it"
+msgstr "Відеокарта спить, і її не чіпають: читання розбудило б її"
+
+#: src/gpu_page.rs:127
+#, no-c-format
+msgid "The driver does not report usage"
+msgstr "Драйвер не повідомляє про навантаження"
+
+#: src/gpu_page.rs:186
+#, no-c-format
+msgid "Graphics"
+msgstr "Графіка"
+
+#: src/gpu_page.rs:187
+#, no-c-format
+msgid "Compute"
+msgstr "Обчислення"
+
+#: src/gpu_page.rs:188
+#, no-c-format
+msgid "Video Decode"
+msgstr "Декодування відео"
+
+#: src/gpu_page.rs:189
+#, no-c-format
+msgid "Video Encode"
+msgstr "Кодування відео"
+
+#: src/gpu_page.rs:190
+#, no-c-format
+msgid "Copy"
+msgstr "Копіювання"
+
+#: src/graph.rs:306
+#, no-c-format
+msgid "Last 2 Minutes"
+msgstr "Останні 2 хвилини"
+
+#: src/graph.rs:307
+#, no-c-format
+msgid "Last 5 Minutes"
+msgstr "Останні 5 хвилин"
+
+#: src/graph.rs:308
+#, no-c-format
+msgid "Last 60 Seconds"
+msgstr "Останні 60 секунд"
+
+#: src/main.rs:98
 #, no-c-format
 msgid "translator-credits"
 msgstr "sachesi"
 
-#: src/preferences_dialog.rs:59
+#. Translators: how far swap is compressed, such as "3.1 to 1".
+#: src/memory_page.rs:125
+#, no-c-format
+msgid "{ratio} to 1"
+msgstr "{ratio} до 1"
+
+#. Translators: the speed of a network connection, such as "2.5 Gbit/s".
+#: src/network_page.rs:114
+#, no-c-format
+msgid "{value} Gbit/s"
+msgstr "{value} Гбіт/с"
+
+#. Translators: the speed of a network connection, such as "100 Mbit/s".
+#: src/network_page.rs:118
+#, no-c-format
+msgid "{value} Mbit/s"
+msgstr "{value} Мбіт/с"
+
+#: src/preferences_dialog.rs:56
 #, no-c-format
 msgid "Every Second"
 msgstr "Щосекунди"
 
-#: src/preferences_dialog.rs:60
+#: src/preferences_dialog.rs:57
 #, no-c-format
 msgid "Every 2 Seconds"
 msgstr "Кожні 2 секунди"
 
-#: src/preferences_dialog.rs:61
+#: src/preferences_dialog.rs:58
 #, no-c-format
 msgid "Every 5 Seconds"
 msgstr "Кожні 5 секунд"
 
-#: src/preferences_dialog.rs:62
+#: src/preferences_dialog.rs:59
 #, no-c-format
 msgid "Every 10 Seconds"
 msgstr "Кожні 10 секунд"
 
-#: src/processes_page.rs:224
+#: src/processes_page.rs:261
 #, no-c-format
 msgid "Try a different search"
 msgstr "Спробуйте змінити запит"
 
-#: src/processes_page.rs:227
+#: src/processes_page.rs:264
 #, no-c-format
 msgid ""
 "Only your own processes are searched. Turn on “Show All Processes” in the "
@@ -247,28 +487,49 @@ msgstr ""
 "Пошук іде лише серед ваших процесів. Увімкніть «Показувати всі процеси» в "
 "головному меню, щоб шукати серед усіх."
 
-#: src/processes_page.rs:337
+#: src/processes_page.rs:319 src/processes_page.rs:394
 #, no-c-format
-msgid "Apps"
-msgstr "Програми"
+msgid "Background Processes"
+msgstr "Фонові процеси"
 
-#: src/processes_page.rs:338 ui/preferences_dialog.ui:28
-#: ui/shortcuts_dialog.ui:27 ui/shortcuts_dialog.ui:59 ui/window.ui:88
+#: src/processes_page.rs:321 src/window.rs:299 ui/cpu_page.ui:164
+#: ui/preferences_dialog.ui:18 ui/processes_page.ui:99
+#: ui/shortcuts_dialog.ui:15 ui/shortcuts_dialog.ui:71 ui/window.ui:88
 #, no-c-format
 msgid "Processes"
 msgstr "Процеси"
 
-#: src/processes_page.rs:459
+#: src/processes_page.rs:393 ui/processes_page.ui:80 ui/processes_page.ui:136
+#: ui/startup_page.ui:44
+#, no-c-format
+msgid "Apps"
+msgstr "Програми"
+
+#: src/processes_page.rs:533
 #, no-c-format
 msgid "Disk use of other users' processes is not shown"
 msgstr "Використання диска процесами інших користувачів не показується"
 
-#: src/processes_page.rs:485
+#: src/processes_page.rs:566
 #, no-c-format
 msgid "GPU use of other users' processes is not shown"
 msgstr "Використання ГП процесами інших користувачів не показується"
 
-#: src/processes_page.rs:755
+#: src/processes_page.rs:818
+#, no-c-format
+msgid "{count} Process"
+msgid_plural "{count} Processes"
+msgstr[0] "{count} процес"
+msgstr[1] "{count} процеси"
+msgstr[2] "{count} процесів"
+
+#. Translators: {pid} is the ID of a process, a number.
+#: src/processes_page.rs:822
+#, no-c-format
+msgid "Process {pid}"
+msgstr "Процес {pid}"
+
+#: src/processes_page.rs:910
 #, no-c-format
 msgid "{count} Running App"
 msgid_plural "{count} Running Apps"
@@ -276,7 +537,7 @@ msgstr[0] "{count} запущена програма"
 msgstr[1] "{count} запущені програми"
 msgstr[2] "{count} запущених програм"
 
-#: src/processes_page.rs:760
+#: src/processes_page.rs:913
 #, no-c-format
 msgid "{count} Running Process"
 msgid_plural "{count} Running Processes"
@@ -284,38 +545,43 @@ msgstr[0] "{count} запущений процес"
 msgstr[1] "{count} запущені процеси"
 msgstr[2] "{count} запущених процесів"
 
-#: src/processes_page.rs:794 ui/processes_page.ui:210
+#: src/processes_page.rs:949 src/window.rs:314 ui/cpu_page.ui:19
+#: ui/details_pane.ui:107 ui/processes_page.ui:159 ui/processes_page.ui:240
+#: ui/services_page.ui:292 ui/shortcuts_dialog.ui:33
 #, no-c-format
 msgid "CPU"
 msgstr "ЦП"
 
-#: src/processes_page.rs:799 ui/processes_page.ui:216 ui/resources_page.ui:107
-#: ui/resources_page.ui:152
+#: src/processes_page.rs:954 src/window.rs:315 ui/details_pane.ui:146
+#: ui/memory_page.ui:19 ui/memory_page.ui:92 ui/processes_page.ui:165
+#: ui/processes_page.ui:246 ui/resources_page.ui:107 ui/resources_page.ui:152
+#: ui/services_page.ui:299 ui/shortcuts_dialog.ui:39
 #, no-c-format
 msgid "Memory"
 msgstr "Пам’ять"
 
-#: src/processes_page.rs:804 ui/processes_page.ui:222
+#: src/processes_page.rs:959 ui/processes_page.ui:252
 #, no-c-format
 msgid "Disk"
 msgstr "Диск"
 
-#: src/processes_page.rs:807 src/resources_page.rs:269 ui/processes_page.ui:229
+#: src/processes_page.rs:962 src/window.rs:682 ui/processes_page.ui:171
+#: ui/processes_page.ui:259
 #, no-c-format
 msgid "GPU"
 msgstr "ГП"
 
-#: src/processes_page.rs:952
+#: src/processes_page.rs:1146 src/service.rs:96
 #, no-c-format
 msgid "Stopped"
 msgstr "Зупинено"
 
-#: src/processes_page.rs:1245
+#: src/processes_page.rs:1442
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr "Примусово завершити «{name}»?"
 
-#: src/processes_page.rs:1248
+#: src/processes_page.rs:1445
 #, no-c-format
 msgid ""
 "Its {count} process ends at once, without a chance to save its work or clean "
@@ -334,7 +600,7 @@ msgstr[2] ""
 "прибрати за собою."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1255
+#: src/processes_page.rs:1452
 #, no-c-format
 msgid ""
 "Process {pid} ends at once, without a chance to save its work or clean up."
@@ -342,22 +608,22 @@ msgstr ""
 "Процес {pid} завершиться одразу, без змоги зберегти роботу чи прибрати за "
 "собою."
 
-#: src/processes_page.rs:1259
+#: src/processes_page.rs:1456
 #, no-c-format
 msgid "_Kill App"
 msgstr "Завершити програму _примусово"
 
-#: src/processes_page.rs:1261
+#: src/processes_page.rs:1458
 #, no-c-format
 msgid "_Kill Process"
 msgstr "Завершити _примусово"
 
-#: src/processes_page.rs:1265
+#: src/processes_page.rs:1462
 #, no-c-format
 msgid "End “{name}”?"
 msgstr "Завершити «{name}»?"
 
-#: src/processes_page.rs:1268
+#: src/processes_page.rs:1465
 #, no-c-format
 msgid ""
 "Its {count} process is asked to quit. Work it has not saved may be lost."
@@ -375,96 +641,628 @@ msgstr[2] ""
 "бути втрачено."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1274
+#: src/processes_page.rs:1471
 #, no-c-format
 msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 "Процесу {pid} буде запропоновано завершитися. Незбережену роботу може бути "
 "втрачено."
 
-#: src/processes_page.rs:1277
+#: src/processes_page.rs:1474
 #, no-c-format
 msgid "_End App"
 msgstr "_Завершити програму"
 
-#: src/processes_page.rs:1279
+#: src/processes_page.rs:1476
 #, no-c-format
 msgid "_End Process"
 msgstr "_Завершити процес"
 
-#: src/processes_page.rs:1291
+#: src/processes_page.rs:1488 src/services_page.rs:654 src/startup_page.rs:284
 #, no-c-format
 msgid "_Cancel"
 msgstr "_Скасувати"
 
-#: src/processes_page.rs:1351
+#: src/processes_page.rs:1548
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr "«{name}» вже завершився"
 
 #. Translators: {reason} is "it belongs to another user", or an error
 #. message of the system; so too in the three messages after this one.
-#: src/processes_page.rs:1357
+#: src/processes_page.rs:1554
 #, no-c-format
 msgid "Could not end “{name}”: {reason}"
 msgstr "Не вдалося завершити «{name}»: {reason}"
 
-#: src/processes_page.rs:1359
+#: src/processes_page.rs:1556
 #, no-c-format
 msgid "Could not kill “{name}”: {reason}"
 msgstr "Не вдалося примусово завершити «{name}»: {reason}"
 
-#: src/processes_page.rs:1360
+#: src/processes_page.rs:1557 src/services_page.rs:702
 #, no-c-format
 msgid "Could not stop “{name}”: {reason}"
 msgstr "Не вдалося зупинити «{name}»: {reason}"
 
-#: src/processes_page.rs:1361
+#: src/processes_page.rs:1558
 #, no-c-format
 msgid "Could not continue “{name}”: {reason}"
 msgstr "Не вдалося продовжити «{name}»: {reason}"
 
-#: src/processes_page.rs:1364
+#: src/processes_page.rs:1561
 #, no-c-format
 msgid "it belongs to another user"
 msgstr "процес належить іншому користувачеві"
 
+#: src/range_switch.rs:32
+#, no-c-format
+msgid "How Far Back the Graphs Reach"
+msgstr "Глибина графіків"
+
+#: src/range_switch.rs:34
+#, no-c-format
+msgid "1 min"
+msgstr "1 хв"
+
+#: src/range_switch.rs:35
+#, no-c-format
+msgid "2 min"
+msgstr "2 хв"
+
+#: src/range_switch.rs:36
+#, no-c-format
+msgid "5 min"
+msgstr "5 хв"
+
+#: src/service.rs:91
+#, no-c-format
+msgid "Failed"
+msgstr "Збій"
+
+#: src/service.rs:92
+#, no-c-format
+msgid "Finished"
+msgstr "Завершена"
+
+#: src/service.rs:93
+#, no-c-format
+msgid "Running"
+msgstr "Працює"
+
+#: src/service.rs:94
+#, no-c-format
+msgid "Starting"
+msgstr "Запускається"
+
+#: src/service.rs:95
+#, no-c-format
+msgid "Stopping"
+msgstr "Зупиняється"
+
+#: src/service.rs:102
+#, no-c-format
+msgid "Enabled"
+msgstr "Увімкнена"
+
+#: src/service.rs:103
+#, no-c-format
+msgid "Disabled"
+msgstr "Вимкнена"
+
+#: src/service.rs:104
+#, no-c-format
+msgid "Automatic"
+msgstr "Автоматично"
+
+#: src/service.rs:105
+#, no-c-format
+msgid "Masked"
+msgstr "Замаскована"
+
+#: src/services_page.rs:314
+#, no-c-format
+msgid "{count} Service"
+msgid_plural "{count} Services"
+msgstr[0] "{count} служба"
+msgstr[1] "{count} служби"
+msgstr[2] "{count} служб"
+
+#: src/services_page.rs:316
+#, no-c-format
+msgid "{count} Running"
+msgid_plural "{count} Running"
+msgstr[0] "{count} працює"
+msgstr[1] "{count} працюють"
+msgstr[2] "{count} працюють"
+
+#: src/services_page.rs:343
+#, no-c-format
+msgid "{count} service has failed"
+msgid_plural "{count} services have failed"
+msgstr[0] "Збій {count} служби"
+msgstr[1] "Збій {count} служб"
+msgstr[2] "Збій {count} служб"
+
+#: src/services_page.rs:350
+#, no-c-format
+msgid "Show All"
+msgstr "Показати всі"
+
+#: src/services_page.rs:352 ui/services_page.ui:237
+#, no-c-format
+msgid "Show"
+msgstr "Показати"
+
+#: src/services_page.rs:581
+#, no-c-format
+msgid "No entries that can be read"
+msgstr "Немає записів, доступних для читання"
+
+#: src/services_page.rs:647
+#, no-c-format
+msgid "Stop “{name}”?"
+msgstr "Зупинити «{name}»?"
+
+#: src/services_page.rs:647
+#, no-c-format
+msgid "_Stop Service"
+msgstr "_Зупинити службу"
+
+#: src/services_page.rs:648
+#, no-c-format
+msgid "Restart “{name}”?"
+msgstr "Перезапустити «{name}»?"
+
+#: src/services_page.rs:648
+#, no-c-format
+msgid "_Restart Service"
+msgstr "_Перезапустити службу"
+
+#: src/services_page.rs:652
+#, no-c-format
+msgid "What relies on this service may stop working."
+msgstr "Те, що залежить від цієї служби, може перестати працювати."
+
+#: src/services_page.rs:701
+#, no-c-format
+msgid "Could not start “{name}”: {reason}"
+msgstr "Не вдалося запустити «{name}»: {reason}"
+
+#: src/services_page.rs:703
+#, no-c-format
+msgid "Could not restart “{name}”: {reason}"
+msgstr "Не вдалося перезапустити «{name}»: {reason}"
+
+#: src/services_page.rs:705
+#, no-c-format
+msgid "Could not change when “{name}” starts: {reason}"
+msgstr "Не вдалося змінити запуск «{name}»: {reason}"
+
+#: src/services_page.rs:733
+#, no-c-format
+msgid "permission was not given"
+msgstr "дозвіл не отримано"
+
+#: src/startup_page.rs:205
+#, no-c-format
+msgid "Your Autostart Folder"
+msgstr "Ваша тека автозапуску"
+
+#: src/startup_page.rs:207 ui/services_page.ui:168 ui/services_page.ui:205
+#: ui/startup_page.ui:160
+#, no-c-format
+msgid "System"
+msgstr "Система"
+
+#: src/startup_page.rs:210
+#, no-c-format
+msgid "Not Measured"
+msgstr "Не виміряно"
+
+#: src/startup_page.rs:226
+#, no-c-format
+msgid "Remove From Startup"
+msgstr "Прибрати з автозапуску"
+
+#: src/startup_page.rs:243
+#, no-c-format
+msgid "Start “{name}” at Login"
+msgstr "Запускати «{name}» під час входу"
+
+#: src/startup_page.rs:269
+#, no-c-format
+msgid "Could not change when “{name}” starts"
+msgstr "Не вдалося змінити запуск «{name}»"
+
+#: src/startup_page.rs:278
+#, no-c-format
+msgid "Remove “{name}” From Startup?"
+msgstr "Прибрати «{name}» з автозапуску?"
+
+#: src/startup_page.rs:280
+#, no-c-format
+msgid ""
+"It will no longer start with your session. The app itself stays installed."
+msgstr ""
+"Вона більше не запускатиметься разом із сеансом. Сама програма залишиться "
+"встановленою."
+
+#: src/startup_page.rs:285
+#, no-c-format
+msgid "_Remove"
+msgstr "_Прибрати"
+
+#: src/startup_page.rs:305
+#, no-c-format
+msgid "Could not remove “{name}”"
+msgstr "Не вдалося прибрати «{name}»"
+
+#: src/startup_page.rs:331
+#, no-c-format
+msgid "Add App"
+msgstr "Додати програму"
+
+#: src/startup_page.rs:359
+#, no-c-format
+msgid "Could not add “{name}”"
+msgstr "Не вдалося додати «{name}»"
+
+#: src/startup_page.rs:371
+#, no-c-format
+msgid "Search apps"
+msgstr "Пошук програм"
+
+#: src/top_list.rs:37
+#, no-c-format
+msgid "What uses the most"
+msgstr "Що споживає найбільше"
+
+#: src/window.rs:305 ui/services_page.ui:181 ui/shortcuts_dialog.ui:21
+#, no-c-format
+msgid "Services"
+msgstr "Служби"
+
+#: src/window.rs:311 ui/shortcuts_dialog.ui:27 ui/startup_page.ui:16
+#, no-c-format
+msgid "Startup"
+msgstr "Автозапуск"
+
+#: src/window.rs:323
+#, no-c-format
+msgid "Performance"
+msgstr "Продуктивність"
+
+#. Translators: one of the disks; {number} counts from 1, {name} is the kernels name for it.
+#: src/window.rs:636
+#, no-c-format
+msgid "Disk {number} ({name})"
+msgstr "Диск {number} ({name})"
+
+#: src/window.rs:643
+#, no-c-format
+msgid "HDD"
+msgstr "HDD"
+
+#: src/window.rs:645
+#, no-c-format
+msgid "SSD"
+msgstr "SSD"
+
+#. Translators: a network interface; {name} is the kernels name for it.
+#: src/window.rs:653
+#, no-c-format
+msgid "Ethernet ({name})"
+msgstr "Ethernet ({name})"
+
+#. Translators: a network interface; {name} is the kernels name for it.
+#: src/window.rs:655
+#, no-c-format
+msgid "Wi-Fi ({name})"
+msgstr "Wi-Fi ({name})"
+
+#. Translators: a network interface; {name} is the kernels name for it.
+#: src/window.rs:657
+#, no-c-format
+msgid "Network ({name})"
+msgstr "Мережа ({name})"
+
 #. Translators: one of several graphics cards; {number} counts from 1.
-#: src/resources_page.rs:268
+#: src/window.rs:680
 #, no-c-format
 msgid "GPU {number}"
 msgstr "ГП {number}"
 
-#: src/resources_page.rs:292
+#: src/window.rs:688
 #, no-c-format
-msgid "GPU usage and video memory in use over the last readings"
-msgstr "Навантаження ГП і зайнята відеопам’ять за останні виміри"
+msgid "Asleep"
+msgstr "Спить"
 
-#: src/resources_page.rs:295
-#, no-c-format
+#: ui/cpu_page.ui:61 ui/cpu_page.ui:144 ui/gpu_page.ui:57 ui/gpu_page.ui:179
+#: ui/memory_page.ui:58
 msgid "Usage"
 msgstr "Навантаження"
 
-#: src/resources_page.rs:296
-#, no-c-format
-msgid "Video Memory"
-msgstr "Відеопам’ять"
+#: ui/cpu_page.ui:75
+msgid "Overall"
+msgstr "Загалом"
 
-#: src/resources_page.rs:297
-#, no-c-format
+#: ui/cpu_page.ui:81
+msgid "Per Core"
+msgstr "За ядрами"
+
+#: ui/cpu_page.ui:99 ui/resources_page.ui:74
+msgid "Processor usage over the last readings"
+msgstr "Завантаження процесора за останні виміри"
+
+#: ui/cpu_page.ui:149 ui/network_page.ui:178
+msgid "Speed"
+msgstr "Частота"
+
+#: ui/cpu_page.ui:154 ui/disk_page.ui:207 ui/gpu_page.ui:189
 msgid "Temperature"
 msgstr "Температура"
 
-#: src/resources_page.rs:308
-#, no-c-format
-msgid "The driver does not report usage"
-msgstr "Драйвер не повідомляє про навантаження"
+#: ui/cpu_page.ui:159
+msgid "Load Average"
+msgstr "Середнє навантаження"
 
-#. Translators: one core of the processor; {number} counts from 1.
-#: src/resources_page.rs:367
-#, no-c-format
-msgid "CPU {number}"
-msgstr "ЦП {number}"
+#: ui/cpu_page.ui:169 ui/details_pane.ui:64 ui/details_pane.ui:218
+msgid "Threads"
+msgstr "Потоки"
+
+#: ui/cpu_page.ui:174 ui/memory_page.ui:231
+msgid "Pressure"
+msgstr "Тиск"
+
+#: ui/cpu_page.ui:179
+msgid "Uptime"
+msgstr "Час роботи"
+
+#: ui/cpu_page.ui:193
+msgid "Using the Most CPU"
+msgstr "Хто навантажує ЦП"
+
+#: ui/cpu_page.ui:203 ui/gpu_page.ui:228
+msgid "Open Processes"
+msgstr "Відкрити процеси"
+
+#: ui/details_pane.ui:29 ui/services_page.ui:41
+msgid "Nothing Selected"
+msgstr "Нічого не вибрано"
+
+#: ui/details_pane.ui:30
+msgid "Select an app or process to see more about it"
+msgstr "Виберіть програму чи процес, щоб дізнатися про них більше"
+
+#: ui/details_pane.ui:58
+msgid "Overview"
+msgstr "Огляд"
+
+#: ui/details_pane.ui:70
+msgid "Files"
+msgstr "Файли"
+
+#: ui/details_pane.ui:76 ui/resources_page.ui:210
+msgid "Network"
+msgstr "Мережа"
+
+#: ui/details_pane.ui:130
+msgid "Processor use of what is selected over the last readings"
+msgstr "Навантаження вибраного на процесор за останні виміри"
+
+#: ui/details_pane.ui:168
+msgid "Memory use of what is selected over the last readings"
+msgstr "Споживання пам’яті вибраним за останні виміри"
+
+#: ui/details_pane.ui:184
+msgid "Command Line"
+msgstr "Командний рядок"
+
+#: ui/details_pane.ui:193
+msgid "Running For"
+msgstr "Працює вже"
+
+#: ui/details_pane.ui:201 ui/processes_page.ui:227 ui/services_page.ui:174
+#: ui/services_page.ui:211
+msgid "User"
+msgstr "Користувач"
+
+#: ui/details_pane.ui:209
+msgid "Systemd Unit"
+msgstr "Юніт systemd"
+
+#: ui/details_pane.ui:228
+msgid "Scheduling"
+msgstr "Планування"
+
+#: ui/details_pane.ui:244
+msgid "Priority"
+msgstr "Пріоритет"
+
+#: ui/details_pane.ui:248
+msgid "Low"
+msgstr "Низький"
+
+#: ui/details_pane.ui:249
+msgid "Normal"
+msgstr "Звичайний"
+
+#: ui/details_pane.ui:250
+msgid "High"
+msgstr "Високий"
+
+#: ui/details_pane.ui:258
+msgid "Run in Background"
+msgstr "Працювати у фоні"
+
+#: ui/details_pane.ui:259
+msgid "Gives other work priority. Undoing it may need administrator rights."
+msgstr ""
+"Віддає пріоритет іншій роботі. Для скасування можуть знадобитися права "
+"адміністратора."
+
+#: ui/disk_page.ui:67 ui/disk_page.ui:187
+msgid "Active Time"
+msgstr "Час активності"
+
+#: ui/disk_page.ui:80
+msgid "How busy the disk was over the last readings"
+msgstr "Зайнятість диска за останні виміри"
+
+#: ui/disk_page.ui:101
+msgid "Transfer Rate"
+msgstr "Швидкість передавання"
+
+#: ui/disk_page.ui:113 ui/resources_page.ui:312
+msgid "Disk reads and writes over the last readings"
+msgstr "Читання й запис дисків за останні виміри"
+
+#: ui/disk_page.ui:135 ui/disk_page.ui:192 ui/resources_page.ui:334
+msgid "Reading"
+msgstr "Читання"
+
+#: ui/disk_page.ui:157 ui/disk_page.ui:197 ui/resources_page.ui:363
+msgid "Writing"
+msgstr "Запис"
+
+#: ui/disk_page.ui:202
+msgid "Response Time"
+msgstr "Час відгуку"
+
+#: ui/disk_page.ui:219
+msgid "File Systems"
+msgstr "Файлові системи"
+
+#: ui/disk_page.ui:238
+msgid "Other File Systems"
+msgstr "Інші файлові системи"
+
+#: ui/gpu_page.ui:69
+msgid "GPU usage over the last readings"
+msgstr "Навантаження ГП за останні виміри"
+
+#: ui/gpu_page.ui:89
+msgid "Engines"
+msgstr "Блоки"
+
+#: ui/gpu_page.ui:98
+msgid "Only the work of processes Locus may read is counted"
+msgstr "Враховується робота лише тих процесів, які Locus може читати"
+
+#: ui/gpu_page.ui:132 ui/gpu_page.ui:184
+msgid "Video Memory"
+msgstr "Відеопам’ять"
+
+#: ui/gpu_page.ui:144
+msgid "Video memory in use over the last readings"
+msgstr "Зайнята відеопам’ять за останні виміри"
+
+#: ui/gpu_page.ui:194
+msgid "Power"
+msgstr "Потужність"
+
+#: ui/gpu_page.ui:199
+msgid "Core Clock"
+msgstr "Частота ядра"
+
+#: ui/gpu_page.ui:204
+msgid "Fan"
+msgstr "Вентилятор"
+
+#: ui/gpu_page.ui:218
+msgid "Using the Most GPU"
+msgstr "Хто навантажує ГП"
+
+#: ui/memory_page.ui:70 ui/resources_page.ui:130
+msgid "Memory and swap in use over the last readings"
+msgstr "Зайнята пам’ять і підкачка за останні виміри"
+
+#: ui/memory_page.ui:121 ui/memory_page.ui:221 ui/resources_page.ui:181
+msgid "Swap"
+msgstr "Підкачка"
+
+#: ui/memory_page.ui:150
+msgid "Composition"
+msgstr "Склад"
+
+#: ui/memory_page.ui:161
+msgid ""
+"How the memory is divided between what is in use, the cache, the buffers and "
+"what is free"
+msgstr "Як пам’ять поділено між використовуваною, кешем, буферами та вільною"
+
+#: ui/memory_page.ui:175
+msgid "In Use"
+msgstr "Використовується"
+
+#: ui/memory_page.ui:180
+msgid "Cache"
+msgstr "Кеш"
+
+#: ui/memory_page.ui:185
+msgid "Buffers"
+msgstr "Буфери"
+
+#: ui/memory_page.ui:190
+msgid "Free"
+msgstr "Вільно"
+
+#: ui/memory_page.ui:211
+msgid "Available"
+msgstr "Доступно"
+
+#: ui/memory_page.ui:216
+msgid "Committed"
+msgstr "Виділено"
+
+#: ui/memory_page.ui:226
+msgid "Swap Compression"
+msgstr "Стиснення підкачки"
+
+#: ui/network_page.ui:56
+msgid "Throughput"
+msgstr "Пропускна здатність"
+
+#: ui/network_page.ui:67 ui/resources_page.ui:221
+msgid "Network traffic over the last readings"
+msgstr "Мережевий обмін за останні виміри"
+
+#: ui/network_page.ui:89 ui/network_page.ui:137 ui/resources_page.ui:243
+msgid "Receiving"
+msgstr "Отримання"
+
+#: ui/network_page.ui:111 ui/network_page.ui:142 ui/resources_page.ui:272
+msgid "Sending"
+msgstr "Надсилання"
+
+#: ui/network_page.ui:147
+msgid "Received Since Boot"
+msgstr "Отримано від завантаження"
+
+#: ui/network_page.ui:152
+msgid "Sent Since Boot"
+msgstr "Надіслано від завантаження"
+
+#: ui/network_page.ui:163
+msgid "Connection"
+msgstr "З’єднання"
+
+#: ui/network_page.ui:186
+msgid "IPv4 Address"
+msgstr "Адреса IPv4"
+
+#: ui/network_page.ui:195
+msgid "IPv6 Address"
+msgstr "Адреса IPv6"
+
+#: ui/network_page.ui:204
+msgid "Hardware Address"
+msgstr "Апаратна адреса"
+
+#: ui/network_page.ui:213
+msgid "Driver"
+msgstr "Драйвер"
 
 #: ui/preferences_dialog.ui:14
 msgid "Update Interval"
@@ -474,169 +1272,269 @@ msgstr "Інтервал оновлення"
 msgid "How often a page is read again while it is shown"
 msgstr "Як часто сторінка оновлюється, поки вона відкрита"
 
-#: ui/preferences_dialog.ui:18 ui/shortcuts_dialog.ui:15 ui/window.ui:68
-msgid "Resources"
-msgstr "Ресурси"
+#: ui/preferences_dialog.ui:23
+msgid "Other Pages"
+msgstr "Інші сторінки"
 
-#: ui/preferences_dialog.ui:23 ui/shortcuts_dialog.ui:21 ui/window.ui:78
-msgid "File Systems"
-msgstr "Файлові системи"
-
-#: ui/preferences_dialog.ui:35
+#: ui/preferences_dialog.ui:30
 msgid "Units"
 msgstr "Одиниці"
 
-#: ui/preferences_dialog.ui:38
+#: ui/preferences_dialog.ui:33
 msgid "Binary Units"
 msgstr "Двійкові одиниці"
 
-#: ui/preferences_dialog.ui:39
+#: ui/preferences_dialog.ui:34
 msgid ""
 "Count sizes in 1024s, as KiB, MiB and GiB, rather than in 1000s, as kB, MB "
 "and GB"
 msgstr ""
 "Рахувати розміри по 1024, у КіБ, МіБ і ГіБ, а не по 1000, у кБ, МБ і ГБ"
 
-#: ui/processes_page.ui:45
+#: ui/processes_page.ui:61 ui/services_page.ui:187
+msgid "Show Details"
+msgstr "Показати подробиці"
+
+#: ui/processes_page.ui:68 ui/services_page.ui:157 ui/shortcuts_dialog.ui:74
+msgid "Search"
+msgstr "Пошук"
+
+#: ui/processes_page.ui:76
+msgid "Arrange Processes"
+msgstr "Упорядкувати процеси"
+
+#: ui/processes_page.ui:86 ui/processes_page.ui:142
+msgid "Tree"
+msgstr "Дерево"
+
+#: ui/processes_page.ui:92 ui/processes_page.ui:148
+msgid "All"
+msgstr "Усі"
+
+#: ui/processes_page.ui:113
 msgid "Search processes"
 msgstr "Пошук процесів"
 
-#: ui/processes_page.ui:112 ui/processes_page.ui:270
-msgid "_Stop"
-msgstr "_Зупинити"
-
-#: ui/processes_page.ui:125 ui/processes_page.ui:275
-msgid "_Continue"
-msgstr "_Продовжити"
-
-#: ui/processes_page.ui:137 ui/processes_page.ui:282
-msgid "_End"
-msgstr "_Завершити"
-
-#: ui/processes_page.ui:149 ui/processes_page.ui:286
-msgid "_Kill"
-msgstr "Завершити _примусово"
-
-#: ui/processes_page.ui:175
+#: ui/processes_page.ui:201
 msgid "Reading processes"
 msgstr "Читання процесів"
 
-#: ui/processes_page.ui:195
-msgid "Process Name"
-msgstr "Назва процесу"
+#: ui/processes_page.ui:220 ui/services_page.ui:272
+msgid "Name"
+msgstr "Назва"
 
-#: ui/processes_page.ui:202
-msgid "User"
-msgstr "Користувач"
-
-#: ui/processes_page.ui:236
+#: ui/processes_page.ui:266
 msgid "ID"
 msgstr "ID"
 
-#: ui/processes_page.ui:253
+#: ui/processes_page.ui:288
 msgid "No Matching Processes"
 msgstr "Немає відповідних процесів"
+
+#: ui/processes_page.ui:301 ui/processes_page.ui:341
+msgid "_Stop"
+msgstr "_Зупинити"
+
+#: ui/processes_page.ui:308 ui/processes_page.ui:346
+msgid "_Continue"
+msgstr "_Продовжити"
+
+#: ui/processes_page.ui:316 ui/processes_page.ui:357
+msgid "_Kill"
+msgstr "_Убити"
+
+#: ui/processes_page.ui:326 ui/processes_page.ui:353
+msgid "_End"
+msgstr "_Завершити"
 
 #: ui/resources_page.ui:38
 msgid "Processor"
 msgstr "Процесор"
 
-#: ui/resources_page.ui:74
-msgid "Processor usage over the last readings"
-msgstr "Завантаження процесора за останні виміри"
-
-#: ui/resources_page.ui:130
-msgid "Memory and swap in use over the last readings"
-msgstr "Зайнята пам’ять і підкачка за останні виміри"
-
-#: ui/resources_page.ui:181
-msgid "Swap"
-msgstr "Підкачка"
-
-#: ui/resources_page.ui:210
-msgid "Network"
-msgstr "Мережа"
-
-#: ui/resources_page.ui:221
-msgid "Network traffic over the last readings"
-msgstr "Мережевий обмін за останні виміри"
-
-#: ui/resources_page.ui:243
-msgid "Receiving"
-msgstr "Отримання"
-
-#: ui/resources_page.ui:272
-msgid "Sending"
-msgstr "Надсилання"
-
 #: ui/resources_page.ui:301
 msgid "Disks"
 msgstr "Диски"
 
-#: ui/resources_page.ui:312
-msgid "Disk reads and writes over the last readings"
-msgstr "Читання й запис дисків за останні виміри"
+#: ui/services_page.ui:42
+msgid "Select a service to see more about it"
+msgstr "Виберіть службу, щоб дізнатися про неї більше"
 
-#: ui/resources_page.ui:334
-msgid "Reading"
-msgstr "Читання"
+#: ui/services_page.ui:72
+msgid "Start at Boot"
+msgstr "Запускати під час завантаження"
 
-#: ui/resources_page.ui:363
-msgid "Writing"
-msgstr "Запис"
+#: ui/services_page.ui:77
+msgid "Unit"
+msgstr "Юніт"
+
+#: ui/services_page.ui:86
+msgid "Last Changed"
+msgstr "Остання зміна"
+
+#: ui/services_page.ui:94
+msgid "Unit File"
+msgstr "Файл юніта"
+
+#: ui/services_page.ui:105
+msgid "Recent Log"
+msgstr "Нещодавній журнал"
+
+#: ui/services_page.ui:129
+msgid "Show Full Log"
+msgstr "Показати весь журнал"
+
+#: ui/services_page.ui:226
+msgid "Search services"
+msgstr "Пошук служб"
+
+#: ui/services_page.ui:253
+msgid "Reading services"
+msgstr "Читання служб"
+
+#: ui/services_page.ui:279
+msgid "Status"
+msgstr "Стан"
+
+#: ui/services_page.ui:285
+msgid "At Startup"
+msgstr "Під час запуску"
+
+#: ui/services_page.ui:316
+msgid "Services Could Not Be Read"
+msgstr "Не вдалося прочитати служби"
+
+#: ui/services_page.ui:317
+msgid "Locus reads services from systemd, which did not answer"
+msgstr "Locus читає служби із systemd, а він не відповів"
+
+#: ui/services_page.ui:328
+msgid "No Matching Services"
+msgstr "Відповідних служб немає"
+
+#: ui/services_page.ui:339
+msgid "_Start"
+msgstr "_Запуск"
+
+#: ui/services_page.ui:346
+msgid "St_op"
+msgstr "_Стоп"
+
+#: ui/services_page.ui:353
+msgid "_Restart"
+msgstr "_Перезапуск"
 
 #: ui/shortcuts_dialog.ui:12
 msgid "General"
 msgstr "Загальні"
 
-#: ui/shortcuts_dialog.ui:33
+#: ui/shortcuts_dialog.ui:45
 msgid "Preferences"
 msgstr "Налаштування"
 
-#: ui/shortcuts_dialog.ui:39
+#: ui/shortcuts_dialog.ui:51
 msgid "Keyboard Shortcuts"
 msgstr "Комбінації клавіш"
 
-#: ui/shortcuts_dialog.ui:45
+#: ui/shortcuts_dialog.ui:57
 msgid "Close Window"
 msgstr "Закрити вікно"
 
-#: ui/shortcuts_dialog.ui:51
+#: ui/shortcuts_dialog.ui:63
 msgid "Quit"
 msgstr "Вийти"
 
-#: ui/shortcuts_dialog.ui:62 ui/window.ui:37
-msgid "Search"
-msgstr "Пошук"
-
-#: ui/shortcuts_dialog.ui:68
+#: ui/shortcuts_dialog.ui:80
 msgid "End Process"
 msgstr "Завершити процес"
 
-#: ui/shortcuts_dialog.ui:74
+#: ui/shortcuts_dialog.ui:86
 msgid "Kill Process"
 msgstr "Завершити примусово"
 
-#: ui/shortcuts_dialog.ui:80
+#: ui/shortcuts_dialog.ui:92
 msgid "Process Menu"
 msgstr "Меню процесу"
 
-#: ui/window.ui:55
+#: ui/startup_page.ui:54
+msgid "_Add App"
+msgstr "_Додати"
+
+#: ui/startup_page.ui:69
+msgid "No apps start with this session"
+msgstr "Разом із цим сеансом нічого не запускається"
+
+#: ui/startup_page.ui:91
+msgid "Last Boot"
+msgstr "Останнє завантаження"
+
+#: ui/startup_page.ui:131
+msgid "How long each part of the last boot took"
+msgstr "Скільки тривала кожна частина останнього завантаження"
+
+#: ui/startup_page.ui:145
+msgid "Firmware"
+msgstr "Мікропрограма"
+
+#: ui/startup_page.ui:150
+msgid "Loader"
+msgstr "Завантажувач"
+
+#: ui/startup_page.ui:155
+msgid "Kernel"
+msgstr "Ядро"
+
+#: ui/startup_page.ui:165
+msgid "Session"
+msgstr "Сеанс"
+
+#: ui/startup_page.ui:183
+msgid "Slowest Services"
+msgstr "Найповільніші служби"
+
+#: ui/startup_page.ui:193
+msgid "Open Services"
+msgstr "Відкрити служби"
+
+#: ui/window.ui:62
 msgid "Main Menu"
 msgstr "Головне меню"
 
-#: ui/window.ui:110
+#: ui/window.ui:147
 msgid "Show _All Processes"
 msgstr "Показувати _всі процеси"
 
-#: ui/window.ui:116
+#: ui/window.ui:153
 msgid "_Preferences"
 msgstr "_Налаштування"
 
-#: ui/window.ui:120
+#: ui/window.ui:157
 msgid "_Keyboard Shortcuts"
 msgstr "_Комбінації клавіш"
 
-#: ui/window.ui:124
+#: ui/window.ui:161
 msgid "_About Locus"
 msgstr "_Про Locus"
+
+#~ msgid "Seconds between readings while Resources is shown"
+#~ msgstr "Секунди між вимірами, поки відкрито «Ресурси»"
+
+#~ msgid "Seconds between readings while File Systems is shown"
+#~ msgstr "Секунди між вимірами, поки відкрито «Файлові системи»"
+
+#~ msgid ""
+#~ "Processor usage as a whole and for each core, memory and swap, network "
+#~ "and disk traffic, and the usage, video memory and temperature of each "
+#~ "graphics card its driver reports"
+#~ msgstr ""
+#~ "Завантаження процесора загалом і за ядрами, пам’ять і підкачка, мережевий "
+#~ "і дисковий обмін, а також навантаження, відеопам’ять і температура кожної "
+#~ "відеокарти, про які повідомляє її драйвер"
+
+#~ msgid "Room left on each mounted disk"
+#~ msgstr "Вільне місце на кожному підключеному диску"
+
+#~ msgid "Watch the processor, memory, network and disks over time"
+#~ msgstr "Стежте за процесором, пам’яттю, мережею та дисками в часі"
+
+#~ msgid "Resources"
+#~ msgstr "Ресурси"
