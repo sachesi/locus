@@ -58,6 +58,11 @@
     <control>touch</control>
   </supports>
   <releases>
+    <release version="0.2.0" date="2026-11-01">
+      <description>
+        <p>Locus is laid out anew around a sidebar. Each device now has a page of its own and a graph in the sidebar, coloured by kind, with its model and live figures beside it, and graphs can reach back 1, 2 or 5 minutes. A new Services page starts, stops and restarts services and shows their logs, and a new Startup page chooses which apps start with the session and breaks down the last boot. Processes tints each value by how much it uses, can be arranged as apps, a tree or a flat list, and has a pane with the threads, open files, connections and priority of what is selected. Every page fits a window 360 pixels wide, with the sidebar sliding over the page.</p>
+      </description>
+    </release>
     <release version="0.1.1" date="2026-10-29">
       <description>
         <p>Locus does much less work to stay open. Reading the processes costs a fraction of what it did, file systems are read only while their page is shown, and a hidden window no longer updates what nobody can see. The window fills in at once on launch, with the processor, network and disk figures following a moment later. Processes showing the same processor use keep their places instead of swapping on every update, and the process list holds less memory. A process that starts using a graphics card can take a few updates to show it in the GPU column.</p>

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-11-01 20:52+0200\n"
+"POT-Creation-Date: 2026-11-01 21:36+0200\n"
 "PO-Revision-Date: 2026-09-27 12:36+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Ukrainian\n"
@@ -188,6 +188,19 @@ msgstr ""
 
 #: data/io.github.sachesi.locus.metainfo.xml:63
 msgid ""
+"Locus is laid out anew around a sidebar. Each device now has a page of its "
+"own and a graph in the sidebar, coloured by kind, with its model and live "
+"figures beside it, and graphs can reach back 1, 2 or 5 minutes. A new "
+"Services page starts, stops and restarts services and shows their logs, and "
+"a new Startup page chooses which apps start with the session and breaks down "
+"the last boot. Processes tints each value by how much it uses, can be "
+"arranged as apps, a tree or a flat list, and has a pane with the threads, "
+"open files, connections and priority of what is selected. Every page fits a "
+"window 360 pixels wide, with the sidebar sliding over the page."
+msgstr "Locus перебудовано навколо бічної панелі. Тепер кожен пристрій має власну сторінку й графік на бічній панелі, забарвлений за типом пристрою, з моделлю та поточними показниками поруч, а графіки можуть охоплювати 1, 2 або 5 хвилин. Нова сторінка «Служби» запускає, зупиняє й перезапускає служби та показує їхні журнали, а нова сторінка «Автозапуск» дає змогу вибрати програми, що запускаються разом із сеансом, і показує, з чого складалося останнє завантаження. «Процеси» підсвічують значення за споживанням, можуть бути впорядковані як програми, дерево або плаский список і мають панель із потоками, відкритими файлами, з’єднаннями та пріоритетом вибраного. Кожна сторінка вміщується у вікні завширшки 360 пікселів, а бічна панель висувається поверх сторінки."
+
+#: data/io.github.sachesi.locus.metainfo.xml:68
+msgid ""
 "Locus does much less work to stay open. Reading the processes costs a "
 "fraction of what it did, file systems are read only while their page is "
 "shown, and a hidden window no longer updates what nobody can see. The window "
@@ -207,7 +220,7 @@ msgstr ""
 "використовувати відеокарту, може з'явитися в стовпці ГП лише через кілька "
 "оновлень."
 
-#: data/io.github.sachesi.locus.metainfo.xml:68
+#: data/io.github.sachesi.locus.metainfo.xml:73
 msgid ""
 "The first release: running apps and processes with their processor, memory, "
 "disk and graphics card use, which can be ended, killed, stopped and "
@@ -1500,23 +1513,23 @@ msgstr "Найповільніші служби"
 msgid "Open Services"
 msgstr "Відкрити служби"
 
-#: ui/window.ui:64
+#: ui/window.ui:70
 msgid "Main Menu"
 msgstr "Головне меню"
 
-#: ui/window.ui:141
+#: ui/window.ui:147
 msgid "Show _All Processes"
 msgstr "Показувати _всі процеси"
 
-#: ui/window.ui:147
+#: ui/window.ui:153
 msgid "_Preferences"
 msgstr "_Налаштування"
 
-#: ui/window.ui:151
+#: ui/window.ui:157
 msgid "_Keyboard Shortcuts"
 msgstr "_Комбінації клавіш"
 
-#: ui/window.ui:155
+#: ui/window.ui:161
 msgid "_About Locus"
 msgstr "_Про Locus"
 
