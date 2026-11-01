@@ -21,6 +21,26 @@ thread_local! {
     static RANGE: StdCell<usize> = const { StdCell::new(0) };
 }
 
+/// The colour that tells a kind of device from the others, here and in the sidebar. These are
+/// libadwaita's palette; a snapshot cannot read its CSS variables.
+fn tint_color(tint: &str) -> Option<gtk::gdk::RGBA> {
+    let (red, green, blue) = match tint {
+        "blue" => (0x35, 0x84, 0xe4),
+        "purple" => (0x91, 0x41, 0xac),
+        "green" => (0x2e, 0xc2, 0x7e),
+        "orange" => (0xe6, 0x61, 0x00),
+        "red" => (0xe0, 0x1b, 0x24),
+        _ => return None,
+    };
+    let channel = |value: u8| f32::from(value) / 255.0;
+    Some(gtk::gdk::RGBA::new(
+        channel(red),
+        channel(green),
+        channel(blue),
+        1.0,
+    ))
+}
+
 fn range_from_name(name: &str) -> usize {
     match name {
         "2min" => 1,
@@ -93,7 +113,11 @@ mod imp {
         /// graphs too small for more.
         #[property(get, set)]
         plain: Cell<bool>,
-        /// Up to two series of readings. The first is drawn in the accent colour and filled
+        /// The colour of the first series, from those of [`tint_color`]; the accent colour by
+        /// default.
+        #[property(get, set)]
+        tint: RefCell<String>,
+        /// Up to two series of readings. The first is drawn in its colour and filled
         /// beneath, the second as a line in the text colour.
         pub series: RefCell<[super::History; 2]>,
         /// When the last reading was added, which the right edge stands for.
@@ -136,7 +160,8 @@ mod imp {
                 return;
             }
             let text = widget.color();
-            let accent = adw::StyleManager::default().accent_color_rgba();
+            let accent = super::tint_color(&self.tint.borrow())
+                .unwrap_or_else(|| adw::StyleManager::default().accent_color_rgba());
             let series = self.series.borrow();
             let plain = self.plain.get();
             // A small graph has no room for the choice of range, and stays on the shortest.
@@ -178,8 +203,8 @@ mod imp {
 
             let bounds = graphene::Rect::new(0.0, 0.0, width, height);
             if plain {
-                snapshot.push_rounded_clip(&gsk::RoundedRect::from_rect(bounds, 4.0));
-                snapshot.append_color(&text.with_alpha(0.05), &bounds);
+                snapshot.push_rounded_clip(&gsk::RoundedRect::from_rect(bounds, 6.0));
+                snapshot.append_color(&accent.with_alpha(0.06), &bounds);
             } else {
                 snapshot.push_clip(&bounds);
             }
@@ -251,6 +276,10 @@ mod imp {
                 snapshot.restore();
             }
             snapshot.pop();
+            if plain {
+                let frame = gsk::RoundedRect::from_rect(bounds, 6.0);
+                snapshot.append_border(&frame, &[1.0; 4], &[accent.with_alpha(0.6); 4]);
+            }
         }
     }
 

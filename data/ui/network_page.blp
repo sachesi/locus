@@ -2,6 +2,10 @@ using Gtk 4.0;
 using Adw 1;
 
 template $LocusNetworkPage: Adw.Bin {
+  styles [
+    "device-orange",
+  ]
+
   child: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
@@ -54,6 +58,7 @@ template $LocusNetworkPage: Adw.Bin {
             }
 
             $LocusGraph graph {
+              tint: "orange";
               height-request: 240;
 
               accessibility {

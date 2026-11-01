@@ -2,6 +2,10 @@ using Gtk 4.0;
 using Adw 1;
 
 template $LocusCpuPage: Adw.Bin {
+  styles [
+    "device-blue",
+  ]
+
   child: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
@@ -81,6 +85,7 @@ template $LocusCpuPage: Adw.Bin {
                 name: "overall";
 
                 child: $LocusGraph graph {
+                  tint: "blue";
                   maximum: 100;
                   height-request: 240;
 

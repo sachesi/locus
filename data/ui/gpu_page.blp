@@ -2,6 +2,10 @@ using Gtk 4.0;
 using Adw 1;
 
 template $LocusGpuPage: Adw.Bin {
+  styles [
+    "device-red",
+  ]
+
   child: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
@@ -55,6 +59,7 @@ template $LocusGpuPage: Adw.Bin {
             }
 
             $LocusGraph usage_graph {
+              tint: "red";
               maximum: 100;
               height-request: 112;
 
@@ -128,6 +133,7 @@ template $LocusGpuPage: Adw.Bin {
             }
 
             $LocusGraph memory_graph {
+              tint: "red";
               maximum: 100;
               height-request: 96;
 

@@ -311,8 +311,8 @@ impl LocusWindow {
             &gettext("Startup"),
             "media-playback-start-symbolic",
         ));
-        let cpu = SidebarRow::for_device("cpu", &gettext("CPU"), 100.0);
-        let memory = SidebarRow::for_device("memory", &gettext("Memory"), 100.0);
+        let cpu = SidebarRow::for_device("cpu", &gettext("CPU"), 100.0, "blue");
+        let memory = SidebarRow::for_device("memory", &gettext("Memory"), 100.0, "purple");
         imp.sidebar.append(&cpu);
         imp.sidebar.append(&memory);
         // The heading of the devices goes above the first of them.
@@ -490,7 +490,7 @@ impl LocusWindow {
                 let title = disk_title(index, disk);
                 let page = DiskPage::default();
                 page.set_name(&title, disk);
-                self.add_device(key, &title, 100.0, page)
+                self.add_device(key, &title, 100.0, "green", page)
             });
             let mut links = imp.links.borrow_mut();
             self.sync_views(&mut links, &link_keys, |index, key| {
@@ -498,7 +498,7 @@ impl LocusWindow {
                 let title = link_title(link);
                 let page = NetworkPage::default();
                 page.set_name(&title, "");
-                self.add_device(key, &title, 0.0, page)
+                self.add_device(key, &title, 0.0, "orange", page)
             });
             let mut gpus = imp.gpus.borrow_mut();
             let several = system.gpus.len() > 1;
@@ -507,7 +507,7 @@ impl LocusWindow {
                 let title = gpu_title(index, several);
                 let page = GpuPage::default();
                 page.set_name(&title, gpu);
-                self.add_device(key, &title, 100.0, page)
+                self.add_device(key, &title, 100.0, "red", page)
             });
             for row in disks
                 .iter()
@@ -553,12 +553,13 @@ impl LocusWindow {
         key: &str,
         title: &str,
         maximum: f64,
+        tint: &str,
         page: P,
     ) -> DeviceView<P> {
         self.imp().stack.add_named(&page, Some(key));
         DeviceView {
             key: key.to_owned(),
-            row: SidebarRow::for_device(key, title, maximum),
+            row: SidebarRow::for_device(key, title, maximum, tint),
             page,
         }
     }
@@ -577,13 +578,12 @@ impl LocusWindow {
         if self.is_suspended() {
             return;
         }
+        cpu.set_description(system.cpu_model.as_deref().unwrap_or_default());
         if !unmeasured {
             cpu.set_subtitle(&format::percent(system.cpu, 0));
         }
-        memory_row.set_subtitle(&format::listed(
-            &format::percent(memory_share, 0),
-            &format::size(memory.used),
-        ));
+        memory_row.set_description(&format::used_of(memory.used, memory.total));
+        memory_row.set_subtitle(&format::percent(memory_share, 0));
     }
 
     fn apply_devices(&self, system: &System, unmeasured: bool) {
@@ -593,7 +593,8 @@ impl LocusWindow {
             if !unmeasured {
                 view.row.push(&[disk.active]);
                 if visible {
-                    view.row.set_subtitle(&disk_subtitle(disk));
+                    view.row.set_description(&disk_description(disk));
+                    view.row.set_subtitle(&format::percent(disk.active, 0));
                 }
             }
             view.page.apply(disk, self.shows(&view.key), unmeasured);
@@ -610,7 +611,10 @@ impl LocusWindow {
             if !unmeasured {
                 view.row.push(&[link.received, link.sent]);
                 if visible {
-                    view.row.set_subtitle(&link_subtitle(link));
+                    view.row
+                        .set_description(&format!("↓ {}", format::rate(link.received)));
+                    view.row
+                        .set_subtitle(&format!("↑ {}", format::rate(link.sent)));
                 }
             }
             if let Some(detail) = link.detail.as_ref().filter(|_| self.shows(&view.key)) {
@@ -624,6 +628,8 @@ impl LocusWindow {
                 view.row.push(&[gpu.usage.unwrap_or(0.0)]);
             }
             if visible {
+                view.row
+                    .set_description(gpu.name.as_deref().unwrap_or_default());
                 view.row.set_subtitle(&gpu_subtitle(gpu));
             }
             view.page.apply(gpu, self.shows(&view.key), unmeasured);
@@ -638,13 +644,16 @@ fn disk_title(index: usize, disk: &Disk) -> String {
         .replace("{name}", &disk.name)
 }
 
-fn disk_subtitle(disk: &Disk) -> String {
+fn disk_description(disk: &Disk) -> String {
     let kind = if disk.rotational {
         gettext("HDD")
     } else {
         gettext("SSD")
     };
-    format::listed(&kind, &format::percent(disk.active, 0))
+    match &disk.model {
+        Some(model) => format::listed(&kind, model),
+        None => kind,
+    }
 }
 
 fn link_title(link: &Link) -> String {
@@ -657,14 +666,6 @@ fn link_title(link: &Link) -> String {
         LinkKind::Virtual => gettext("Network ({name})"),
     };
     title.replace("{name}", &link.name)
-}
-
-fn link_subtitle(link: &Link) -> String {
-    format!(
-        "↓ {}  ↑ {}",
-        format::rate(link.received),
-        format::rate(link.sent)
-    )
 }
 
 fn link_connection(speed: Option<u32>) -> String {
