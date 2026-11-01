@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: locus 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/sachesi/locus/issues\n"
-"POT-Creation-Date: 2026-11-01 19:55+0200\n"
+"POT-Creation-Date: 2026-11-01 20:52+0200\n"
 "PO-Revision-Date: 2026-09-27 12:36+0300\n"
 "Last-Translator: sachesi <xsachesi@pm.me>\n"
 "Language-Team: Russian\n"
@@ -27,7 +27,7 @@ msgid "System Monitor"
 msgstr "Системный монитор"
 
 #: data/io.github.sachesi.locus.desktop:4
-#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:97
+#: data/io.github.sachesi.locus.metainfo.xml:7 src/main.rs:99
 #, no-c-format
 msgid "Watch resources and end processes"
 msgstr "Следите за ресурсами и завершайте процессы"
@@ -222,13 +222,18 @@ msgstr ""
 "подкачки, сети, дисков и видеокарт; свободное место на каждом подключённом "
 "диске."
 
+#: src/back_button.rs:24 ui/shortcuts_dialog.ui:15
+#, no-c-format
+msgid "Back"
+msgstr "Назад"
+
 #. Translators: one core of the processor; {number} counts from 1.
-#: src/cpu_page.rs:157
+#: src/cpu_page.rs:158
 #, no-c-format
 msgid "CPU {number}"
 msgstr "ЦП {number}"
 
-#: src/details_pane.rs:137 src/services_page.rs:523 ui/details_pane.ui:17
+#: src/details_pane.rs:137 src/services_page.rs:555 ui/details_pane.ui:17
 #: ui/services_page.ui:29
 #, no-c-format
 msgid "Details"
@@ -290,7 +295,7 @@ msgstr "Чтение и запись"
 msgid "Listening"
 msgstr "Ожидает соединений"
 
-#: src/details_pane.rs:413 src/window.rs:672
+#: src/details_pane.rs:413 src/window.rs:692
 #, no-c-format
 msgid "Connected"
 msgstr "Подключено"
@@ -416,22 +421,22 @@ msgstr "Кодирование видео"
 msgid "Copy"
 msgstr "Копирование"
 
-#: src/graph.rs:306
+#: src/graph.rs:335
 #, no-c-format
 msgid "Last 2 Minutes"
 msgstr "Последние 2 минуты"
 
-#: src/graph.rs:307
+#: src/graph.rs:336
 #, no-c-format
 msgid "Last 5 Minutes"
 msgstr "Последние 5 минут"
 
-#: src/graph.rs:308
+#: src/graph.rs:337
 #, no-c-format
 msgid "Last 60 Seconds"
 msgstr "Последние 60 секунд"
 
-#: src/main.rs:98
+#: src/main.rs:100
 #, no-c-format
 msgid "translator-credits"
 msgstr "sachesi"
@@ -474,12 +479,12 @@ msgstr "Каждые 5 секунд"
 msgid "Every 10 Seconds"
 msgstr "Каждые 10 секунд"
 
-#: src/processes_page.rs:261
+#: src/processes_page.rs:259
 #, no-c-format
 msgid "Try a different search"
 msgstr "Попробуйте изменить запрос"
 
-#: src/processes_page.rs:264
+#: src/processes_page.rs:262
 #, no-c-format
 msgid ""
 "Only your own processes are searched. Turn on “Show All Processes” in the "
@@ -488,35 +493,35 @@ msgstr ""
 "Поиск идёт только среди ваших процессов. Включите «Показывать все процессы» "
 "в главном меню, чтобы искать среди всех."
 
-#: src/processes_page.rs:319 src/processes_page.rs:394
+#: src/processes_page.rs:331 src/processes_page.rs:406
 #, no-c-format
 msgid "Background Processes"
 msgstr "Фоновые процессы"
 
-#: src/processes_page.rs:321 src/window.rs:299 ui/cpu_page.ui:164
-#: ui/preferences_dialog.ui:18 ui/processes_page.ui:99
-#: ui/shortcuts_dialog.ui:15 ui/shortcuts_dialog.ui:71 ui/window.ui:88
+#: src/processes_page.rs:333 src/window.rs:311 ui/cpu_page.ui:171
+#: ui/preferences_dialog.ui:18 ui/processes_page.ui:102
+#: ui/shortcuts_dialog.ui:21 ui/shortcuts_dialog.ui:77
 #, no-c-format
 msgid "Processes"
 msgstr "Процессы"
 
-#: src/processes_page.rs:393 ui/processes_page.ui:80 ui/processes_page.ui:136
-#: ui/startup_page.ui:44
+#: src/processes_page.rs:405 ui/processes_page.ui:83 ui/processes_page.ui:139
+#: ui/startup_page.ui:47
 #, no-c-format
 msgid "Apps"
 msgstr "Приложения"
 
-#: src/processes_page.rs:533
+#: src/processes_page.rs:545
 #, no-c-format
 msgid "Disk use of other users' processes is not shown"
 msgstr "Использование диска процессами других пользователей не показывается"
 
-#: src/processes_page.rs:566
+#: src/processes_page.rs:578
 #, no-c-format
 msgid "GPU use of other users' processes is not shown"
 msgstr "Использование ГП процессами других пользователей не показывается"
 
-#: src/processes_page.rs:818
+#: src/processes_page.rs:830
 #, no-c-format
 msgid "{count} Process"
 msgid_plural "{count} Processes"
@@ -525,12 +530,12 @@ msgstr[1] "{count} процесса"
 msgstr[2] "{count} процессов"
 
 #. Translators: {pid} is the ID of a process, a number.
-#: src/processes_page.rs:822
+#: src/processes_page.rs:834
 #, no-c-format
 msgid "Process {pid}"
 msgstr "Процесс {pid}"
 
-#: src/processes_page.rs:910
+#: src/processes_page.rs:922
 #, no-c-format
 msgid "{count} Running App"
 msgid_plural "{count} Running Apps"
@@ -538,7 +543,7 @@ msgstr[0] "{count} запущенное приложение"
 msgstr[1] "{count} запущенных приложения"
 msgstr[2] "{count} запущенных приложений"
 
-#: src/processes_page.rs:913
+#: src/processes_page.rs:925
 #, no-c-format
 msgid "{count} Running Process"
 msgid_plural "{count} Running Processes"
@@ -546,43 +551,43 @@ msgstr[0] "{count} запущенный процесс"
 msgstr[1] "{count} запущенных процесса"
 msgstr[2] "{count} запущенных процессов"
 
-#: src/processes_page.rs:949 src/window.rs:314 ui/cpu_page.ui:19
-#: ui/details_pane.ui:107 ui/processes_page.ui:159 ui/processes_page.ui:240
-#: ui/services_page.ui:292 ui/shortcuts_dialog.ui:33
+#: src/processes_page.rs:961 src/window.rs:326 ui/cpu_page.ui:25
+#: ui/details_pane.ui:107 ui/processes_page.ui:162 ui/processes_page.ui:237
+#: ui/services_page.ui:294 ui/shortcuts_dialog.ui:39
 #, no-c-format
 msgid "CPU"
 msgstr "ЦП"
 
-#: src/processes_page.rs:954 src/window.rs:315 ui/details_pane.ui:146
-#: ui/memory_page.ui:19 ui/memory_page.ui:92 ui/processes_page.ui:165
-#: ui/processes_page.ui:246 ui/resources_page.ui:107 ui/resources_page.ui:152
-#: ui/services_page.ui:299 ui/shortcuts_dialog.ui:39
+#: src/processes_page.rs:966 src/window.rs:327 ui/details_pane.ui:146
+#: ui/memory_page.ui:25 ui/memory_page.ui:99 ui/processes_page.ui:168
+#: ui/processes_page.ui:243 ui/resources_page.ui:107 ui/resources_page.ui:152
+#: ui/services_page.ui:300 ui/shortcuts_dialog.ui:45
 #, no-c-format
 msgid "Memory"
 msgstr "Память"
 
-#: src/processes_page.rs:959 ui/processes_page.ui:252
+#: src/processes_page.rs:971 ui/processes_page.ui:249
 #, no-c-format
 msgid "Disk"
 msgstr "Диск"
 
-#: src/processes_page.rs:962 src/window.rs:682 ui/processes_page.ui:171
-#: ui/processes_page.ui:259
+#: src/processes_page.rs:974 src/window.rs:702 ui/processes_page.ui:174
+#: ui/processes_page.ui:255
 #, no-c-format
 msgid "GPU"
 msgstr "ГП"
 
-#: src/processes_page.rs:1146 src/service.rs:96
+#: src/processes_page.rs:1158 src/service.rs:96
 #, no-c-format
 msgid "Stopped"
 msgstr "Остановлен"
 
-#: src/processes_page.rs:1442
+#: src/processes_page.rs:1454
 #, no-c-format
 msgid "Kill “{name}”?"
 msgstr "Принудительно завершить «{name}»?"
 
-#: src/processes_page.rs:1445
+#: src/processes_page.rs:1457
 #, no-c-format
 msgid ""
 "Its {count} process ends at once, without a chance to save its work or clean "
@@ -601,7 +606,7 @@ msgstr[2] ""
 "прибраться за собой."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1452
+#: src/processes_page.rs:1464
 #, no-c-format
 msgid ""
 "Process {pid} ends at once, without a chance to save its work or clean up."
@@ -609,22 +614,22 @@ msgstr ""
 "Процесс {pid} завершится сразу, без возможности сохранить работу или "
 "прибраться за собой."
 
-#: src/processes_page.rs:1456
+#: src/processes_page.rs:1468
 #, no-c-format
 msgid "_Kill App"
 msgstr "Завершить приложение _принудительно"
 
-#: src/processes_page.rs:1458
+#: src/processes_page.rs:1470
 #, no-c-format
 msgid "_Kill Process"
 msgstr "Завершить _принудительно"
 
-#: src/processes_page.rs:1462
+#: src/processes_page.rs:1474
 #, no-c-format
 msgid "End “{name}”?"
 msgstr "Завершить «{name}»?"
 
-#: src/processes_page.rs:1465
+#: src/processes_page.rs:1477
 #, no-c-format
 msgid ""
 "Its {count} process is asked to quit. Work it has not saved may be lost."
@@ -642,56 +647,56 @@ msgstr[2] ""
 "может быть потеряна."
 
 #. Translators: {pid} is the ID of the process, a number.
-#: src/processes_page.rs:1471
+#: src/processes_page.rs:1483
 #, no-c-format
 msgid "Process {pid} is asked to quit. Work it has not saved may be lost."
 msgstr ""
 "Процессу {pid} будет предложено завершиться. Несохранённая работа может быть "
 "потеряна."
 
-#: src/processes_page.rs:1474
+#: src/processes_page.rs:1486
 #, no-c-format
 msgid "_End App"
 msgstr "_Завершить приложение"
 
-#: src/processes_page.rs:1476
+#: src/processes_page.rs:1488
 #, no-c-format
 msgid "_End Process"
 msgstr "_Завершить процесс"
 
-#: src/processes_page.rs:1488 src/services_page.rs:654 src/startup_page.rs:284
+#: src/processes_page.rs:1500 src/services_page.rs:686 src/startup_page.rs:296
 #, no-c-format
 msgid "_Cancel"
 msgstr "_Отмена"
 
-#: src/processes_page.rs:1548
+#: src/processes_page.rs:1560
 #, no-c-format
 msgid "“{name}” has already exited"
 msgstr "«{name}» уже завершился"
 
 #. Translators: {reason} is "it belongs to another user", or an error
 #. message of the system; so too in the three messages after this one.
-#: src/processes_page.rs:1554
+#: src/processes_page.rs:1566
 #, no-c-format
 msgid "Could not end “{name}”: {reason}"
 msgstr "Не удалось завершить «{name}»: {reason}"
 
-#: src/processes_page.rs:1556
+#: src/processes_page.rs:1568
 #, no-c-format
 msgid "Could not kill “{name}”: {reason}"
 msgstr "Не удалось принудительно завершить «{name}»: {reason}"
 
-#: src/processes_page.rs:1557 src/services_page.rs:702
+#: src/processes_page.rs:1569 src/services_page.rs:734
 #, no-c-format
 msgid "Could not stop “{name}”: {reason}"
 msgstr "Не удалось остановить «{name}»: {reason}"
 
-#: src/processes_page.rs:1558
+#: src/processes_page.rs:1570
 #, no-c-format
 msgid "Could not continue “{name}”: {reason}"
 msgstr "Не удалось продолжить «{name}»: {reason}"
 
-#: src/processes_page.rs:1561
+#: src/processes_page.rs:1573
 #, no-c-format
 msgid "it belongs to another user"
 msgstr "процесс принадлежит другому пользователю"
@@ -761,7 +766,7 @@ msgstr "Автоматически"
 msgid "Masked"
 msgstr "Замаскирована"
 
-#: src/services_page.rs:314
+#: src/services_page.rs:337
 #, no-c-format
 msgid "{count} Service"
 msgid_plural "{count} Services"
@@ -769,7 +774,7 @@ msgstr[0] "{count} служба"
 msgstr[1] "{count} службы"
 msgstr[2] "{count} служб"
 
-#: src/services_page.rs:316
+#: src/services_page.rs:339
 #, no-c-format
 msgid "{count} Running"
 msgid_plural "{count} Running"
@@ -777,7 +782,7 @@ msgstr[0] "{count} работает"
 msgstr[1] "{count} работают"
 msgstr[2] "{count} работают"
 
-#: src/services_page.rs:343
+#: src/services_page.rs:371
 #, no-c-format
 msgid "{count} service has failed"
 msgid_plural "{count} services have failed"
@@ -785,62 +790,62 @@ msgstr[0] "Сбой {count} службы"
 msgstr[1] "Сбой {count} служб"
 msgstr[2] "Сбой {count} служб"
 
-#: src/services_page.rs:350
+#: src/services_page.rs:378
 #, no-c-format
 msgid "Show All"
 msgstr "Показать все"
 
-#: src/services_page.rs:352 ui/services_page.ui:237
+#: src/services_page.rs:380 ui/services_page.ui:240
 #, no-c-format
 msgid "Show"
 msgstr "Показать"
 
-#: src/services_page.rs:581
+#: src/services_page.rs:613
 #, no-c-format
 msgid "No entries that can be read"
 msgstr "Нет записей, доступных для чтения"
 
-#: src/services_page.rs:647
+#: src/services_page.rs:679
 #, no-c-format
 msgid "Stop “{name}”?"
 msgstr "Остановить «{name}»?"
 
-#: src/services_page.rs:647
+#: src/services_page.rs:679
 #, no-c-format
 msgid "_Stop Service"
 msgstr "_Остановить службу"
 
-#: src/services_page.rs:648
+#: src/services_page.rs:680
 #, no-c-format
 msgid "Restart “{name}”?"
 msgstr "Перезапустить «{name}»?"
 
-#: src/services_page.rs:648
+#: src/services_page.rs:680
 #, no-c-format
 msgid "_Restart Service"
 msgstr "_Перезапустить службу"
 
-#: src/services_page.rs:652
+#: src/services_page.rs:684
 #, no-c-format
 msgid "What relies on this service may stop working."
 msgstr "То, что зависит от этой службы, может перестать работать."
 
-#: src/services_page.rs:701
+#: src/services_page.rs:733
 #, no-c-format
 msgid "Could not start “{name}”: {reason}"
 msgstr "Не удалось запустить «{name}»: {reason}"
 
-#: src/services_page.rs:703
+#: src/services_page.rs:735
 #, no-c-format
 msgid "Could not restart “{name}”: {reason}"
 msgstr "Не удалось перезапустить «{name}»: {reason}"
 
-#: src/services_page.rs:705
+#: src/services_page.rs:737
 #, no-c-format
 msgid "Could not change when “{name}” starts: {reason}"
 msgstr "Не удалось изменить запуск «{name}»: {reason}"
 
-#: src/services_page.rs:733
+#: src/services_page.rs:765
 #, no-c-format
 msgid "permission was not given"
 msgstr "разрешение не получено"
@@ -850,8 +855,8 @@ msgstr "разрешение не получено"
 msgid "Your Autostart Folder"
 msgstr "Ваша папка автозапуска"
 
-#: src/startup_page.rs:207 ui/services_page.ui:168 ui/services_page.ui:205
-#: ui/startup_page.ui:160
+#: src/startup_page.rs:207 ui/services_page.ui:171 ui/services_page.ui:208
+#: ui/startup_page.ui:163
 #, no-c-format
 msgid "System"
 msgstr "Система"
@@ -871,17 +876,17 @@ msgstr "Убрать из автозапуска"
 msgid "Start “{name}” at Login"
 msgstr "Запускать «{name}» при входе"
 
-#: src/startup_page.rs:269
+#: src/startup_page.rs:277
 #, no-c-format
 msgid "Could not change when “{name}” starts"
 msgstr "Не удалось изменить запуск «{name}»"
 
-#: src/startup_page.rs:278
+#: src/startup_page.rs:290
 #, no-c-format
 msgid "Remove “{name}” From Startup?"
 msgstr "Убрать «{name}» из автозапуска?"
 
-#: src/startup_page.rs:280
+#: src/startup_page.rs:292
 #, no-c-format
 msgid ""
 "It will no longer start with your session. The app itself stays installed."
@@ -889,142 +894,142 @@ msgstr ""
 "Оно больше не будет запускаться вместе с сеансом. Само приложение останется "
 "установленным."
 
-#: src/startup_page.rs:285
+#: src/startup_page.rs:297
 #, no-c-format
 msgid "_Remove"
 msgstr "_Убрать"
 
-#: src/startup_page.rs:305
+#: src/startup_page.rs:319
 #, no-c-format
 msgid "Could not remove “{name}”"
 msgstr "Не удалось убрать «{name}»"
 
-#: src/startup_page.rs:331
+#: src/startup_page.rs:339
+#, no-c-format
+msgid "Search apps"
+msgstr "Поиск приложений"
+
+#: src/startup_page.rs:368
 #, no-c-format
 msgid "Add App"
 msgstr "Добавить приложение"
 
-#: src/startup_page.rs:359
+#: src/startup_page.rs:413
 #, no-c-format
 msgid "Could not add “{name}”"
 msgstr "Не удалось добавить «{name}»"
-
-#: src/startup_page.rs:371
-#, no-c-format
-msgid "Search apps"
-msgstr "Поиск приложений"
 
 #: src/top_list.rs:37
 #, no-c-format
 msgid "What uses the most"
 msgstr "Что потребляет больше всего"
 
-#: src/window.rs:305 ui/services_page.ui:181 ui/shortcuts_dialog.ui:21
+#: src/window.rs:317 ui/services_page.ui:184 ui/shortcuts_dialog.ui:27
 #, no-c-format
 msgid "Services"
 msgstr "Службы"
 
-#: src/window.rs:311 ui/shortcuts_dialog.ui:27 ui/startup_page.ui:16
+#: src/window.rs:323 ui/shortcuts_dialog.ui:33 ui/startup_page.ui:19
 #, no-c-format
 msgid "Startup"
 msgstr "Автозапуск"
 
-#: src/window.rs:323
+#: src/window.rs:335
 #, no-c-format
 msgid "Performance"
 msgstr "Производительность"
 
 #. Translators: one of the disks; {number} counts from 1, {name} is the kernels name for it.
-#: src/window.rs:636
+#: src/window.rs:661
 #, no-c-format
 msgid "Disk {number} ({name})"
 msgstr "Диск {number} ({name})"
 
-#: src/window.rs:643
+#: src/window.rs:668
 #, no-c-format
 msgid "HDD"
 msgstr "HDD"
 
-#: src/window.rs:645
+#: src/window.rs:670
 #, no-c-format
 msgid "SSD"
 msgstr "SSD"
 
 #. Translators: a network interface; {name} is the kernels name for it.
-#: src/window.rs:653
+#: src/window.rs:681
 #, no-c-format
 msgid "Ethernet ({name})"
 msgstr "Ethernet ({name})"
 
 #. Translators: a network interface; {name} is the kernels name for it.
-#: src/window.rs:655
+#: src/window.rs:683
 #, no-c-format
 msgid "Wi-Fi ({name})"
 msgstr "Wi-Fi ({name})"
 
 #. Translators: a network interface; {name} is the kernels name for it.
-#: src/window.rs:657
+#: src/window.rs:685
 #, no-c-format
 msgid "Network ({name})"
 msgstr "Сеть ({name})"
 
 #. Translators: one of several graphics cards; {number} counts from 1.
-#: src/window.rs:680
+#: src/window.rs:700
 #, no-c-format
 msgid "GPU {number}"
 msgstr "ГП {number}"
 
-#: src/window.rs:688
+#: src/window.rs:708
 #, no-c-format
 msgid "Asleep"
 msgstr "Спит"
 
-#: ui/cpu_page.ui:61 ui/cpu_page.ui:144 ui/gpu_page.ui:57 ui/gpu_page.ui:179
-#: ui/memory_page.ui:58
+#: ui/cpu_page.ui:67 ui/cpu_page.ui:151 ui/gpu_page.ui:63 ui/gpu_page.ui:187
+#: ui/memory_page.ui:64
 msgid "Usage"
 msgstr "Нагрузка"
 
-#: ui/cpu_page.ui:75
+#: ui/cpu_page.ui:81
 msgid "Overall"
 msgstr "Всего"
 
-#: ui/cpu_page.ui:81
+#: ui/cpu_page.ui:87
 msgid "Per Core"
 msgstr "По ядрам"
 
-#: ui/cpu_page.ui:99 ui/resources_page.ui:74
+#: ui/cpu_page.ui:106 ui/resources_page.ui:74
 msgid "Processor usage over the last readings"
 msgstr "Загрузка процессора за последние замеры"
 
-#: ui/cpu_page.ui:149 ui/network_page.ui:178
+#: ui/cpu_page.ui:156 ui/network_page.ui:185
 msgid "Speed"
 msgstr "Частота"
 
-#: ui/cpu_page.ui:154 ui/disk_page.ui:207 ui/gpu_page.ui:189
+#: ui/cpu_page.ui:161 ui/disk_page.ui:215 ui/gpu_page.ui:197
 msgid "Temperature"
 msgstr "Температура"
 
-#: ui/cpu_page.ui:159
+#: ui/cpu_page.ui:166
 msgid "Load Average"
 msgstr "Средняя нагрузка"
 
-#: ui/cpu_page.ui:169 ui/details_pane.ui:64 ui/details_pane.ui:218
+#: ui/cpu_page.ui:176 ui/details_pane.ui:64 ui/details_pane.ui:218
 msgid "Threads"
 msgstr "Потоки"
 
-#: ui/cpu_page.ui:174 ui/memory_page.ui:231
+#: ui/cpu_page.ui:181 ui/memory_page.ui:238
 msgid "Pressure"
 msgstr "Давление"
 
-#: ui/cpu_page.ui:179
+#: ui/cpu_page.ui:186
 msgid "Uptime"
 msgstr "Время работы"
 
-#: ui/cpu_page.ui:193
+#: ui/cpu_page.ui:200
 msgid "Using the Most CPU"
 msgstr "Кто нагружает ЦП"
 
-#: ui/cpu_page.ui:203 ui/gpu_page.ui:228
+#: ui/cpu_page.ui:210 ui/gpu_page.ui:236
 msgid "Open Processes"
 msgstr "Открыть процессы"
 
@@ -1064,8 +1069,8 @@ msgstr "Командная строка"
 msgid "Running For"
 msgstr "Работает уже"
 
-#: ui/details_pane.ui:201 ui/processes_page.ui:227 ui/services_page.ui:174
-#: ui/services_page.ui:211
+#: ui/details_pane.ui:201 ui/processes_page.ui:230 ui/services_page.ui:177
+#: ui/services_page.ui:214
 msgid "User"
 msgstr "Пользователь"
 
@@ -1103,165 +1108,165 @@ msgstr ""
 "Отдаёт приоритет другой работе. Для отмены могут понадобиться права "
 "администратора."
 
-#: ui/disk_page.ui:67 ui/disk_page.ui:187
+#: ui/disk_page.ui:73 ui/disk_page.ui:195
 msgid "Active Time"
 msgstr "Время активности"
 
-#: ui/disk_page.ui:80
+#: ui/disk_page.ui:87
 msgid "How busy the disk was over the last readings"
 msgstr "Занятость диска за последние замеры"
 
-#: ui/disk_page.ui:101
+#: ui/disk_page.ui:108
 msgid "Transfer Rate"
 msgstr "Скорость передачи"
 
-#: ui/disk_page.ui:113 ui/resources_page.ui:312
+#: ui/disk_page.ui:121 ui/resources_page.ui:312
 msgid "Disk reads and writes over the last readings"
 msgstr "Чтение и запись дисков за последние замеры"
 
-#: ui/disk_page.ui:135 ui/disk_page.ui:192 ui/resources_page.ui:334
+#: ui/disk_page.ui:143 ui/disk_page.ui:200 ui/resources_page.ui:334
 msgid "Reading"
 msgstr "Чтение"
 
-#: ui/disk_page.ui:157 ui/disk_page.ui:197 ui/resources_page.ui:363
+#: ui/disk_page.ui:165 ui/disk_page.ui:205 ui/resources_page.ui:363
 msgid "Writing"
 msgstr "Запись"
 
-#: ui/disk_page.ui:202
+#: ui/disk_page.ui:210
 msgid "Response Time"
 msgstr "Время отклика"
 
-#: ui/disk_page.ui:219
+#: ui/disk_page.ui:227
 msgid "File Systems"
 msgstr "Файловые системы"
 
-#: ui/disk_page.ui:238
+#: ui/disk_page.ui:246
 msgid "Other File Systems"
 msgstr "Другие файловые системы"
 
-#: ui/gpu_page.ui:69
+#: ui/gpu_page.ui:76
 msgid "GPU usage over the last readings"
 msgstr "Нагрузка ГП за последние замеры"
 
-#: ui/gpu_page.ui:89
+#: ui/gpu_page.ui:96
 msgid "Engines"
 msgstr "Блоки"
 
-#: ui/gpu_page.ui:98
+#: ui/gpu_page.ui:105
 msgid "Only the work of processes Locus may read is counted"
 msgstr "Учитывается работа только тех процессов, которые Locus может читать"
 
-#: ui/gpu_page.ui:132 ui/gpu_page.ui:184
+#: ui/gpu_page.ui:139 ui/gpu_page.ui:192
 msgid "Video Memory"
 msgstr "Видеопамять"
 
-#: ui/gpu_page.ui:144
+#: ui/gpu_page.ui:152
 msgid "Video memory in use over the last readings"
 msgstr "Занятая видеопамять за последние замеры"
 
-#: ui/gpu_page.ui:194
+#: ui/gpu_page.ui:202
 msgid "Power"
 msgstr "Мощность"
 
-#: ui/gpu_page.ui:199
+#: ui/gpu_page.ui:207
 msgid "Core Clock"
 msgstr "Частота ядра"
 
-#: ui/gpu_page.ui:204
+#: ui/gpu_page.ui:212
 msgid "Fan"
 msgstr "Вентилятор"
 
-#: ui/gpu_page.ui:218
+#: ui/gpu_page.ui:226
 msgid "Using the Most GPU"
 msgstr "Кто нагружает ГП"
 
-#: ui/memory_page.ui:70 ui/resources_page.ui:130
+#: ui/memory_page.ui:77 ui/resources_page.ui:130
 msgid "Memory and swap in use over the last readings"
 msgstr "Занятая память и подкачка за последние замеры"
 
-#: ui/memory_page.ui:121 ui/memory_page.ui:221 ui/resources_page.ui:181
+#: ui/memory_page.ui:128 ui/memory_page.ui:228 ui/resources_page.ui:181
 msgid "Swap"
 msgstr "Подкачка"
 
-#: ui/memory_page.ui:150
+#: ui/memory_page.ui:157
 msgid "Composition"
 msgstr "Состав"
 
-#: ui/memory_page.ui:161
+#: ui/memory_page.ui:168
 msgid ""
 "How the memory is divided between what is in use, the cache, the buffers and "
 "what is free"
 msgstr "Как память разделена между используемой, кэшем, буферами и свободной"
 
-#: ui/memory_page.ui:175
+#: ui/memory_page.ui:182
 msgid "In Use"
 msgstr "Используется"
 
-#: ui/memory_page.ui:180
+#: ui/memory_page.ui:187
 msgid "Cache"
 msgstr "Кэш"
 
-#: ui/memory_page.ui:185
+#: ui/memory_page.ui:192
 msgid "Buffers"
 msgstr "Буферы"
 
-#: ui/memory_page.ui:190
+#: ui/memory_page.ui:197
 msgid "Free"
 msgstr "Свободно"
 
-#: ui/memory_page.ui:211
+#: ui/memory_page.ui:218
 msgid "Available"
 msgstr "Доступно"
 
-#: ui/memory_page.ui:216
+#: ui/memory_page.ui:223
 msgid "Committed"
 msgstr "Выделено"
 
-#: ui/memory_page.ui:226
+#: ui/memory_page.ui:233
 msgid "Swap Compression"
 msgstr "Сжатие подкачки"
 
-#: ui/network_page.ui:56
+#: ui/network_page.ui:62
 msgid "Throughput"
 msgstr "Пропускная способность"
 
-#: ui/network_page.ui:67 ui/resources_page.ui:221
+#: ui/network_page.ui:74 ui/resources_page.ui:221
 msgid "Network traffic over the last readings"
 msgstr "Сетевой обмен за последние замеры"
 
-#: ui/network_page.ui:89 ui/network_page.ui:137 ui/resources_page.ui:243
+#: ui/network_page.ui:96 ui/network_page.ui:144 ui/resources_page.ui:243
 msgid "Receiving"
 msgstr "Приём"
 
-#: ui/network_page.ui:111 ui/network_page.ui:142 ui/resources_page.ui:272
+#: ui/network_page.ui:118 ui/network_page.ui:149 ui/resources_page.ui:272
 msgid "Sending"
 msgstr "Отправка"
 
-#: ui/network_page.ui:147
+#: ui/network_page.ui:154
 msgid "Received Since Boot"
 msgstr "Получено с загрузки"
 
-#: ui/network_page.ui:152
+#: ui/network_page.ui:159
 msgid "Sent Since Boot"
 msgstr "Отправлено с загрузки"
 
-#: ui/network_page.ui:163
+#: ui/network_page.ui:170
 msgid "Connection"
 msgstr "Соединение"
 
-#: ui/network_page.ui:186
+#: ui/network_page.ui:193
 msgid "IPv4 Address"
 msgstr "Адрес IPv4"
 
-#: ui/network_page.ui:195
+#: ui/network_page.ui:202
 msgid "IPv6 Address"
 msgstr "Адрес IPv6"
 
-#: ui/network_page.ui:204
+#: ui/network_page.ui:211
 msgid "Hardware Address"
 msgstr "Аппаратный адрес"
 
-#: ui/network_page.ui:213
+#: ui/network_page.ui:220
 msgid "Driver"
 msgstr "Драйвер"
 
@@ -1291,59 +1296,59 @@ msgid ""
 "and GB"
 msgstr "Считать размеры по 1024, в КиБ, МиБ и ГиБ, а не по 1000, в кБ, МБ и ГБ"
 
-#: ui/processes_page.ui:61 ui/services_page.ui:187
+#: ui/processes_page.ui:64 ui/services_page.ui:190
 msgid "Show Details"
 msgstr "Показать подробности"
 
-#: ui/processes_page.ui:68 ui/services_page.ui:157 ui/shortcuts_dialog.ui:74
+#: ui/processes_page.ui:71 ui/services_page.ui:160 ui/shortcuts_dialog.ui:80
 msgid "Search"
 msgstr "Поиск"
 
-#: ui/processes_page.ui:76
+#: ui/processes_page.ui:79
 msgid "Arrange Processes"
 msgstr "Упорядочить процессы"
 
-#: ui/processes_page.ui:86 ui/processes_page.ui:142
+#: ui/processes_page.ui:89 ui/processes_page.ui:145
 msgid "Tree"
 msgstr "Дерево"
 
-#: ui/processes_page.ui:92 ui/processes_page.ui:148
+#: ui/processes_page.ui:95 ui/processes_page.ui:151
 msgid "All"
 msgstr "Все"
 
-#: ui/processes_page.ui:113
+#: ui/processes_page.ui:116
 msgid "Search processes"
 msgstr "Поиск процессов"
 
-#: ui/processes_page.ui:201
+#: ui/processes_page.ui:204
 msgid "Reading processes"
 msgstr "Чтение процессов"
 
-#: ui/processes_page.ui:220 ui/services_page.ui:272
+#: ui/processes_page.ui:223 ui/services_page.ui:275
 msgid "Name"
 msgstr "Имя"
 
-#: ui/processes_page.ui:266
+#: ui/processes_page.ui:262
 msgid "ID"
 msgstr "ID"
 
-#: ui/processes_page.ui:288
+#: ui/processes_page.ui:278
 msgid "No Matching Processes"
 msgstr "Нет подходящих процессов"
 
-#: ui/processes_page.ui:301 ui/processes_page.ui:341
+#: ui/processes_page.ui:291 ui/processes_page.ui:331
 msgid "_Stop"
 msgstr "_Остановить"
 
-#: ui/processes_page.ui:308 ui/processes_page.ui:346
+#: ui/processes_page.ui:298 ui/processes_page.ui:336
 msgid "_Continue"
 msgstr "_Продолжить"
 
-#: ui/processes_page.ui:316 ui/processes_page.ui:357
+#: ui/processes_page.ui:306 ui/processes_page.ui:347
 msgid "_Kill"
 msgstr "_Убить"
 
-#: ui/processes_page.ui:326 ui/processes_page.ui:353
+#: ui/processes_page.ui:316 ui/processes_page.ui:343
 msgid "_End"
 msgstr "_Завершить"
 
@@ -1383,19 +1388,19 @@ msgstr "Недавний журнал"
 msgid "Show Full Log"
 msgstr "Показать весь журнал"
 
-#: ui/services_page.ui:226
+#: ui/services_page.ui:229
 msgid "Search services"
 msgstr "Поиск служб"
 
-#: ui/services_page.ui:253
+#: ui/services_page.ui:256
 msgid "Reading services"
 msgstr "Чтение служб"
 
-#: ui/services_page.ui:279
+#: ui/services_page.ui:282
 msgid "Status"
 msgstr "Состояние"
 
-#: ui/services_page.ui:285
+#: ui/services_page.ui:288
 msgid "At Startup"
 msgstr "При запуске"
 
@@ -1427,91 +1432,91 @@ msgstr "_Перезапуск"
 msgid "General"
 msgstr "Общие"
 
-#: ui/shortcuts_dialog.ui:45
+#: ui/shortcuts_dialog.ui:51
 msgid "Preferences"
 msgstr "Параметры"
 
-#: ui/shortcuts_dialog.ui:51
+#: ui/shortcuts_dialog.ui:57
 msgid "Keyboard Shortcuts"
 msgstr "Комбинации клавиш"
 
-#: ui/shortcuts_dialog.ui:57
+#: ui/shortcuts_dialog.ui:63
 msgid "Close Window"
 msgstr "Закрыть окно"
 
-#: ui/shortcuts_dialog.ui:63
+#: ui/shortcuts_dialog.ui:69
 msgid "Quit"
 msgstr "Выйти"
 
-#: ui/shortcuts_dialog.ui:80
+#: ui/shortcuts_dialog.ui:86
 msgid "End Process"
 msgstr "Завершить процесс"
 
-#: ui/shortcuts_dialog.ui:86
+#: ui/shortcuts_dialog.ui:92
 msgid "Kill Process"
 msgstr "Завершить принудительно"
 
-#: ui/shortcuts_dialog.ui:92
+#: ui/shortcuts_dialog.ui:98
 msgid "Process Menu"
 msgstr "Меню процесса"
 
-#: ui/startup_page.ui:54
+#: ui/startup_page.ui:57
 msgid "_Add App"
 msgstr "_Добавить"
 
-#: ui/startup_page.ui:69
+#: ui/startup_page.ui:72
 msgid "No apps start with this session"
 msgstr "Вместе с этим сеансом ничего не запускается"
 
-#: ui/startup_page.ui:91
+#: ui/startup_page.ui:94
 msgid "Last Boot"
 msgstr "Последняя загрузка"
 
-#: ui/startup_page.ui:131
+#: ui/startup_page.ui:134
 msgid "How long each part of the last boot took"
 msgstr "Сколько длилась каждая часть последней загрузки"
 
-#: ui/startup_page.ui:145
+#: ui/startup_page.ui:148
 msgid "Firmware"
 msgstr "Прошивка"
 
-#: ui/startup_page.ui:150
+#: ui/startup_page.ui:153
 msgid "Loader"
 msgstr "Загрузчик"
 
-#: ui/startup_page.ui:155
+#: ui/startup_page.ui:158
 msgid "Kernel"
 msgstr "Ядро"
 
-#: ui/startup_page.ui:165
+#: ui/startup_page.ui:168
 msgid "Session"
 msgstr "Сеанс"
 
-#: ui/startup_page.ui:183
+#: ui/startup_page.ui:186
 msgid "Slowest Services"
 msgstr "Медленные службы"
 
-#: ui/startup_page.ui:193
+#: ui/startup_page.ui:196
 msgid "Open Services"
 msgstr "Открыть службы"
 
-#: ui/window.ui:62
+#: ui/window.ui:64
 msgid "Main Menu"
 msgstr "Главное меню"
 
-#: ui/window.ui:147
+#: ui/window.ui:141
 msgid "Show _All Processes"
 msgstr "Показывать _все процессы"
 
-#: ui/window.ui:153
+#: ui/window.ui:147
 msgid "_Preferences"
 msgstr "_Параметры"
 
-#: ui/window.ui:157
+#: ui/window.ui:151
 msgid "_Keyboard Shortcuts"
 msgstr "_Комбинации клавиш"
 
-#: ui/window.ui:161
+#: ui/window.ui:155
 msgid "_About Locus"
 msgstr "_О Locus"
 
