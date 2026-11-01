@@ -1,0 +1,194 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusStartupPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle {
+        title: _("Startup");
+      };
+    }
+
+    content: ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Adw.Clamp {
+        maximum-size: 680;
+        tightening-threshold: 500;
+
+        child: Box {
+          orientation: vertical;
+          spacing: 18;
+          margin-top: 6;
+          margin-bottom: 18;
+          margin-start: 12;
+          margin-end: 12;
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            Box {
+              Label {
+                label: _("Apps");
+                xalign: 0;
+                hexpand: true;
+
+                styles [
+                  "heading",
+                ]
+              }
+
+              Button {
+                label: _("_Add App");
+                use-underline: true;
+                clicked => $on_add_app() swapped;
+
+                styles [
+                  "flat",
+                ]
+              }
+            }
+
+            ListBox apps {
+              selection-mode: none;
+
+              [placeholder]
+              Label {
+                label: _("No apps start with this session");
+                margin-top: 18;
+                margin-bottom: 18;
+
+                styles [
+                  "dim-label",
+                ]
+              }
+
+              styles [
+                "boxed-list",
+              ]
+            }
+          }
+
+          Box boot {
+            orientation: vertical;
+            spacing: 12;
+            visible: false;
+
+            Label {
+              label: _("Last Boot");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            Box {
+              orientation: vertical;
+              spacing: 12;
+
+              styles [
+                "card",
+                "resource",
+              ]
+
+              Box {
+                spacing: 8;
+
+                Label boot_total {
+                  styles [
+                    "title-2",
+                  ]
+                }
+
+                Label boot_date {
+                  valign: baseline;
+
+                  styles [
+                    "dim-label",
+                    "caption",
+                  ]
+                }
+              }
+
+              $LocusSegmentBar boot_bar {
+                height-request: 26;
+
+                accessibility {
+                  label: _("How long each part of the last boot took");
+                }
+              }
+
+              FlowBox {
+                selection-mode: none;
+                homogeneous: true;
+                min-children-per-line: 2;
+                max-children-per-line: 5;
+                column-spacing: 12;
+                row-spacing: 12;
+
+                $LocusStat firmware {
+                  title: _("Firmware");
+                }
+
+                $LocusStat loader {
+                  title: _("Loader");
+                }
+
+                $LocusStat kernel {
+                  title: _("Kernel");
+                }
+
+                $LocusStat system {
+                  title: _("System");
+                }
+
+                $LocusStat session {
+                  title: _("Session");
+                }
+              }
+            }
+          }
+
+          Box slowest_group {
+            orientation: vertical;
+            spacing: 12;
+            visible: false;
+
+            Box {
+              Label {
+                label: _("Slowest Services");
+                xalign: 0;
+                hexpand: true;
+
+                styles [
+                  "heading",
+                ]
+              }
+
+              Button open_services {
+                label: _("Open Services");
+                action-name: "win.page";
+                action-target: "'services'";
+
+                styles [
+                  "flat",
+                ]
+              }
+            }
+
+            ListBox slowest {
+              selection-mode: none;
+
+              styles [
+                "boxed-list",
+              ]
+            }
+          }
+        };
+      };
+    };
+  };
+}

@@ -1,3 +1,4 @@
+mod autostart;
 #[cfg(test)]
 mod bench;
 mod config;
@@ -23,6 +24,7 @@ mod segment_bar;
 mod service;
 mod services_page;
 mod sidebar_row;
+mod startup_page;
 mod stat;
 mod systemd;
 mod top_list;
@@ -80,6 +82,7 @@ fn setup_actions(app: &adw::Application) {
     app.set_accels_for_action("win.search", &["<Control>f"]);
     app.set_accels_for_action("win.page::processes", &["<Alt>1"]);
     app.set_accels_for_action("win.page::services", &["<Alt>2"]);
+    app.set_accels_for_action("win.page::startup", &["<Alt>3"]);
     app.set_accels_for_action("win.page::cpu", &["<Alt>4"]);
     app.set_accels_for_action("win.page::memory", &["<Alt>5"]);
 }

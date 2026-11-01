@@ -98,6 +98,12 @@ template $LocusWindow: Adw.ApplicationWindow {
           }
 
           StackPage {
+            name: "startup";
+
+            child: $LocusStartupPage startup_page {};
+          }
+
+          StackPage {
             name: "cpu";
 
             child: $LocusCpuPage cpu_page {};

@@ -6,6 +6,7 @@ use gtk::glib;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use std::time::Duration;
 
 const SERVICE: &str = "org.freedesktop.systemd1";
 const PATH: &str = "/org/freedesktop/systemd1";
@@ -262,7 +263,33 @@ pub fn perform(scope: Scope, name: &str, action: Action) -> Result<(), glib::Err
     }
 }
 
-/// A property of a unit, as a string, a boolean or a number, read through its object path.
+/// The properties of an object of systemd's under one of its interfaces.
+fn properties_of(
+    connection: &gio::DBusConnection,
+    path: &str,
+    interface: &str,
+) -> Result<HashMap<String, glib::Variant>, glib::Error> {
+    let parameters = (interface,).to_variant();
+    let plain = gio::DBusCallFlags::NONE;
+    let all = call(
+        connection,
+        PROPERTIES,
+        path,
+        "GetAll",
+        Some(&parameters),
+        -1,
+        plain,
+    )?;
+    let mut properties = HashMap::new();
+    for entry in all.child_value(0).iter() {
+        if let Some(value) = entry.child_value(1).as_variant() {
+            properties.insert(text(&entry, 0), value);
+        }
+    }
+    Ok(properties)
+}
+
+/// The properties of a unit, loading it if it has to be.
 pub fn unit_properties(
     scope: Scope,
     name: &str,
@@ -278,24 +305,127 @@ pub fn unit_properties(
         -1,
         plain,
     )?;
-    let path = text(&path, 0);
-    let all = call(
-        &connection,
-        PROPERTIES,
-        &path,
-        "GetAll",
-        Some(&(UNIT,).to_variant()),
-        -1,
-        plain,
-    )?
-    .child_value(0);
-    let mut properties = HashMap::new();
-    for entry in all.iter() {
-        if let Some(value) = entry.child_value(1).as_variant() {
-            properties.insert(text(&entry, 0), value);
+    properties_of(&connection, &text(&path, 0), UNIT)
+}
+
+fn microseconds(properties: &HashMap<String, glib::Variant>, key: &str) -> u64 {
+    properties
+        .get(key)
+        .and_then(glib::Variant::get)
+        .unwrap_or(0)
+}
+
+/// How long a unit took to come up, where it has come up.
+fn start_time(properties: &HashMap<String, glib::Variant>) -> Option<Duration> {
+    let began = microseconds(properties, "InactiveExitTimestampMonotonic");
+    let ended = microseconds(properties, "ActiveEnterTimestampMonotonic");
+    (began > 0 && ended > began).then(|| Duration::from_micros(ended - began))
+}
+
+/// How long an app started by the user's systemd took to start, where it was.
+pub fn unit_start_time(scope: Scope, name: &str) -> Option<Duration> {
+    start_time(&unit_properties(scope, name).ok()?)
+}
+
+/// The monotonic times systemd records of a boot, in microseconds. Those from before the
+/// kernel count back from when it started.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+struct BootStamps {
+    firmware: u64,
+    loader: u64,
+    userspace: u64,
+    finish: u64,
+}
+
+/// How long the last boot took, each part where it was measured.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct BootTimes {
+    pub firmware: Duration,
+    pub loader: Duration,
+    pub kernel: Duration,
+    pub system: Duration,
+    pub session: Duration,
+    /// When it happened, in microseconds since the epoch.
+    pub at: u64,
+}
+
+impl BootTimes {
+    pub fn total(&self) -> Duration {
+        self.firmware + self.loader + self.kernel + self.system + self.session
+    }
+}
+
+/// `None` while the machine is still starting. A container has no firmware or kernel of its
+/// own, and its first stamp counts from when the machine it runs on started.
+fn parts_of(stamps: BootStamps, in_container: bool) -> Option<BootTimes> {
+    let micros = Duration::from_micros;
+    if stamps.finish == 0 {
+        return None;
+    }
+    let mut times = BootTimes {
+        system: micros(stamps.finish.saturating_sub(stamps.userspace)),
+        ..BootTimes::default()
+    };
+    if !in_container {
+        times.firmware = micros(stamps.firmware.saturating_sub(stamps.loader));
+        times.loader = micros(stamps.loader);
+        times.kernel = micros(stamps.userspace);
+    }
+    Some(times)
+}
+
+pub fn read_boot_times() -> Result<Option<BootTimes>, glib::Error> {
+    let connection = Scope::System.connect()?;
+    let system = properties_of(&connection, PATH, MANAGER)?;
+    let stamps = BootStamps {
+        firmware: microseconds(&system, "FirmwareTimestampMonotonic"),
+        loader: microseconds(&system, "LoaderTimestampMonotonic"),
+        userspace: microseconds(&system, "UserspaceTimestampMonotonic"),
+        finish: microseconds(&system, "FinishTimestampMonotonic"),
+    };
+    let Some(mut times) = parts_of(stamps, Path::new("/run/systemd/container").exists()) else {
+        return Ok(None);
+    };
+    times.at = microseconds(&system, "UserspaceTimestamp");
+    if let Ok(connection) = Scope::User.connect()
+        && let Ok(user) = properties_of(&connection, PATH, MANAGER)
+    {
+        let began = microseconds(&user, "UserspaceTimestampMonotonic");
+        let ended = microseconds(&user, "FinishTimestampMonotonic");
+        times.session = Duration::from_micros(ended.saturating_sub(began));
+    }
+    Ok(Some(times))
+}
+
+/// The services of the machine that took the longest to come up during boot, the slowest first.
+pub fn slowest_services(count: usize) -> Result<Vec<(String, Duration)>, glib::Error> {
+    let connection = Scope::System.connect()?;
+    let plain = gio::DBusCallFlags::NONE;
+    let finish = microseconds(
+        &properties_of(&connection, PATH, MANAGER)?,
+        "FinishTimestampMonotonic",
+    );
+    let units = call(&connection, MANAGER, PATH, "ListUnits", None, -1, plain)?.child_value(0);
+    let mut times = Vec::new();
+    for unit in units.iter() {
+        let name = text(&unit, 0);
+        if !name.ends_with(".service") {
+            continue;
+        }
+        let Ok(properties) = properties_of(&connection, &text(&unit, 6), UNIT) else {
+            continue;
+        };
+        // One restarted since says nothing about the boot.
+        if finish > 0 && microseconds(&properties, "ActiveEnterTimestampMonotonic") > finish {
+            continue;
+        }
+        if let Some(time) = start_time(&properties) {
+            times.push((name, time));
         }
     }
-    Ok(properties)
+    times.sort_by_key(|(_, time)| std::cmp::Reverse(*time));
+    times.truncate(count);
+    Ok(times)
 }
 
 /// The last lines the journal has of a service.
@@ -342,6 +472,25 @@ mod tests {
             Some(1234)
         );
         assert_eq!(parse_cpu_usage("nr_periods 0\n"), None);
+    }
+
+    #[test]
+    fn a_boot_splits_into_its_parts() {
+        let stamps = BootStamps {
+            firmware: 5_000_000,
+            loader: 2_000_000,
+            userspace: 1_500_000,
+            finish: 7_500_000,
+        };
+        let times = parts_of(stamps, false).unwrap();
+        assert_eq!(times.firmware, Duration::from_secs(3));
+        assert_eq!(times.loader, Duration::from_secs(2));
+        assert_eq!(times.kernel, Duration::from_millis(1500));
+        assert_eq!(times.system, Duration::from_secs(6));
+        assert_eq!(times.total(), Duration::from_millis(12500));
+        let in_container = parts_of(stamps, true).unwrap();
+        assert_eq!(in_container.total(), Duration::from_secs(6));
+        assert_eq!(parts_of(BootStamps::default(), false), None);
     }
 
     #[test]
