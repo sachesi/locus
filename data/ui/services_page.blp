@@ -1,0 +1,288 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusServicesPage: Adw.Bin {
+  child: Adw.OverlaySplitView details_split {
+    sidebar-position: end;
+    collapsed: bind template.compact;
+    pin-sidebar: true;
+    show-sidebar: bind template.details-shown;
+    min-sidebar-width: 370;
+    max-sidebar-width: 400;
+
+    sidebar: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        show-start-title-buttons: false;
+
+        title-widget: Adw.WindowTitle details_title {
+          title: _("Details");
+        };
+      }
+
+      content: Stack details_stack {
+        StackPage {
+          name: "nothing";
+
+          child: Adw.StatusPage {
+            title: _("Nothing Selected");
+            description: _("Select a service to see more about it");
+
+            styles [
+              "compact",
+            ]
+          };
+        }
+
+        StackPage {
+          name: "service";
+
+          child: ScrolledWindow {
+            hscrollbar-policy: never;
+
+            child: Box {
+              orientation: vertical;
+              spacing: 12;
+              margin-top: 6;
+              margin-bottom: 18;
+              margin-start: 12;
+              margin-end: 12;
+
+              ListBox {
+                selection-mode: none;
+
+                styles [
+                  "boxed-list",
+                ]
+
+                Adw.SwitchRow start_at_boot {
+                  title: _("Start at Boot");
+                }
+
+                Adw.ActionRow unit_row {
+                  title: _("Unit");
+                  subtitle-selectable: true;
+
+                  styles [
+                    "property",
+                  ]
+                }
+
+                Adw.ActionRow changed_row {
+                  title: _("Last Changed");
+
+                  styles [
+                    "property",
+                  ]
+                }
+
+                Adw.ActionRow file_row {
+                  title: _("Unit File");
+                  subtitle-selectable: true;
+
+                  styles [
+                    "property",
+                  ]
+                }
+              }
+
+              Label {
+                label: _("Recent Log");
+                xalign: 0;
+                margin-top: 6;
+
+                styles [
+                  "heading",
+                ]
+              }
+
+              Label log {
+                xalign: 0;
+                wrap: true;
+                wrap-mode: word_char;
+                selectable: true;
+
+                styles [
+                  "monospace",
+                  "caption",
+                  "card",
+                  "resource-small",
+                ]
+              }
+
+              Button {
+                label: _("Show Full Log");
+                halign: start;
+                clicked => $on_show_log() swapped;
+              }
+            };
+          };
+        }
+      };
+    };
+
+    content: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        show-end-title-buttons: bind $title_buttons_shown(template.details-shown, template.compact) as <bool>;
+
+        [start]
+        ToggleButton {
+          icon-name: "system-search-symbolic";
+          tooltip-text: _("Search");
+          active: bind search_bar.search-mode-enabled bidirectional;
+        }
+
+        [start]
+        Adw.ToggleGroup scope_group {
+          active-name: "system";
+
+          Adw.Toggle {
+            name: "system";
+            label: _("System");
+          }
+
+          Adw.Toggle {
+            name: "user";
+            label: _("User");
+          }
+        }
+
+        title-widget: Adw.WindowTitle title {
+          title: _("Services");
+        };
+
+        [end]
+        ToggleButton {
+          icon-name: "sidebar-show-right-symbolic";
+          tooltip-text: _("Show Details");
+          active: bind template.details-shown bidirectional;
+        }
+      }
+
+      [top]
+      SearchBar search_bar {
+        key-capture-widget: template;
+
+        child: Adw.Clamp {
+          maximum-size: 400;
+
+          child: SearchEntry search_entry {
+            placeholder-text: _("Search services");
+            hexpand: true;
+            search-changed => $on_search_changed() swapped;
+          };
+        };
+      }
+
+      [top]
+      Adw.Banner banner {
+        button-label: _("Show");
+        button-clicked => $on_banner_clicked() swapped;
+      }
+
+      content: Stack stack {
+        StackPage {
+          name: "loading";
+
+          child: Adw.Spinner {
+            halign: center;
+            valign: center;
+            width-request: 32;
+            height-request: 32;
+
+            accessibility {
+              label: _("Reading services");
+            }
+          };
+        }
+
+        StackPage {
+          name: "list";
+
+          child: ScrolledWindow {
+            child: ColumnView view {
+              reorderable: false;
+
+              styles [
+                "processes",
+              ]
+
+              ColumnViewColumn name_column {
+                title: _("Name");
+                expand: true;
+                resizable: true;
+              }
+
+              ColumnViewColumn status_column {
+                title: _("Status");
+                fixed-width: 90;
+              }
+
+              ColumnViewColumn startup_column {
+                title: _("At Startup");
+                fixed-width: 100;
+                visible: bind template.narrow inverted;
+              }
+
+              ColumnViewColumn cpu_column {
+                title: _("CPU");
+                fixed-width: 70;
+                visible: bind template.narrow inverted;
+              }
+
+              ColumnViewColumn memory_column {
+                title: _("Memory");
+                fixed-width: 90;
+                visible: bind template.narrow inverted;
+              }
+            };
+          };
+        }
+
+        StackPage {
+          name: "unavailable";
+
+          child: Adw.StatusPage unavailable_page {
+            icon-name: "dialog-warning-symbolic";
+            title: _("Services Could Not Be Read");
+            description: _("Locus reads services from systemd, which did not answer");
+          };
+        }
+
+        StackPage {
+          name: "empty";
+
+          child: Adw.StatusPage {
+            icon-name: "system-search-symbolic";
+            title: _("No Matching Services");
+          };
+        }
+      };
+
+      [bottom]
+      ActionBar {
+        [start]
+        Button start_button {
+          label: _("_Start");
+          use-underline: true;
+          action-name: "service.start";
+        }
+
+        [start]
+        Button {
+          label: _("St_op");
+          use-underline: true;
+          action-name: "service.stop";
+        }
+
+        [start]
+        Button {
+          label: _("_Restart");
+          use-underline: true;
+          action-name: "service.restart";
+        }
+      }
+    };
+  };
+}

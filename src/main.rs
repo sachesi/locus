@@ -20,8 +20,11 @@ mod procfs;
 mod range_switch;
 mod sampler;
 mod segment_bar;
+mod service;
+mod services_page;
 mod sidebar_row;
 mod stat;
+mod systemd;
 mod top_list;
 mod window;
 
@@ -76,6 +79,7 @@ fn setup_actions(app: &adw::Application) {
     app.set_accels_for_action("window.close", &["<Control>w"]);
     app.set_accels_for_action("win.search", &["<Control>f"]);
     app.set_accels_for_action("win.page::processes", &["<Alt>1"]);
+    app.set_accels_for_action("win.page::services", &["<Alt>2"]);
     app.set_accels_for_action("win.page::cpu", &["<Alt>4"]);
     app.set_accels_for_action("win.page::memory", &["<Alt>5"]);
 }
