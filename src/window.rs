@@ -16,7 +16,7 @@ use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gettextrs::gettext;
 use gtk::{gio, glib};
-use std::cell::{OnceCell, RefCell};
+use std::cell::{Cell, OnceCell, RefCell};
 use std::time::Duration;
 
 /// A device that comes and goes with the hardware: its row in the sidebar and its page.
@@ -29,7 +29,8 @@ struct DeviceView<P> {
 mod imp {
     use super::*;
 
-    #[derive(gtk::CompositeTemplate)]
+    #[derive(gtk::CompositeTemplate, glib::Properties)]
+    #[properties(wrapper_type = super::LocusWindow)]
     #[template(resource = "/io/github/sachesi/locus/ui/window.ui")]
     pub struct LocusWindow {
         #[template_child]
@@ -60,6 +61,9 @@ mod imp {
         pub(super) links: RefCell<Vec<DeviceView<NetworkPage>>>,
         pub(super) gpus: RefCell<Vec<DeviceView<GpuPage>>>,
 
+        /// Set by the window's breakpoint.
+        #[property(get, set)]
+        narrow: Cell<bool>,
         pub settings: gio::Settings,
         /// Cuts the wait for the next reading short.
         pub wake: RefCell<Option<async_channel::Sender<()>>>,
@@ -86,6 +90,7 @@ mod imp {
                 disks: RefCell::default(),
                 links: RefCell::default(),
                 gpus: RefCell::default(),
+                narrow: Cell::new(false),
                 settings: gio::Settings::new(config::APP_ID),
                 wake: RefCell::default(),
                 reveal: OnceCell::new(),
@@ -129,6 +134,7 @@ mod imp {
         }
     }
 
+    #[glib::derived_properties]
     impl ObjectImpl for LocusWindow {
         fn constructed(&self) {
             self.parent_constructed();

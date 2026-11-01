@@ -33,6 +33,7 @@ template $LocusWindow: Adw.ApplicationWindow {
       split_view.collapsed: true;
       processes_page.compact: true;
       services_page.compact: true;
+      template.narrow: true;
       processes_page.narrow: true;
       services_page.narrow: true;
     }
@@ -83,6 +84,8 @@ template $LocusWindow: Adw.ApplicationWindow {
         tag: "content";
 
         child: Stack stack {
+          hhomogeneous: false;
+          vhomogeneous: false;
           opacity: 0;
 
           StackPage {
