@@ -113,6 +113,11 @@ pub fn milliseconds(ms: f64) -> String {
     gettext("{value} ms").replace("{value}", &number(ms, 1))
 }
 
+pub fn seconds(seconds: f64) -> String {
+    // Translators: a time in seconds, such as "1.4 s".
+    gettext("{value} s").replace("{value}", &number(seconds, 1))
+}
+
 /// How long something has been running, as hours, minutes and seconds, with days before them
 /// once there are any.
 pub fn uptime(seconds: u64) -> String {
