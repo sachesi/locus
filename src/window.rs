@@ -8,7 +8,9 @@ use crate::memory_page::MemoryPage;
 use crate::network_page::NetworkPage;
 use crate::processes_page::ProcessesPage;
 use crate::sampler::{self, Disk, Focus, Link, LinkKind, Sampler, Scope, Snapshot, System};
+use crate::services_page::ServicesPage;
 use crate::sidebar_row::SidebarRow;
+use crate::systemd;
 use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gettextrs::gettext;
@@ -42,6 +44,8 @@ mod imp {
         #[template_child]
         pub processes_page: TemplateChild<ProcessesPage>,
         #[template_child]
+        pub services_page: TemplateChild<ServicesPage>,
+        #[template_child]
         pub cpu_page: TemplateChild<CpuPage>,
         #[template_child]
         pub memory_page: TemplateChild<MemoryPage>,
@@ -70,6 +74,7 @@ mod imp {
                 content_page: TemplateChild::default(),
                 stack: TemplateChild::default(),
                 processes_page: TemplateChild::default(),
+                services_page: TemplateChild::default(),
                 cpu_page: TemplateChild::default(),
                 memory_page: TemplateChild::default(),
                 cpu_row: OnceCell::new(),
@@ -94,6 +99,7 @@ mod imp {
             CpuPage::ensure_type();
             MemoryPage::ensure_type();
             ProcessesPage::ensure_type();
+            ServicesPage::ensure_type();
             klass.bind_template();
             klass.bind_template_callbacks();
 
@@ -282,6 +288,13 @@ impl LocusWindow {
             &gettext("Processes"),
             "view-list-symbolic",
         ));
+        if systemd::is_running() {
+            imp.sidebar.append(&SidebarRow::for_page(
+                "services",
+                &gettext("Services"),
+                "system-run-symbolic",
+            ));
+        }
         let cpu = SidebarRow::for_device("cpu", &gettext("CPU"), 100.0);
         let memory = SidebarRow::for_device("memory", &gettext("Memory"), 100.0);
         imp.sidebar.append(&cpu);
@@ -393,6 +406,9 @@ impl LocusWindow {
         imp.memory_page
             .apply(system, self.shows("memory"), unmeasured);
         self.apply_devices(system, unmeasured);
+        if self.shows("services") {
+            imp.services_page.refresh();
+        }
         if let Some(processes) = &snapshot.processes {
             if self.shows("processes") {
                 imp.processes_page.apply(processes, system);

@@ -11,6 +11,7 @@ template $LocusWindow: Adw.ApplicationWindow {
 
     setters {
       processes_page.compact: true;
+      services_page.compact: true;
     }
   }
 
@@ -21,6 +22,7 @@ template $LocusWindow: Adw.ApplicationWindow {
     setters {
       split_view.collapsed: true;
       processes_page.compact: true;
+      services_page.compact: true;
     }
   }
 
@@ -30,7 +32,9 @@ template $LocusWindow: Adw.ApplicationWindow {
     setters {
       split_view.collapsed: true;
       processes_page.compact: true;
+      services_page.compact: true;
       processes_page.narrow: true;
+      services_page.narrow: true;
     }
   }
 
@@ -85,6 +89,12 @@ template $LocusWindow: Adw.ApplicationWindow {
             name: "processes";
 
             child: $LocusProcessesPage processes_page {};
+          }
+
+          StackPage {
+            name: "services";
+
+            child: $LocusServicesPage services_page {};
           }
 
           StackPage {
