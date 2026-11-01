@@ -21,9 +21,27 @@ template $LocusProcessesPage: Adw.Bin {
     }
   }
 
-  child: Adw.ToolbarView {
+  child: Adw.OverlaySplitView details_split {
+    sidebar-position: end;
+    collapsed: bind template.compact;
+    show-sidebar: bind template.details-shown;
+    min-sidebar-width: 370;
+    max-sidebar-width: 400;
+
+    sidebar: $LocusDetailsPane details_pane {};
+
+    content: Adw.ToolbarView {
     [top]
     Adw.HeaderBar {
+      show-end-title-buttons: bind $title_buttons_shown(template.details-shown, template.compact) as <bool>;
+
+      [end]
+      ToggleButton {
+        icon-name: "sidebar-show-right-symbolic";
+        tooltip-text: _("Show Details");
+        active: bind template.details-shown bidirectional;
+      }
+
       [start]
       ToggleButton {
         icon-name: "system-search-symbolic";
@@ -121,7 +139,7 @@ template $LocusProcessesPage: Adw.Bin {
                 title: _("User");
                 fixed-width: 110;
                 resizable: true;
-                visible: bind template.compact inverted;
+                visible: bind $roomy(template.compact, template.details-shown) as <bool>;
               }
 
               ColumnViewColumn cpu_column {
@@ -149,7 +167,7 @@ template $LocusProcessesPage: Adw.Bin {
               ColumnViewColumn pid_column {
                 title: _("ID");
                 fixed-width: 80;
-                visible: bind template.narrow inverted;
+                visible: bind $roomy(template.narrow, template.details-shown) as <bool>;
               }
             };
           };
@@ -201,6 +219,7 @@ template $LocusProcessesPage: Adw.Bin {
         action-name: "process.end";
       }
     }
+  };
   };
 }
 

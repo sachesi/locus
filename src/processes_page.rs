@@ -1,3 +1,4 @@
+use crate::details_pane::{DetailsPane, Selected};
 use crate::format;
 use crate::heat_cell::{self, HeatCell};
 use crate::process::{Place, Process, Signal};
@@ -35,6 +36,8 @@ mod imp {
         pub context_bin: TemplateChild<gtk::PopoverBin>,
         #[template_child]
         pub title: TemplateChild<adw::WindowTitle>,
+        #[template_child]
+        pub details_pane: TemplateChild<DetailsPane>,
         #[template_child]
         pub arrangement_group: TemplateChild<adw::ToggleGroup>,
         #[template_child]
@@ -74,6 +77,9 @@ mod imp {
         /// Whether processes of other users are listed.
         #[property(get, set = Self::set_show_all)]
         show_all: Cell<bool>,
+        /// Whether the pane with more about what is selected is open.
+        #[property(get, set = Self::set_details_shown)]
+        details_shown: Cell<bool>,
         /// How the list is arranged: "apps", "tree" or "all".
         #[property(get, set = Self::set_arrangement)]
         arrangement: RefCell<String>,
@@ -120,6 +126,7 @@ mod imp {
         type ParentType = adw::Bin;
 
         fn class_init(klass: &mut Self::Class) {
+            DetailsPane::ensure_type();
             Process::ensure_type();
             klass.bind_template();
             klass.bind_template_callbacks();
@@ -195,6 +202,19 @@ mod imp {
 
     #[gtk::template_callbacks]
     impl ProcessesPage {
+        /// The pane has the window's buttons while it is beside the list, at its end.
+        #[template_callback(function)]
+        fn title_buttons_shown(details_shown: bool, compact: bool) -> bool {
+            !details_shown || compact
+        }
+
+        /// Whether there is room for the columns that fit only when the window is wide and
+        /// the pane closed.
+        #[template_callback(function)]
+        fn roomy(tight: bool, details_shown: bool) -> bool {
+            !tight && !details_shown
+        }
+
         #[template_callback]
         fn on_search_changed(&self, entry: &gtk::SearchEntry) {
             self.query.replace(entry.text().to_lowercase());
@@ -235,6 +255,11 @@ mod imp {
         fn set_search_mode(&self, search_mode: bool) {
             self.search_mode.set(search_mode);
             self.obj().refilter();
+        }
+
+        fn set_details_shown(&self, shown: bool) {
+            self.details_shown.set(shown);
+            self.obj().update_details();
         }
 
         fn set_show_all(&self, show_all: bool) {
@@ -388,7 +413,10 @@ impl ProcessesPage {
         selection.connect_selected_item_notify(glib::clone!(
             #[weak(rename_to = page)]
             self,
-            move |_| page.update_selection()
+            move |_| {
+                page.update_selection();
+                page.update_details();
+            }
         ));
         imp.view.set_model(Some(&selection));
 
@@ -724,6 +752,58 @@ impl ProcessesPage {
             sorter.changed(gtk::SorterChange::Different);
         }
         self.update_selection();
+        self.update_details();
+    }
+
+    /// Brings the details pane, while it is open, up to what is selected.
+    fn update_details(&self) {
+        let imp = self.imp();
+        if !self.details_shown() {
+            return;
+        }
+        let Some(process) = self.selected().filter(|process| !process.is_group()) else {
+            imp.details_pane.show_nothing();
+            return;
+        };
+        let targets = self.members(&process);
+        let own_uid = imp.own_uid.get();
+        let count = u32::try_from(targets.len()).unwrap_or(u32::MAX);
+        let subtitle = if process.is_app() {
+            ngettext("{count} Process", "{count} Processes", count)
+                .replace("{count}", &targets.len().to_string())
+        } else {
+            // Translators: {pid} is the ID of a process, a number.
+            gettext("Process {pid}").replace("{pid}", &process.pid().to_string())
+        };
+        imp.details_pane.show(&Selected {
+            name: process.name(),
+            subtitle,
+            command: process.command(),
+            user: process.user(),
+            cpu: process.cpu(),
+            memory: process.memory(),
+            own: own_uid == 0 || process.uid() == own_uid,
+            pids: targets.iter().map(|p| (p.pid(), p.start_time())).collect(),
+        });
+    }
+
+    /// The processes `process` stands for: itself, or those of the app it is the row of, the
+    /// oldest first.
+    fn members(&self, process: &Process) -> Vec<Process> {
+        if !process.is_app() {
+            return vec![process.clone()];
+        }
+        let app = process.app_id();
+        let mut members: Vec<Process> = self
+            .imp()
+            .by_pid
+            .borrow()
+            .values()
+            .filter(|member| member.app_id() == app)
+            .cloned()
+            .collect();
+        members.sort_by_key(Process::start_time);
+        members
     }
 
     /// The row a process listed in `place` is beneath.

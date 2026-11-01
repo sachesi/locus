@@ -5,6 +5,7 @@
     <file preprocess="xml-stripblanks">io.github.sachesi.locus.metainfo.xml</file>
     <file preprocess="xml-stripblanks">ui/window.ui</file>
     <file preprocess="xml-stripblanks">ui/cpu_page.ui</file>
+    <file preprocess="xml-stripblanks">ui/details_pane.ui</file>
     <file preprocess="xml-stripblanks">ui/disk_page.ui</file>
     <file preprocess="xml-stripblanks">ui/gpu_page.ui</file>
     <file preprocess="xml-stripblanks">ui/memory_page.ui</file>

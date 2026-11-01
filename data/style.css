@@ -6,6 +6,10 @@
   padding: 18px;
 }
 
+.resource-small {
+  padding: 10px 12px;
+}
+
 graph {
   font-size: 0.8em;
   font-feature-settings: "tnum";

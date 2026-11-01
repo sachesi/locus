@@ -2,6 +2,7 @@
 mod bench;
 mod config;
 mod cpu_page;
+mod details_pane;
 mod disk_page;
 mod file_system_list;
 mod format;
@@ -13,6 +14,7 @@ mod memory_page;
 mod network_page;
 mod preferences_dialog;
 mod process;
+mod process_details;
 mod processes_page;
 mod procfs;
 mod sampler;
