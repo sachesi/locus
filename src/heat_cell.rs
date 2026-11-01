@@ -113,6 +113,17 @@ pub fn cpu_level(share: f64) -> u32 {
     level(share, [0.5, 3.0, 8.0, 15.0, 30.0])
 }
 
+pub fn memory_level(bytes: u64) -> u32 {
+    let mib = (bytes / (1024 * 1024)) as f64;
+    level(mib, [200.0, 500.0, 1000.0, 2000.0, 4000.0])
+}
+
+/// Bytes per second; negative where it cannot be read.
+pub fn disk_level(rate: i64) -> u32 {
+    let kib = rate as f64 / 1024.0;
+    level(kib, [1.0, 200.0, 1000.0, 3000.0, 10000.0])
+}
+
 /// `share` of the busiest engine of a card, from 0 to 100; negative where it cannot be read.
 pub fn gpu_level(share: f64) -> u32 {
     level(share, [0.5, 5.0, 15.0, 30.0, 60.0])
@@ -128,10 +139,13 @@ mod tests {
         assert_eq!(cpu_level(0.5), 1);
         assert_eq!(cpu_level(22.1), 4);
         assert_eq!(cpu_level(100.0), 5);
+        assert_eq!(memory_level(3482 * 1024 * 1024), 4);
+        assert_eq!(memory_level(10 * 1024 * 1024), 0);
     }
 
     #[test]
     fn what_cannot_be_read_has_no_tint() {
+        assert_eq!(disk_level(-1), 0);
         assert_eq!(gpu_level(-1.0), 0);
     }
 }

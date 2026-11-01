@@ -134,6 +134,9 @@ mod imp {
                 .get()
                 .build();
             obj.add_action(&self.settings.create_action("show-all-processes"));
+            self.settings
+                .bind("process-arrangement", &*self.processes_page, "arrangement")
+                .build();
             format::set_binary(self.settings.boolean("binary-units"));
 
             obj.set_up_sidebar();

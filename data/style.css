@@ -30,7 +30,9 @@ levelbar block.filled.almost-full {
 columnview.processes > listview > row > cell {
   padding: 0;
 }
-columnview.processes inscription,
+columnview.processes heatcell > inscription {
+  margin: 7px 8px;
+}
 columnview.processes treeexpander {
   margin: 7px 6px;
 }

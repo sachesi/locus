@@ -1,4 +1,5 @@
 use crate::format;
+use crate::heat_cell::{self, HeatCell};
 use crate::process::{Place, Process, Signal};
 use crate::sampler::{ProcessSample, System};
 use crate::window::LocusWindow;
@@ -34,6 +35,8 @@ mod imp {
         pub context_bin: TemplateChild<gtk::PopoverBin>,
         #[template_child]
         pub title: TemplateChild<adw::WindowTitle>,
+        #[template_child]
+        pub arrangement_group: TemplateChild<adw::ToggleGroup>,
         #[template_child]
         pub stop_button: TemplateChild<gtk::Button>,
         #[template_child]
@@ -71,6 +74,9 @@ mod imp {
         /// Whether processes of other users are listed.
         #[property(get, set = Self::set_show_all)]
         show_all: Cell<bool>,
+        /// How the list is arranged: "apps", "tree" or "all".
+        #[property(get, set = Self::set_arrangement)]
+        arrangement: RefCell<String>,
 
         /// The rows heading the apps, each with its processes beneath it, and the processes
         /// that are not part of an app and are listed beneath no other.
@@ -101,6 +107,10 @@ mod imp {
         pub cells: RefCell<HashMap<usize, glib::WeakRef<gtk::ListItem>>>,
         /// When the pointer last moved over the list, while it is over it.
         pub pointer_moved: Cell<Option<Instant>>,
+        /// Whether the heading of the apps had any apps under it at the last listing.
+        pub apps_heading_shown: Cell<Option<bool>>,
+        /// Whether the column titles are read as markup.
+        pub titles_marked: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -146,6 +156,11 @@ mod imp {
             // The entry sits in a clamp, where the bar does not find it by itself; connected,
             // it takes the keys typed over the list and closes on Escape.
             self.search_bar.connect_entry(&*self.search_entry);
+
+            self.arrangement.replace("apps".to_owned());
+            obj.bind_property("arrangement", &*self.arrangement_group, "active-name")
+                .bidirectional()
+                .build();
 
             obj.set_up_model();
             obj.set_up_columns();
@@ -224,6 +239,25 @@ mod imp {
 
         fn set_show_all(&self, show_all: bool) {
             self.show_all.set(show_all);
+            self.list_again();
+        }
+
+        fn set_arrangement(&self, arrangement: String) {
+            if let Some(groups) = self.groups.get() {
+                groups[1].set_name(if arrangement == "apps" {
+                    gettext("Background Processes")
+                } else {
+                    gettext("Processes")
+                });
+            }
+            self.arrangement.replace(arrangement);
+            self.list_again();
+            if let Some(filter) = self.filter.get() {
+                filter.changed(gtk::FilterChange::Different);
+            }
+        }
+
+        fn list_again(&self) {
             let obj = self.obj();
             if self.read.get() {
                 let samples = self.samples.take();
@@ -373,13 +407,21 @@ impl ProcessesPage {
             false,
             false,
             None,
+            None,
             move || process_of_row().chain_property::<Process>("user").upcast(),
         )));
+        let heat = process_of_row()
+            .chain_property::<Process>("cpu")
+            .chain_closure::<u32>(glib::closure!(|_: Option<glib::Object>, cpu: f64| {
+                heat_cell::cpu_level(cpu)
+            }))
+            .upcast();
         imp.cpu_column.set_factory(Some(&self.cell_factory(
             1.0,
             true,
             false,
             None,
+            Some(heat),
             move || {
                 process_of_row()
                     .chain_property::<Process>("cpu")
@@ -389,11 +431,18 @@ impl ProcessesPage {
                     .upcast()
             },
         )));
+        let heat = process_of_row()
+            .chain_property::<Process>("memory")
+            .chain_closure::<u32>(glib::closure!(|_: Option<glib::Object>, memory: u64| {
+                heat_cell::memory_level(memory)
+            }))
+            .upcast();
         imp.memory_column.set_factory(Some(&self.cell_factory(
             1.0,
             true,
             false,
             None,
+            Some(heat),
             move || {
                 process_of_row()
                     .chain_property::<Process>("memory")
@@ -410,11 +459,18 @@ impl ProcessesPage {
                     .then(|| gettext("Disk use of other users' processes is not shown"))
             ))
             .upcast();
+        let heat = process_of_row()
+            .chain_property::<Process>("disk")
+            .chain_closure::<u32>(glib::closure!(|_: Option<glib::Object>, disk: i64| {
+                heat_cell::disk_level(disk)
+            }))
+            .upcast();
         imp.disk_column.set_factory(Some(&self.cell_factory(
             1.0,
             true,
             true,
             Some(unshown),
+            Some(heat),
             move || {
                 process_of_row()
                     .chain_property::<Process>("disk")
@@ -436,11 +492,18 @@ impl ProcessesPage {
                 (gpu < 0.0).then(|| gettext("GPU use of other users' processes is not shown"))
             }))
             .upcast();
+        let heat = process_of_row()
+            .chain_property::<Process>("gpu")
+            .chain_closure::<u32>(glib::closure!(|_: Option<glib::Object>, gpu: f64| {
+                heat_cell::gpu_level(gpu)
+            }))
+            .upcast();
         imp.gpu_column.set_factory(Some(&self.cell_factory(
             1.0,
             true,
             true,
             Some(unshown),
+            Some(heat),
             move || {
                 process_of_row()
                     .chain_property::<Process>("gpu")
@@ -461,6 +524,7 @@ impl ProcessesPage {
             1.0,
             true,
             false,
+            None,
             None,
             move || {
                 process_of_row()
@@ -551,9 +615,12 @@ impl ProcessesPage {
             self.detach(process);
         }
 
+        let arrangement = self.arrangement();
+        let grouped = arrangement != "tree" && arrangement != "all";
+        let flat = arrangement == "all";
         let mut members: HashMap<Arc<str>, Vec<Process>> = HashMap::new();
         for (process, sample) in &listed {
-            if let Some(app) = &sample.app {
+            if let Some(app) = sample.app.as_ref().filter(|_| grouped) {
                 members
                     .entry(app.id.clone())
                     .or_default()
@@ -564,7 +631,11 @@ impl ProcessesPage {
         let mut gone_apps = Vec::new();
         {
             let mut apps = imp.apps.borrow_mut();
-            for app in listed.iter().filter_map(|(_, sample)| sample.app.as_ref()) {
+            for app in listed
+                .iter()
+                .filter_map(|(_, sample)| sample.app.as_ref())
+                .filter(|_| grouped)
+            {
                 if !apps.contains_key(&app.id) {
                     let row = Process::for_app(app);
                     apps.insert(app.id.clone(), row.clone());
@@ -596,7 +667,8 @@ impl ProcessesPage {
                 .iter()
                 .map(|(process, sample)| {
                     let parent = by_pid.get(&sample.ppid);
-                    let place = match &sample.app {
+                    let place = match sample.app.as_ref().filter(|_| grouped) {
+                        _ if flat => Place::Top,
                         Some(app) => match parent {
                             Some(parent) if parent.app_id().as_ref() == Some(&app.id) => {
                                 Place::Under(parent.downgrade())
@@ -607,7 +679,9 @@ impl ProcessesPage {
                         },
                         // What init starts is at the top, not beneath it.
                         None => match parent {
-                            Some(parent) if sample.ppid != 1 && parent.app_id().is_none() => {
+                            Some(parent)
+                                if sample.ppid != 1 && (!grouped || parent.app_id().is_none()) =>
+                            {
                                 Place::Under(parent.downgrade())
                             }
                             _ => Place::Top,
@@ -630,6 +704,11 @@ impl ProcessesPage {
         self.show_counts();
         if self.searching() {
             self.refilter();
+        } else if let Some(filter) = imp.filter.get().filter(|_| {
+            let apps_heading = imp.groups.get().map(|groups| groups[0].child_count() > 0);
+            imp.apps_heading_shown.replace(apps_heading) != apps_heading
+        }) {
+            filter.changed(gtk::FilterChange::Different);
         }
         // The sort list models do not watch the values they sort by. Rows stay where they
         // are while the user is choosing what to do with one of them, or aiming the pointer
@@ -737,6 +816,7 @@ impl ProcessesPage {
         } else {
             memory.used as f64 * 100.0 / memory.total as f64
         };
+        self.use_markup_in_titles();
         for (column, title, total) in [
             (
                 &imp.cpu_column,
@@ -755,8 +835,43 @@ impl ProcessesPage {
             ),
             (&imp.gpu_column, gettext("GPU"), format::percent(gpu, 0)),
         ] {
-            column.set_title(Some(&format!("{title}\n{total}")));
+            if imp.titles_marked.get() {
+                let title = glib::markup_escape_text(&title);
+                let total = glib::markup_escape_text(&total);
+                column.set_title(Some(&format!(
+                    "<span size=\"large\" weight=\"bold\">{total}</span>\n{title}"
+                )));
+            } else {
+                column.set_title(Some(&format!("{total}\n{title}")));
+            }
         }
+    }
+
+    /// Lets the column titles set the machine's total larger than the name. GTK gives no way
+    /// to reach the label of a title but through the widgets of the view's header; if they
+    /// are not as expected, the titles stay plain text.
+    fn use_markup_in_titles(&self) {
+        let imp = self.imp();
+        if imp.titles_marked.get() {
+            return;
+        }
+        let Some(header) = imp.view.first_child() else {
+            return;
+        };
+        let mut labels = Vec::new();
+        let mut button = header.first_child();
+        while let Some(current) = button {
+            collect_labels(&current, &mut labels);
+            button = current.next_sibling();
+        }
+        if labels.is_empty() {
+            return;
+        }
+        for label in labels {
+            label.set_use_markup(true);
+            label.set_justify(gtk::Justification::Right);
+        }
+        imp.titles_marked.set(true);
     }
 
     fn searching(&self) -> bool {
@@ -764,6 +879,10 @@ impl ProcessesPage {
     }
 
     fn shows(&self, process: &Process) -> bool {
+        // The heading of the apps has nothing beneath it unless they are grouped, or none run.
+        if process.is_group() && process.child_count() == 0 {
+            return false;
+        }
         !self.searching() || self.imp().found.borrow().contains(process)
     }
 
@@ -986,6 +1105,7 @@ impl ProcessesPage {
         numeric: bool,
         markup: bool,
         tooltip: Option<gtk::Expression>,
+        heat: Option<gtk::Expression>,
         text: impl Fn() -> gtk::Expression + 'static,
     ) -> gtk::SignalListItemFactory {
         let factory = gtk::SignalListItemFactory::new();
@@ -994,26 +1114,28 @@ impl ProcessesPage {
             self,
             move |_, item| {
                 let item = item.downcast_ref::<gtk::ListItem>().expect("a list item");
-                let cell = gtk::Inscription::builder()
-                    .xalign(xalign)
-                    .text_overflow(gtk::InscriptionOverflow::EllipsizeEnd)
-                    .build();
-                if numeric {
-                    cell.add_css_class("numeric");
+                let holder = HeatCell::default();
+                let cell = holder.text();
+                cell.set_xalign(xalign);
+                if !numeric {
+                    cell.remove_css_class("numeric");
                 }
-                text().bind(&cell, if markup { "markup" } else { "text" }, Some(item));
+                if let Some(heat) = &heat {
+                    heat.bind(&holder, "level", Some(item));
+                }
+                text().bind(cell, if markup { "markup" } else { "text" }, Some(item));
                 // The rows heading the groups have a name alone.
                 process_of_row()
                     .chain_property::<Process>("is-group")
                     .chain_closure::<bool>(glib::closure!(
                         |_: Option<glib::Object>, is_group: bool| !is_group
                     ))
-                    .bind(&cell, "visible", Some(item));
+                    .bind(cell, "visible", Some(item));
                 if let Some(tooltip) = &tooltip {
-                    tooltip.bind(&cell, "tooltip-text", Some(item));
+                    tooltip.bind(cell, "tooltip-text", Some(item));
                 }
-                page.add_cell(cell.upcast_ref(), item);
-                item.set_child(Some(&cell));
+                page.add_cell(holder.upcast_ref(), item);
+                item.set_child(Some(&holder));
             }
         ));
         self.forget_cells(&factory);
@@ -1323,6 +1445,17 @@ impl ProcessesPage {
         {
             overlay.add_toast(toast);
         }
+    }
+}
+
+fn collect_labels(widget: &gtk::Widget, labels: &mut Vec<gtk::Label>) {
+    if let Some(label) = widget.downcast_ref::<gtk::Label>() {
+        labels.push(label.clone());
+    }
+    let mut child = widget.first_child();
+    while let Some(current) = child {
+        collect_labels(&current, labels);
+        child = current.next_sibling();
     }
 }
 

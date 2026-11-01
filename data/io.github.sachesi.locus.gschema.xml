@@ -21,6 +21,16 @@
       <summary>List the processes of every user</summary>
       <description>When off, only the processes of the user running Locus are listed.</description>
     </key>
+    <key name="process-arrangement" type="s">
+      <choices>
+        <choice value="apps"/>
+        <choice value="tree"/>
+        <choice value="all"/>
+      </choices>
+      <default>"apps"</default>
+      <summary>How the list of processes is arranged</summary>
+      <description>Apps lists the running apps first, each with its processes, then the other processes as trees. Tree lists every process under what started it. All lists every process on its own.</description>
+    </key>
     <key name="window-size" type="(ii)">
       <default>(960, 720)</default>
       <summary>Window size</summary>

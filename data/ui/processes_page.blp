@@ -31,6 +31,27 @@ template $LocusProcessesPage: Adw.Bin {
         active: bind template.search-mode bidirectional;
       }
 
+      [start]
+      Adw.ToggleGroup arrangement_group {
+        active-name: "apps";
+        tooltip-text: _("Arrange Processes");
+
+        Adw.Toggle {
+          name: "apps";
+          label: _("Apps");
+        }
+
+        Adw.Toggle {
+          name: "tree";
+          label: _("Tree");
+        }
+
+        Adw.Toggle {
+          name: "all";
+          label: _("All");
+        }
+      }
+
       title-widget: Adw.WindowTitle title {
         title: _("Processes");
       };
