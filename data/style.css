@@ -26,3 +26,22 @@ graph {
 levelbar block.filled.almost-full {
   background-color: var(--warning-bg-color);
 }
+
+columnview.processes > listview > row > cell {
+  padding: 0;
+}
+columnview.processes inscription,
+columnview.processes treeexpander {
+  margin: 7px 6px;
+}
+
+.top-value {
+  margin: 3px 8px;
+}
+
+flowboxchild {
+  padding: 0;
+}
+flowboxchild:hover {
+  background: none;
+}

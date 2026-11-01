@@ -7,83 +7,99 @@ template $LocusWindow: Adw.ApplicationWindow {
   height-request: 294;
 
   Adw.Breakpoint {
-    condition ("max-width: 860sp")
+    condition ("max-width: 1100sp")
 
     setters {
-      resources_page.compact: true;
+      processes_page.compact: true;
     }
   }
 
   // The last breakpoint that matches is the one applied.
   Adw.Breakpoint {
+    condition ("max-width: 720sp")
+
+    setters {
+      split_view.collapsed: true;
+      processes_page.compact: true;
+    }
+  }
+
+  Adw.Breakpoint {
     condition ("max-width: 550sp")
 
     setters {
-      header_bar.title-widget: null;
-      switcher_bar.reveal: true;
+      split_view.collapsed: true;
+      processes_page.compact: true;
       processes_page.narrow: true;
-      resources_page.compact: true;
     }
   }
 
   content: Adw.ToastOverlay toasts {
-    child: Adw.ToolbarView {
-      [top]
-      Adw.HeaderBar header_bar {
-        [start]
-        ToggleButton {
-          icon-name: "system-search-symbolic";
-          tooltip-text: _("Search");
-          active: bind processes_page.search-mode bidirectional;
-          visible: bind $is_processes(stack.visible-child-name) as <bool>;
-        }
+    child: Adw.NavigationSplitView split_view {
+      min-sidebar-width: 250;
+      max-sidebar-width: 290;
+      show-content: true;
 
-        title-widget: Adw.ViewSwitcher {
-          stack: stack;
-          policy: wide;
+      sidebar: Adw.NavigationPage {
+        title: "Locus";
+        tag: "sidebar";
+
+        child: Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            title-widget: Adw.WindowTitle {
+              title: "Locus";
+            };
+
+            [end]
+            MenuButton {
+              icon-name: "open-menu-symbolic";
+              tooltip-text: _("Main Menu");
+              primary: true;
+              menu-model: primary_menu;
+            }
+          }
+
+          content: ScrolledWindow {
+            hscrollbar-policy: never;
+
+            child: ListBox sidebar {
+              row-activated => $on_row_activated() swapped;
+
+              styles [
+                "navigation-sidebar",
+              ]
+            };
+          };
         };
-
-        [end]
-        MenuButton {
-          icon-name: "open-menu-symbolic";
-          tooltip-text: _("Main Menu");
-          primary: true;
-          menu-model: primary_menu;
-        }
-      }
-
-      content: Adw.ViewStack stack {
-        opacity: 0;
-
-        Adw.ViewStackPage {
-          name: "resources";
-          title: _("Resources");
-          icon-name: "resources-symbolic";
-
-          child: $LocusResourcesPage resources_page {};
-        }
-
-        Adw.ViewStackPage {
-          name: "filesystems";
-          title: _("File Systems");
-          icon-name: "drive-harddisk-symbolic";
-
-          child: $LocusFileSystemsPage filesystems_page {};
-        }
-
-        Adw.ViewStackPage {
-          name: "processes";
-          title: _("Processes");
-          icon-name: "view-list-symbolic";
-
-          child: $LocusProcessesPage processes_page {};
-        }
       };
 
-      [bottom]
-      Adw.ViewSwitcherBar switcher_bar {
-        stack: stack;
-      }
+      content: Adw.NavigationPage content_page {
+        title: _("Processes");
+        tag: "content";
+
+        child: Stack stack {
+          opacity: 0;
+
+          StackPage {
+            name: "processes";
+
+            child: $LocusProcessesPage processes_page {};
+          }
+
+          StackPage {
+            name: "cpu";
+
+            child: $LocusCpuPage cpu_page {};
+          }
+
+          StackPage {
+            name: "memory";
+
+            child: $LocusMemoryPage memory_page {};
+          }
+        };
+      };
     };
   };
 }

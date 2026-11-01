@@ -7,16 +7,12 @@ template $LocusPreferencesDialog: Adw.PreferencesDialog {
       title: _("Update Interval");
       description: _("How often a page is read again while it is shown");
 
-      Adw.ComboRow resources_interval {
-        title: _("Resources");
-      }
-
-      Adw.ComboRow filesystems_interval {
-        title: _("File Systems");
-      }
-
       Adw.ComboRow processes_interval {
         title: _("Processes");
+      }
+
+      Adw.ComboRow resources_interval {
+        title: _("Other Pages");
       }
     }
 

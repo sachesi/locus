@@ -1,16 +1,25 @@
 #[cfg(test)]
 mod bench;
 mod config;
-mod filesystems_page;
+mod cpu_page;
+mod disk_page;
+mod file_system_list;
 mod format;
 mod gpu;
+mod gpu_page;
 mod graph;
+mod heat_cell;
+mod memory_page;
+mod network_page;
 mod preferences_dialog;
 mod process;
 mod processes_page;
 mod procfs;
-mod resources_page;
 mod sampler;
+mod segment_bar;
+mod sidebar_row;
+mod stat;
+mod top_list;
 mod window;
 
 use adw::prelude::*;
@@ -63,9 +72,9 @@ fn setup_actions(app: &adw::Application) {
     app.set_accels_for_action("app.quit", &["<Control>q"]);
     app.set_accels_for_action("window.close", &["<Control>w"]);
     app.set_accels_for_action("win.search", &["<Control>f"]);
-    app.set_accels_for_action("win.page::resources", &["<Alt>1"]);
-    app.set_accels_for_action("win.page::filesystems", &["<Alt>2"]);
-    app.set_accels_for_action("win.page::processes", &["<Alt>3"]);
+    app.set_accels_for_action("win.page::processes", &["<Alt>1"]);
+    app.set_accels_for_action("win.page::cpu", &["<Alt>4"]);
+    app.set_accels_for_action("win.page::memory", &["<Alt>5"]);
 }
 
 fn show_about(app: &adw::Application) {

@@ -1,8 +1,8 @@
 use crate::format;
 use crate::sampler::FileSystem;
+use adw::prelude::*;
 use adw::subclass::prelude::*;
 use gtk::glib;
-use gtk::prelude::*;
 use std::cell::RefCell;
 
 struct FileSystemView {
@@ -14,43 +14,42 @@ struct FileSystemView {
 mod imp {
     use super::*;
 
-    #[derive(Default, gtk::CompositeTemplate)]
-    #[template(resource = "/io/github/sachesi/locus/ui/filesystems_page.ui")]
-    pub struct FileSystemsPage {
-        #[template_child]
-        pub filesystems: TemplateChild<gtk::ListBox>,
-
+    #[derive(Default)]
+    pub struct FileSystemList {
+        pub list: gtk::ListBox,
         pub(super) views: RefCell<Vec<FileSystemView>>,
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for FileSystemsPage {
-        const NAME: &'static str = "LocusFileSystemsPage";
-        type Type = super::FileSystemsPage;
+    impl ObjectSubclass for FileSystemList {
+        const NAME: &'static str = "LocusFileSystemList";
+        type Type = super::FileSystemList;
         type ParentType = adw::Bin;
+    }
 
-        fn class_init(klass: &mut Self::Class) {
-            klass.bind_template();
-        }
-
-        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
-            obj.init_template();
+    impl ObjectImpl for FileSystemList {
+        fn constructed(&self) {
+            self.parent_constructed();
+            self.list.set_selection_mode(gtk::SelectionMode::None);
+            self.list.set_valign(gtk::Align::Start);
+            self.list.add_css_class("boxed-list");
+            self.obj().set_child(Some(&self.list));
         }
     }
 
-    impl ObjectImpl for FileSystemsPage {}
-    impl WidgetImpl for FileSystemsPage {}
-    impl BinImpl for FileSystemsPage {}
+    impl WidgetImpl for FileSystemList {}
+    impl BinImpl for FileSystemList {}
 }
 
 glib::wrapper! {
-    pub struct FileSystemsPage(ObjectSubclass<imp::FileSystemsPage>)
+    /// Mounted file systems and the room left on each.
+    pub struct FileSystemList(ObjectSubclass<imp::FileSystemList>)
         @extends adw::Bin, gtk::Widget,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
-impl FileSystemsPage {
-    pub fn apply(&self, filesystems: &[FileSystem]) {
+impl FileSystemList {
+    pub fn apply(&self, filesystems: &[&FileSystem]) {
         let imp = self.imp();
         let mut views = imp.views.borrow_mut();
         let same = views.len() == filesystems.len()
@@ -59,11 +58,11 @@ impl FileSystemsPage {
                 .zip(filesystems)
                 .all(|(view, fs)| view.mount_point == fs.mount_point);
         if !same {
-            imp.filesystems.remove_all();
+            imp.list.remove_all();
             views.clear();
             for filesystem in filesystems {
                 let (view, row) = filesystem_row(filesystem);
-                imp.filesystems.append(&row);
+                imp.list.append(&row);
                 views.push(view);
             }
         }

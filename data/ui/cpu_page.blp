@@ -1,0 +1,183 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusCpuPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle title {
+        title: _("CPU");
+      };
+    }
+
+    content: ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Adw.Clamp {
+        maximum-size: 1020;
+        tightening-threshold: 600;
+
+        child: Box {
+          orientation: vertical;
+          spacing: 18;
+          margin-top: 6;
+          margin-bottom: 18;
+          margin-start: 12;
+          margin-end: 12;
+
+          Box {
+            orientation: vertical;
+            spacing: 12;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            Box {
+              spacing: 12;
+
+              Label {
+                label: _("Usage");
+                xalign: 0;
+                hexpand: true;
+
+                styles [
+                  "heading",
+                ]
+              }
+
+              Adw.ToggleGroup view {
+                active-name: "overall";
+
+                Adw.Toggle {
+                  name: "overall";
+                  label: _("Overall");
+                }
+
+                Adw.Toggle {
+                  name: "cores";
+                  label: _("Per Core");
+                }
+              }
+            }
+
+            Stack graphs {
+              visible-child-name: bind view.active-name;
+
+              StackPage {
+                name: "overall";
+
+                child: $LocusGraph graph {
+                  maximum: 100;
+                  height-request: 240;
+
+                  accessibility {
+                    label: _("Processor usage over the last readings");
+                  }
+                };
+              }
+
+              StackPage {
+                name: "cores";
+
+                child: FlowBox cores {
+                  selection-mode: none;
+                  homogeneous: true;
+                  min-children-per-line: 2;
+                  max-children-per-line: 8;
+                  column-spacing: 12;
+                  row-spacing: 12;
+                  valign: start;
+                };
+              }
+            }
+          }
+
+          Box {
+            orientation: vertical;
+            spacing: 18;
+
+            FlowBox {
+              selection-mode: none;
+              homogeneous: true;
+              min-children-per-line: 2;
+              max-children-per-line: 4;
+              column-spacing: 12;
+              row-spacing: 12;
+              valign: start;
+
+              styles [
+                "card",
+                "resource",
+              ]
+
+              $LocusStat usage {
+                title: _("Usage");
+              }
+
+              $LocusStat speed {
+                title: _("Speed");
+              }
+
+              $LocusStat temperature {
+                title: _("Temperature");
+              }
+
+              $LocusStat load {
+                title: _("Load Average");
+              }
+
+              $LocusStat processes {
+                title: _("Processes");
+              }
+
+              $LocusStat threads {
+                title: _("Threads");
+              }
+
+              $LocusStat pressure {
+                title: _("Pressure");
+              }
+
+              $LocusStat uptime {
+                title: _("Uptime");
+              }
+            }
+
+            Box {
+              orientation: vertical;
+              spacing: 6;
+
+              Box {
+                spacing: 12;
+
+                Label {
+                  label: _("Using the Most CPU");
+                  xalign: 0;
+                  hexpand: true;
+
+                  styles [
+                    "heading",
+                  ]
+                }
+
+                Button {
+                  label: _("Open Processes");
+                  action-name: "win.page";
+                  action-target: "'processes'";
+
+                  styles [
+                    "flat",
+                  ]
+                }
+              }
+
+              $LocusTopList top {}
+            }
+          }
+        };
+      };
+    };
+  };
+}

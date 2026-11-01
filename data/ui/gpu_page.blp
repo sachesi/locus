@@ -1,0 +1,216 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LocusGpuPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle title {};
+    }
+
+    content: ScrolledWindow {
+      hscrollbar-policy: never;
+
+      child: Adw.Clamp {
+        maximum-size: 1020;
+        tightening-threshold: 600;
+
+        child: Box {
+          orientation: vertical;
+          spacing: 18;
+          margin-top: 6;
+          margin-bottom: 18;
+          margin-start: 12;
+          margin-end: 12;
+
+          Box usage_card {
+            orientation: vertical;
+            spacing: 12;
+            visible: false;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            Label {
+              label: _("Usage");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            $LocusGraph usage_graph {
+              maximum: 100;
+              height-request: 112;
+
+              accessibility {
+                label: _("GPU usage over the last readings");
+              }
+            }
+          }
+
+          Box engines_card {
+            orientation: vertical;
+            spacing: 12;
+            visible: false;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            Box {
+              orientation: vertical;
+
+              Label {
+                label: _("Engines");
+                xalign: 0;
+
+                styles [
+                  "heading",
+                ]
+              }
+
+              Label {
+                label: _("Only the work of processes Locus may read is counted");
+                xalign: 0;
+                wrap: true;
+
+                styles [
+                  "caption",
+                  "dim-label",
+                ]
+              }
+            }
+
+            FlowBox engines {
+              selection-mode: none;
+              homogeneous: true;
+              min-children-per-line: 1;
+              max-children-per-line: 4;
+              column-spacing: 12;
+              row-spacing: 12;
+            }
+          }
+
+          Box memory_card {
+            orientation: vertical;
+            spacing: 12;
+            visible: false;
+
+            styles [
+              "card",
+              "resource",
+            ]
+
+            Label {
+              label: _("Video Memory");
+              xalign: 0;
+
+              styles [
+                "heading",
+              ]
+            }
+
+            $LocusGraph memory_graph {
+              maximum: 100;
+              height-request: 96;
+
+              accessibility {
+                label: _("Video memory in use over the last readings");
+              }
+            }
+          }
+
+          Label note {
+            xalign: 0;
+            wrap: true;
+            visible: false;
+
+            styles [
+              "dim-label",
+            ]
+          }
+
+          Box {
+            orientation: vertical;
+            spacing: 18;
+
+            FlowBox {
+              selection-mode: none;
+              homogeneous: true;
+              min-children-per-line: 2;
+              max-children-per-line: 3;
+              column-spacing: 12;
+              row-spacing: 12;
+              valign: start;
+
+              styles [
+                "card",
+                "resource",
+              ]
+
+              $LocusStat usage {
+                title: _("Usage");
+              }
+
+              $LocusStat memory {
+                title: _("Video Memory");
+              }
+
+              $LocusStat temperature {
+                title: _("Temperature");
+              }
+
+              $LocusStat power {
+                title: _("Power");
+              }
+
+              $LocusStat clock {
+                title: _("Core Clock");
+              }
+
+              $LocusStat fan {
+                title: _("Fan");
+              }
+            }
+
+            Box {
+              orientation: vertical;
+              spacing: 6;
+
+              Box {
+                spacing: 12;
+
+                Label {
+                  label: _("Using the Most GPU");
+                  xalign: 0;
+                  hexpand: true;
+
+                  styles [
+                    "heading",
+                  ]
+                }
+
+                Button {
+                  label: _("Open Processes");
+                  action-name: "win.page";
+                  action-target: "'processes'";
+
+                  styles [
+                    "flat",
+                  ]
+                }
+              }
+
+              $LocusTopList top {}
+            }
+          }
+        };
+      };
+    };
+  };
+}

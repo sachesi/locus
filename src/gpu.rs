@@ -23,6 +23,16 @@ pub struct Gpu {
     pub memory: Option<(u64, u64)>,
     /// In degrees Celsius.
     pub temperature: Option<f64>,
+    /// The card has powered down while idle, and was left alone.
+    pub asleep: bool,
+    /// Read only while its page is shown: watts drawn, the core clock in hertz, and how
+    /// fast the fan turns.
+    pub power: Option<f64>,
+    pub clock: Option<f64>,
+    pub fan: Option<u64>,
+    /// What each kind of engine spent on the work of the processes that could be read, as
+    /// a share of its time, by the name the driver gives it.
+    pub engines: Vec<(String, f64)>,
 }
 
 /// A card found when the sampler started.
@@ -82,18 +92,25 @@ pub fn cards() -> Vec<Card> {
 }
 
 impl Card {
-    pub fn read(&self) -> Gpu {
+    /// Reads the card; `detail` adds what only its page shows.
+    pub fn read(&self, detail: bool) -> Gpu {
         let mut gpu = Gpu {
             slot: self.slot.clone(),
             name: self.name.clone(),
             usage: None,
             memory: None,
             temperature: None,
+            asleep: false,
+            power: None,
+            clock: None,
+            fan: None,
+            engines: Vec::new(),
         };
         // Reading the driver's files wakes a card that has powered down while idle, as
         // the second card of a laptop does, and keeps it from ever powering down again.
         if read(&self.device.join("power/runtime_status")).as_deref() == Some("suspended") {
             gpu.usage = Some(0.0);
+            gpu.asleep = true;
             return gpu;
         }
         gpu.usage = number(&self.device.join("gpu_busy_percent")).map(|busy| busy as f64);
@@ -105,6 +122,13 @@ impl Card {
             .as_ref()
             .and_then(|hwmon| number(&hwmon.join("temp1_input")))
             .map(|millidegrees| millidegrees as f64 / 1000.0);
+        if detail && let Some(hwmon) = &self.hwmon {
+            gpu.power = number(&hwmon.join("power1_average"))
+                .or_else(|| number(&hwmon.join("power1_input")))
+                .map(|microwatts| microwatts as f64 / 1e6);
+            gpu.clock = number(&hwmon.join("freq1_input")).map(|hertz| hertz as f64);
+            gpu.fan = number(&hwmon.join("fan1_input"));
+        }
         gpu
     }
 }
@@ -225,15 +249,16 @@ mod tests {
             hwmon: Some(hwmon),
         };
 
-        let awake = card.read();
+        let awake = card.read(false);
         assert_eq!(awake.usage, Some(37.0));
         assert_eq!(awake.memory, Some((20_725_760, 8_589_934_592)));
         assert_eq!(awake.temperature, Some(44.5));
 
         fs::write(device.join("power/runtime_status"), "suspended\n").unwrap();
-        let asleep = card.read();
+        let asleep = card.read(false);
         fs::remove_dir_all(&device).unwrap();
         assert_eq!(asleep.usage, Some(0.0));
+        assert!(asleep.asleep && !awake.asleep);
         assert_eq!((asleep.memory, asleep.temperature), (None, None));
     }
 
