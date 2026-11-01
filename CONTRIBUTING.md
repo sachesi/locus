@@ -43,7 +43,8 @@ Before a change goes in:
     src/network_page.rs        one network connection
     src/gpu_page.rs            one graphics card and its engines
     src/preferences_dialog.rs  the update intervals, and the units of sizes
-    src/sidebar_row.rs         a row of the sidebar, with a small graph for a device
+    src/sidebar_row.rs         a row of the sidebar, with a graph for a device
+    src/back_button.rs         back to the sidebar, where the window is too narrow to show both
     src/range_switch.rs        how far back the graphs reach, in the header of a device page
     src/graph.rs               LocusGraph, a line graph drawn with GtkSnapshot, and its history
     src/heat_cell.rs           a list cell tinted by how much a process uses
