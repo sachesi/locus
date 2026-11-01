@@ -6,27 +6,37 @@
   <name>Locus</name>
   <summary>Watch resources and end processes</summary>
   <description>
-    <p>Locus is a system monitor for Wayland desktops, built with GTK 4 and libadwaita. It graphs the whole machine, and lists the running apps and processes with what each takes of the processor, the memory and the disks.</p>
+    <p>Locus is a system monitor for Wayland desktops, built with GTK 4 and libadwaita. It lists the running apps and processes with what each takes of the processor, the memory, the disks and the graphics card, and graphs the whole machine.</p>
     <ul>
-      <li>Processor usage as a whole and for each core, memory and swap, network and disk traffic, and the usage, video memory and temperature of each graphics card its driver reports</li>
-      <li>Room left on each mounted disk</li>
-      <li>Running apps with their processes, and every other process beneath the one that started it, sorted by processor, memory, disk or graphics card use and searchable by name, command line or ID</li>
-      <li>End, kill, stop and continue a process, or end an app with all its processes, from its menu or the buttons above the list</li>
+      <li>Running apps with their processes, and every other process, tinted by what each uses, sorted by any column and searchable by name, command line or ID</li>
+      <li>End, kill, stop and continue a process, or end an app with all its processes</li>
+      <li>A pane with the threads, open files, network connections and priority of what is selected</li>
+      <li>Services of the machine and the user, which can be started, stopped and restarted, with their logs</li>
+      <li>Apps that start with the session, how long the last boot took and the services that took longest</li>
+      <li>A page and a small graph for the processor, memory, each disk, each network connection and each graphics card, reaching back up to 5 minutes</li>
     </ul>
-    <p>Everything is read from /proc and /sys, and processes are read only while their list is on screen.</p>
+    <p>Everything but services is read from /proc and /sys, and processes are read only while something on screen shows them.</p>
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/sachesi/locus/v0.1.0/data/screenshots/resources.png</image>
-      <caption>Watch the processor, memory, network and disks over time</caption>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.2.0/data/screenshots/processes.png</image>
+      <caption>Find the apps and processes that keep the machine busy</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/sachesi/locus/v0.1.0/data/screenshots/gpus.png</image>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.2.0/data/screenshots/cpu.png</image>
+      <caption>Watch the processor over the last minutes, and see what is using it</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.2.0/data/screenshots/gpus.png</image>
       <caption>Follow each graphics card's usage, video memory and temperature</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/sachesi/locus/v0.1.0/data/screenshots/processes.png</image>
-      <caption>Find the apps and processes that keep the machine busy</caption>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.2.0/data/screenshots/services.png</image>
+      <caption>Start, stop and read the logs of services</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/sachesi/locus/v0.2.0/data/screenshots/startup.png</image>
+      <caption>Choose what starts with the session and see how long the last boot took</caption>
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">io.github.sachesi.locus.desktop</launchable>

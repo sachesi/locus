@@ -16,24 +16,41 @@ Before a change goes in:
 ## Where things are
 
     build.rs                   runs blueprint-compiler and bundles the GResource
-    data/ui/*.blp              the window, the three pages, and the preferences and shortcuts
-                               dialogs
+    data/ui/*.blp              the window, its pages, the details pane, and the preferences and
+                               shortcuts dialogs
     data/style.css             structural CSS, colours come from libadwaita
     src/main.rs                the application: its actions, the About dialog, one window
-    src/window.rs              the window, its win.* actions and settings, and the loop that
-                               takes a reading, hands it to the pages and waits for the next
+    src/window.rs              the window, its sidebar, win.* actions and settings, and the loop
+                               that takes a reading, hands it to the pages and waits for the next
     src/sampler.rs             a reading of the machine and its processes, and the apps they are
                                part of, on a worker thread, with the counters of the last one
                                to measure rates against
     src/procfs.rs              parsers of the /proc files, pure functions over their text
     src/gpu.rs                 the graphics cards under /sys/class/drm, and their names
+    src/systemd.rs             systemd over D-Bus: services, changing them, boot times, the log
+    src/autostart.rs           the XDG autostart folders, and writing to the user's
     src/process.rs             LocusProcess, one process in the list model, and signalling it
+    src/process_details.rs     what the details pane reads of one process
+    src/service.rs             LocusService, one service in the list model
     src/processes_page.rs      the process list: the trees of apps and processes, columns,
                                sorting, search, the process.* actions and their confirmations
-    src/resources_page.rs      the processor, memory, network, disk and graphics card cards
-    src/filesystems_page.rs    the mounted file systems and the room left on each
-    src/preferences_dialog.rs  the update interval of each page, and the units of sizes
-    src/graph.rs               LocusGraph, a line graph drawn with GtkSnapshot
+    src/details_pane.rs        the pane beside the process list
+    src/services_page.rs       the list of services, their pane and service.* actions
+    src/startup_page.rs        the autostart apps, the last boot and the slowest services
+    src/cpu_page.rs            the processor
+    src/memory_page.rs         memory and swap
+    src/disk_page.rs           one disk, and its file systems
+    src/network_page.rs        one network connection
+    src/gpu_page.rs            one graphics card and its engines
+    src/preferences_dialog.rs  the update intervals, and the units of sizes
+    src/sidebar_row.rs         a row of the sidebar, with a small graph for a device
+    src/range_switch.rs        how far back the graphs reach, in the header of a device page
+    src/graph.rs               LocusGraph, a line graph drawn with GtkSnapshot, and its history
+    src/heat_cell.rs           a list cell tinted by how much a process uses
+    src/segment_bar.rs         a whole split into parts in one bar
+    src/stat.rs                a named value in a grid of them
+    src/top_list.rs            the processes using the most of something
+    src/file_system_list.rs    the room left on each file system of a disk
     src/format.rs              percentages, sizes and rates as the interface writes them
     src/bench.rs               the processor time and allocations of a reading, for
                                `just bench`

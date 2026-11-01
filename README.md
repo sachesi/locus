@@ -3,30 +3,43 @@
 Locus is a system monitor for Wayland desktops, written in Rust with GTK 4 and libadwaita.
 It was made for the Meridian desktop but does not depend on it, so it runs on any other.
 
-![The Resources page, with graphs of the processor and each of its cores, memory, the network, the disks and the graphics cards](data/screenshots/resources.png)
+![The Processes page, with running apps and processes tinted by how much they use, beside a sidebar of graphs of the processor, memory, disks, network and graphics card](data/screenshots/processes.png)
 
-Resources, the page Locus opens on, graphs the processor and each of its cores, memory and
-swap, the network, the disks and each graphics card. File Systems shows how much room is
-left on each mounted disk, and switches a bar to the warning colour once its disk is 90%
-full.
+A sidebar leads to the pages. Processes, the page Locus opens on, lists the running apps
+first, each with its processes underneath, then every other process; it can also be
+arranged as a tree of everything or as a flat list. The columns show CPU, memory, disk and
+GPU use, tinted by how much each takes; the list sorts by any of them and searches by name,
+command line or PID. Processes can be ended, killed, stopped and continued, and apps ended
+or killed with all of their processes, from the buttons beneath the list, the context menu
+(right click or long press) or the keyboard. Ending and killing ask first, and the list
+stops re-sorting while a dialog or menu is open. A pane beside the list shows more about
+what is selected: its threads, open files and network connections, and its priority.
 
-Processes lists the running apps first, each with its processes underneath, then every
-other process as a tree under the process that started it. The columns show CPU, memory,
-disk and GPU use; the list sorts by any of them and searches by name, command line or PID.
-Processes can be ended, killed, stopped and continued, and apps ended or killed with all of
-their processes, from the buttons above the list, the context menu (right click or long
-press) or the keyboard. Ending and killing ask first, and the list stops re-sorting while a
-dialog or menu is open.
+Services lists those of the machine and of the user, from systemd, with what each is doing,
+whether it starts at boot and what it uses. They can be started, stopped and restarted, and
+each shows the end of its log. Changes to the machine's services go through systemd's own
+authorization.
 
-Everything is read from `/proc` and `/sys` on a worker thread. Apps are recognised by the
-systemd unit the desktop starts them in, by the desktop file GLib launched them from, or,
-for apps D-Bus activates, by their program. Processes are read only while the Processes
-page is visible, since that is most of the cost of a reading, and file systems only while
-File Systems is; the graphs keep going in the background, and while the window is hidden.
+Startup lists the apps that start with the session, with a switch for each and a way to add
+more, and breaks down how long the last boot took and which services took longest.
 
-Each page refreshes every 2 seconds by default, or every 1, 5 or 10 seconds as set for it
-in Preferences. Sizes are shown in binary units (KiB, MiB, GiB), or in decimal units (kB,
-MB, GB) when Preferences says so.
+Under Performance, the sidebar has a page and a small live graph for the processor, memory,
+each disk, each network connection and each graphics card. Their graphs reach back 1, 2 or
+5 minutes, and each page adds what it can say about its device: the processor's speed and
+load, how memory is divided, a disk's file systems and how full they are, a connection's
+addresses, a graphics card's engines, and the processes using the most of it.
+
+Everything but services is read from `/proc` and `/sys` on a worker thread. Apps are
+recognised by the systemd unit the desktop starts them in, by the desktop file GLib launched
+them from, or, for apps D-Bus activates, by their program. Processes are read only while a
+page that shows them is visible, since that is most of the cost of a reading, and details of
+a device only while its page is; the sidebar's graphs keep going in the background, and
+while the window is hidden. Services are read at most every 5 seconds, and only while their
+page is visible.
+
+Processes refresh every 2 seconds by default, and so do the other pages, or every 1, 5 or 10
+seconds as set for each in Preferences. Sizes are shown in binary units (KiB, MiB, GiB), or
+in decimal units (kB, MB, GB) when Preferences says so.
 
 GPU usage, video memory and temperature are whatever the driver exposes under `/sys`:
 amdgpu provides all three, most other drivers less, some nothing. A GPU that has powered
